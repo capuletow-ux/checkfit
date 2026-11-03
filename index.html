@@ -219,7 +219,7 @@ input,select,textarea{font-size:16px}
 
 <div class="wrap">
   <header class="top">
-    <div class="brand"><div><h1>Diário Alimentar</h1><small>Plano da Dra. Helenice Rosa · CRN 14709</small></div><div class="who" id="who" hidden><button class="todaybtn" id="logout" data-act="logout">Sair</button></div></div>
+    <div class="brand"><div><h1>Diário Alimentar</h1><small id="nutri">Seu plano alimentar</small></div><div class="who" id="who" hidden><button class="todaybtn" id="logout" data-act="logout">Sair</button></div></div>
     <div class="tabs" id="tabs" role="group" aria-label="Visão">
       <button id="tab-dia" data-act="tab" data-v="dia" aria-pressed="true">Dia</button>
       <button id="tab-semana" data-act="tab" data-v="semana" aria-pressed="false">Semana</button>
@@ -239,54 +239,8 @@ input,select,textarea{font-size:16px}
 <script>
 (function(){
 /* ---------- Plano (quantidades da nutricionista; kcal aproximadas pela tabela TACO e rótulos) ---------- */
-const PLAN = [
- {id:'desjejum', time:'05:40', name:'Desjejum', tip:'Pelo menos 200 ml de água morna. Ao marcar, os 500 ml entram no controle de água.', options:[
-   {label:'Plano', items:[{k:'agua', ch:[['Água morna','500 ml',0]]}]}]},
- {id:'cafe', time:'08:00', name:'Café da manhã', tip:'O cottage pode virar creme de ricota, requeijão ou 1 fatia de mussarela. O pão pode virar 60 g de cuscuz.', options:[
-   {label:'Opção 1 · Completo', items:[
-     {k:'cafe', ch:[['Café','1 caneca',5]]},
-     {k:'leite', ch:[['Leite em pó desnatado','2 c. sopa',72]]},
-     {k:'pao', ch:[['Pão francês','50 g',150],['Cuscuz','60 g',68]]},
-     {k:'ovo', ch:[['Ovos','2 un',143]]},
-     {k:'queijo', ch:[['Queijo cottage','30 g',30],['Creme de ricota','30 g',50],['Requeijão','30 g',79],['Mussarela','1 fatia (15 g)',50]]}]},
-   {label:'Opção 2 · Com whey', items:[
-     {k:'cafe', ch:[['Café','1 caneca',5]]},
-     {k:'whey', ch:[['Whey','30 g',120]]},
-     {k:'leite', ch:[['Leite em pó desnatado','10 g',36]]}]}]},
- {id:'almoco', time:'12:00', name:'Almoço', tip:'Salada com 1 colher de sobremesa de azeite e limão. Sem feijão? Aumente o carboidrato para 100 g (use 1½×).', options:[
-   {label:'Plano', items:[
-     {k:'prot', ch:[['Frango','150 g',239],['Carne bovina','150 g',329],['Peixe assado','200 g',260]]},
-     {k:'salada', ch:[['Salada ou verdura cozida','1 prato fundo',25]]},
-     {k:'azeite', ch:[['Azeite de oliva','1 c. sobremesa',45]]},
-     {k:'carbo', ch:[['Arroz integral','60 g',74],['Quinoa','60 g',72],['Mandioca','60 g',75],['Batata','60 g',31],['Macarrão integral','60 g',74]]},
-     {k:'feijao', ch:[['Feijão','60 g',46]]},
-     {k:'laranja', ch:[['Laranja','1 pequena',45]]}]}]},
- {id:'lanche', time:'16:00', name:'Lanche da tarde', tip:'Pode acrescentar 5 a 10 g de chia, linhaça ou psyllium, e canela ou cacau.', options:[
-   {label:'Opção 1', items:[
-     {k:'iog', ch:[['Iogurte natural','150 ml',77]]},
-     {k:'whey', ch:[['Whey concentrado','30 g',120]]},
-     {k:'fruta', ch:[['Fruta','1 porção',70]]},
-     {k:'semente', opt:true, ch:[['Chia, linhaça ou psyllium (opcional)','10 g',45]]}]},
-   {label:'Opção 2', items:[
-     {k:'iogp', ch:[['Iogurte proteico Piracanjuba 23 g','1 un',160]]},
-     {k:'fruta', ch:[['Fruta','1 porção',70]]}]},
-   {label:'Opção 3 · Cappuccino', items:[
-     {k:'cafe', ch:[['Café','1 caneca',5]]},
-     {k:'whey', ch:[['Whey','30 g',120]]},
-     {k:'leite', ch:[['Leite em pó desnatado','1 c. sopa',36]]},
-     {k:'fruta', ch:[['Fruta','1 porção',70]]}]}]},
- {id:'jantar', time:'20:00', name:'Jantar', tip:'Legumes e verduras à vontade.', options:[
-   {label:'Opção 1 · Lanche', items:[
-     {k:'pao', ch:[['Pão francês','50 g',150],['Rap 10 integral','1 un',120],['Tapioca','3 c. sopa',140]]},
-     {k:'prot', ch:[['Frango','100 g',159],['Carne bovina','100 g',219],['Atum','1 lata',118]]},
-     {k:'mus', ch:[['Queijo mussarela','1 fatia',50]]},
-     {k:'req', ch:[['Requeijão light','15 g',28]]},
-     {k:'leg', opt:true, ch:[['Legumes e verduras (à vontade)','1 porção',30]]}]},
-   {label:'Opção 2 · Prato', items:[
-     {k:'carbo', ch:[['Arroz integral','60 g',74],['Aipim','60 g',75],['Batata','60 g',31],['Macarrão integral','60 g',74]]},
-     {k:'prot', ch:[['Filé de frango','120 g',191],['Carne bovina','120 g',263],['Atum','1 lata',130]]},
-     {k:'salada', ch:[['Salada ou verdura crua (à vontade)','1 prato',25]]}]}]}
-];
+let PLAN = [];
+let PLANINFO = null;
 const FOODS = [
  ['Pão de queijo médio',145],['Coxinha',230],['Pastel',280],['Salgado assado',200],['Esfiha',180],['Pizza (1 fatia)',280],['Hambúrguer',500],['Cachorro-quente',400],['Batata frita (porção média)',360],['Sanduíche natural',250],
  ['Brigadeiro',90],['Bolo (1 fatia)',300],['Torta doce (1 fatia)',350],['Pudim (1 fatia)',250],['Chocolate (25 g)',135],['Sorvete (1 bola)',140],['Biscoito recheado (3 un)',150],['Açaí 300 ml com granola',450],
@@ -296,7 +250,7 @@ const FOODS = [
 ];
 const MEAL_STATUS = {ok:['No plano','s-ok'], adj:['Ajustado','s-warn'], extra:['Com extra','s-warn'], skip:['Pulou','s-bad'], pend:['Pendente','s-idle']};
 const DAY_STATUS = {plano:['Fiz tudo','s-ok'], fora:['Não fiz tudo','s-bad'], andamento:['Em andamento','s-idle'], vazio:['Sem registro','s-idle']};
-const WATER_GOAL = 3200;
+let WATER_GOAL = 2000;
 /* MET (Compêndio de Atividades Físicas): leve, moderada, intensa. Gasto do treino = (MET − 1) × peso × horas, ou seja, o que o treino queima a mais que o repouso */
 const ACTS = {
  musculacao:{n:'Musculação', met:[3.5,5,6]},
@@ -313,7 +267,10 @@ const INT = ['Leve','Moderada','Intensa'];
 const PROF_DEF = {altura:null, idade:null, tmb:null, fator:1.2, meta:null};
 const fmtKg = n => (Math.round(n*10)/10).toLocaleString('pt-BR');
 const fmtL = ml => (ml/1000).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2});
-const REF = PLAN.reduce((s,m)=>s+m.options[0].items.filter(i=>!i.opt).reduce((a,i)=>a+i.ch[0][2],0),0);
+let REF = 0;
+function computeRef(){return PLAN.reduce((s,m)=>s+m.options[0].items.filter(i=>!i.opt).reduce((a,i)=>a+i.ch[0][2],0),0);}
+function validPlan(p){return p&&Array.isArray(p.meals)&&p.meals.length&&p.meals.every(m=>m&&m.id&&m.name&&Array.isArray(m.options)&&m.options.length&&m.options.every(o=>Array.isArray(o.items)&&o.items.every(it=>it&&it.k&&Array.isArray(it.ch)&&it.ch.length)));}
+function setPlan(p){PLANINFO=p||null; PLAN=p?p.meals:[]; REF=computeRef(); const n=document.getElementById('nutri'); if(n) n.textContent=p&&p.nutri?'Plano de '+p.nutri:'Seu plano alimentar';}
 
 /* ---------- Estado ---------- */
 const S = {view:'dia', date:ymd(new Date()), days:{}, custom:[], db:null, local:false, timers:{}, ready:false, prof:{...PROF_DEF}, tf:{t:'musculacao',min:60,i:1}, profOpen:false};
@@ -353,7 +310,7 @@ function dayCalc(date){
   const kcal=meals.reduce((a,x)=>a+x.c.kcal,0), extraK=meals.reduce((a,x)=>a+x.c.extraK,0);
   const ok=meals.filter(x=>x.c.status==='ok').length, pend=meals.filter(x=>x.c.status==='pend').length;
   const water=waterMl(date), waterOk=water>=WATER_GOAL;
-  let status = (pend===5 && !water) ? 'vazio' : (ok===5 && waterOk) ? 'plano' : (date===today() && (pend>0 || !waterOk)) ? 'andamento' : 'fora';
+  let status = (pend===PLAN.length && !water) ? 'vazio' : (ok===PLAN.length && waterOk) ? 'plano' : (date===today() && (pend>0 || !waterOk)) ? 'andamento' : 'fora';
   const extras=[]; meals.forEach(x=>(((d.meals||{})[x.m.id]||{}).extras||[]).forEach(e=>extras.push({...e,meal:x.m.name})));
   const tr=trainCalc(date), base=baseBurn(), gasto=base+tr.kcal, saldo=kcal-gasto;
   return {meals,kcal,extraK,ok,pend,status,extras,water,waterOk,tr,base,gasto,saldo};
@@ -365,8 +322,8 @@ function trainCalc(date){const d=day(date), ts=Array.isArray(d.treinos)?d.treino
 function baseBurn(){return S.prof.tmb ? S.prof.tmb*(S.prof.fator||1.2) : 0;}
 function waterMl(date){
   const d=day(date), logs=(Array.isArray(d.agua)?d.agua:[]).reduce((a,x)=>a+(+x||0),0);
-  const dj=(d.meals||{}).desjejum; let base=0;
-  if(dj && !dj.skip){const ir=itemRec(dj,0,'agua'); if(ir.on) base=500*(ir.m||1);}
+  let base=0;
+  PLAN.forEach(m=>{const r=(d.meals||{})[m.id]; if(!r||r.skip) return; const oi=r.opt||0; ((m.options[oi]||m.options[0]).items||[]).forEach(it=>{ if(it.w){const ir=itemRec(r,oi,it.k); if(ir.on) base+=it.w*(ir.m||1);} });});
   return logs+base;
 }
 
@@ -399,7 +356,7 @@ const FB_CONFIG = {
 let AUTH=null, FS=null;
 function bindUser(user){
   (S.unsubs||[]).forEach(u=>{try{u()}catch(e){}}); S.unsubs=[];
-  S.user=user||null; S.days={}; S.custom=[]; S.prof={...PROF_DEF}; S.ready=false; S.db=null; bannerMsg='';
+  S.user=user||null; S.days={}; S.custom=[]; S.prof={...PROF_DEF}; S.ready=false; S.planReady=false; S.db=null; bannerMsg=''; S.imsg=''; setPlan(null);
   document.getElementById('who').hidden=!user;
   if(!user){ render(); return; }
   const base=FS.collection('users').doc(user.uid);
@@ -410,6 +367,7 @@ function bindUser(user){
     S.ready=true; render();
   },()=>{ banner('Não consegui ler seus dados. Verifique a internet e recarregue.'); }));
   S.unsubs.push(S.db.doc('config/alimentos').onSnapshot(s=>{ S.custom=(s.exists && s.data().lista)||[]; fillFoods(); },()=>{}));
+  S.unsubs.push(S.db.doc('config/plano').onSnapshot(s=>{ let p=null; if(s.exists){ try{ p=JSON.parse(s.data().json||'null'); }catch(e){} } setPlan(validPlan(p)?p:null); S.planReady=true; if(PLAN.length){ const pi=document.getElementById('planimport'); if(pi) pi.remove(); } render(); },()=>{ S.planReady=true; render(); }));
   S.unsubs.push(S.db.doc('config/perfil').onSnapshot(s=>{ S.prof={...PROF_DEF,...(s.exists?s.data():{})}; if(S.ready) render(); },()=>{}));
   render();
 }
@@ -437,6 +395,17 @@ function authMsg(e){
   return m[c] || ('Não consegui entrar ('+(c||'erro')+').');
 }
 function loginMsg(t,ok){const el=document.getElementById('loginmsg'); if(el){el.textContent=t; el.className='lmsg'+(ok?' ok':'');}}
+function planView(){
+  return `<section class="card login" id="planimport" aria-label="Carregar plano"><h2>Carregue seu plano alimentar</h2>
+   <p class="sub" style="margin:0">Cole aqui o texto do plano que você recebeu e toque em Carregar plano. Ele fica salvo só na sua conta.</p>
+   <div class="tools" style="margin-top:0;padding-top:0;border-top:0">
+    <label for="impt">Texto do plano<textarea id="impt" autocomplete="off" spellcheck="false"></textarea></label>
+    <div class="row"><button class="primary" id="impbtn" data-act="import">Carregar plano</button><label class="ghost" for="impf" style="display:inline-flex;align-items:center;cursor:pointer">Escolher arquivo<input id="impf" type="file" accept="application/json,.json" hidden></label></div>
+    <p class="lmsg${S.imsgOk?' ok':''}" id="imsg" role="status">${esc(S.imsg||'')}</p>
+   </div>
+   <div class="sub">Conectado como <b>${esc((S.user&&S.user.email)||'')}</b></div>
+  </section>`;
+}
 function loginView(){
   return `<section class="card login" aria-label="Entrar"><h2>Entrar</h2>
    <p class="sub" style="margin:0">Cada pessoa entra com a própria conta e vê só os próprios registros.</p>
@@ -465,21 +434,23 @@ async function googleLogin(){
 }
 /* ---------- Cópia de segurança ---------- */
 function exportData(){
-  const data={app:'diario-alimentar',exportado:new Date().toISOString(),dias:S.days,perfil:S.prof,alimentos:S.custom};
+  const data={app:'diario-alimentar',exportado:new Date().toISOString(),plano:PLANINFO,dias:S.days,perfil:S.prof,alimentos:S.custom};
   const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='dieta-backup-'+today()+'.json';
   document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},1000);
 }
 async function importData(text){
   const out=document.getElementById('imsg'); const say=(t,ok)=>{S.imsg=t; S.imsgOk=!!ok; const el=document.getElementById('imsg'); if(el){el.textContent=t; el.className='lmsg'+(ok?' ok':'');}};
-  let d; try{ d=JSON.parse(text); }catch(e){ say('Esse texto não é uma cópia de segurança válida.'); return; }
-  if(!d||typeof d!=='object'||!d.dias){ say('Não encontrei registros nessa cópia.'); return; }
+  let d; try{ d=JSON.parse((text||'').trim()); }catch(e){ say('Esse texto não é válido. Copie o texto inteiro, do { inicial até o } final.'); return; }
+  if(!d||typeof d!=='object'||(!d.dias&&!d.plano)){ say('Não encontrei plano nem registros nesse texto.'); return; }
+  if(d.plano&&!validPlan(d.plano)){ say('O plano desse texto está incompleto. Peça um novo texto do plano.'); return; }
   try{
     const b=FS.batch(); let n=0;
-    Object.entries(d.dias).forEach(([k,v])=>{ if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&v&&typeof v==='object'){ b.set(S.db.doc('dias/'+k),v); n++; } });
+    if(d.plano) b.set(S.db.doc('config/plano'),{json:JSON.stringify(d.plano),atualizado:new Date().toISOString()});
+    Object.entries(d.dias||{}).forEach(([k,v])=>{ if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&v&&typeof v==='object'){ b.set(S.db.doc('dias/'+k),v); n++; } });
     if(d.perfil&&typeof d.perfil==='object') b.set(S.db.doc('config/perfil'),d.perfil);
     if(Array.isArray(d.alimentos)) b.set(S.db.doc('config/alimentos'),{lista:d.alimentos});
-    await b.commit(); say(`Pronto: ${n} dia(s) importados.`,true);
+    await b.commit(); say(d.plano&&!n?'Plano carregado.':d.plano?`Pronto: plano e ${n} dia(s) importados.`:`Pronto: ${n} dia(s) importados.`,true);
     const ta=document.getElementById('impt'); if(ta) ta.value='';
   }catch(e){ say('Não consegui importar agora. Verifique a internet e tente de novo.'); }
 }
@@ -515,7 +486,9 @@ function render(){
   else lbl.textContent=d.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
   const app=document.getElementById('app');
   const ban = bannerMsg ? `<div class="banner">${esc(bannerMsg)}</div>` : '';
-  if(!S.ready){ app.innerHTML=ban+`<div class="card"><p class="sub" style="margin:0">Abrindo seu diário…</p></div>`; return; }
+  WATER_GOAL = (+S.prof.agua>0) ? +S.prof.agua : ((PLANINFO&&+PLANINFO.agua)||2000);
+  if(!S.ready||!S.planReady){ app.innerHTML=ban+`<div class="card"><p class="sub" style="margin:0">Abrindo seu diário…</p></div>`; return; }
+  if(!PLAN.length){ document.getElementById('tabs').hidden=true; document.getElementById('navbar').hidden=true; if(!document.getElementById('planimport')) app.innerHTML=ban+planView(); return; }
   const active=document.activeElement && document.activeElement.id;
   app.innerHTML = ban + (S.view==='dia'?viewDay():S.view==='semana'?viewWeek():viewMonth());
   if(active){const el=document.getElementById(active); if(el && el.tagName==='INPUT') el.focus();}
@@ -526,7 +499,7 @@ function viewDay(){
   let h=`<section class="card hero" aria-label="Total do dia">
     <div class="row1"><div><div class="big num">${fmt(c.kcal)}<span>kcal</span></div><div class="sub num">Referência do plano ≈ ${fmt(REF)} kcal</div></div>${pill(DAY_STATUS,c.status)}</div>
     <div class="bar"><i class="${over?'over':''}" style="width:${pct}%"></i></div>
-    <div class="sub num">${c.ok} de 5 refeições no plano${c.extraK?` · extras: ${fmt(c.extraK)} kcal`:''}${c.tr.kcal?` · treinos: −${fmt(c.tr.kcal)} kcal`:''}</div>
+    <div class="sub num">${c.ok} de ${PLAN.length} refeições no plano${c.extraK?` · extras: ${fmt(c.extraK)} kcal`:''}${c.tr.kcal?` · treinos: −${fmt(c.tr.kcal)} kcal`:''}</div>
     <button class="primary" id="allplan" data-act="allplan">Segui o plano em todas as refeições</button>
   </section>`;
   h+=waterCard(date,c);
@@ -535,7 +508,7 @@ function viewDay(){
   h+=weightCard(date);
   h+=daySummary(date,c);
   h+=profileCard();
-  h+=`<p class="note">Calorias aproximadas (tabela TACO e rótulos). Quantidades conforme o plano de 31/10/2026.</p>`;
+  h+=`<p class="note">Calorias aproximadas (tabela TACO e rótulos). Quantidades conforme o plano${PLANINFO&&PLANINFO.data?' de '+esc(PLANINFO.data):''}.</p>`;
   return h;
 }
 function tprevText(){const kg=weightOn(S.date).w; if(!kg||!(S.tf.min>0)) return ''; return `≈ <b>${fmt(trainK(S.tf,kg))} kcal</b> a mais que em repouso`;}
@@ -568,13 +541,14 @@ function profileCard(){
     <label for="pf-meta">Meta de peso (kg)<input id="pf-meta" inputmode="decimal" value="${p.meta??''}"></label>
     <label for="pf-alt">Altura (cm)<input id="pf-alt" inputmode="numeric" value="${p.altura??''}"></label>
     <label for="pf-idade">Idade<input id="pf-idade" inputmode="numeric" value="${p.idade??''}"></label>
+    <label for="pf-agua">Meta de água (ml por dia)<input id="pf-agua" inputmode="numeric" value="${p.agua??''}" placeholder="${(PLANINFO&&PLANINFO.agua)||2000}"></label>
     <button type="submit" class="primary" style="grid-column:1/-1">Salvar meus dados</button>
    </form>
    <p class="tip" style="margin:10px 0 0">O gasto do dia é a taxa basal × 1,2 (rotina de escritório) mais o que os treinos queimam a mais que o repouso.</p>
    <div class="tools">
     <div class="sub">Conectado como <b>${esc((S.user&&(S.user.email||S.user.displayName))||'')}</b></div>
     <div class="row"><button class="ghost" id="exp" data-act="export">Baixar cópia dos meus dados</button><label class="ghost" for="impf" style="display:inline-flex;align-items:center;cursor:pointer">Importar arquivo<input id="impf" type="file" accept="application/json,.json" hidden></label></div>
-    <label for="impt">Ou cole aqui o texto de uma cópia de segurança<textarea id="impt" autocomplete="off" spellcheck="false"></textarea></label>
+    <label for="impt">Ou cole aqui o texto de uma cópia de segurança ou de um plano novo<textarea id="impt" autocomplete="off" spellcheck="false"></textarea></label>
     <div class="row"><button class="ghost" id="impbtn" data-act="import">Importar texto colado</button></div>
     <p class="lmsg${S.imsgOk?' ok':''}" id="imsg" role="status">${esc(S.imsg||'')}</p>
    </div></details></section>`;
@@ -609,10 +583,10 @@ function trainList(s,group){
   return `<section class="card sum" aria-label="Treinos"><h2>Treinos</h2><div class="lines">${body}<div class="line"><span>Total gasto em treinos</span><span class="num" style="color:var(--fire)">−${fmt(s.trK)} kcal</span></div></div></section>`;
 }
 function waterCard(date,c){
-  const left=Math.max(0,WATER_GOAL-c.water), full=Math.min(16,Math.floor(c.water/200)), logs=day(date).agua||[];
+  const left=Math.max(0,WATER_GOAL-c.water), nc=Math.max(1,Math.min(24,Math.ceil(WATER_GOAL/200))), full=Math.min(nc,Math.floor(c.water/200)), logs=day(date).agua||[];
   return `<section class="card water" aria-label="Controle de água">
    <div class="row1"><div><div class="wbig num">${fmtL(c.water)}<span> de ${fmtL(WATER_GOAL)} L</span></div><div class="sub">${c.waterOk?'Meta de água batida.':`Faltam ${fmt(left)} ml, cerca de ${Math.ceil(left/200)} copo(s) de 200 ml`}</div></div>${c.waterOk?'<span class="pill s-ok">Meta batida</span>':'<span class="pill s-water">Água</span>'}</div>
-   <div class="cups" role="img" aria-label="${full} de 16 copos de 200 ml">${Array.from({length:16},(_,i)=>`<i class="${i<full?'on':''}"></i>`).join('')}</div>
+   <div class="cups" role="img" style="grid-template-columns:repeat(${nc},minmax(0,1fr))" aria-label="${full} de ${nc} copos de 200 ml">${Array.from({length:nc},(_,i)=>`<i class="${i<full?'on':''}"></i>`).join('')}</div>
    <div class="wbtns">
     <button class="wbtn" id="w-200" data-act="water" data-ml="200">+200 ml<small>copo</small></button>
     <button class="wbtn" id="w-300" data-act="water" data-ml="300">+300 ml<small>copo grande</small></button>
@@ -620,7 +594,7 @@ function waterCard(date,c){
     <button class="wbtn" id="w-1000" data-act="water" data-ml="1000">+1 L<small>garrafa</small></button>
    </div>
    <div class="wrow"><form class="addw"><input id="wml" inputmode="decimal" placeholder="Outra quantidade (ml)" aria-label="Quantidade de água em ml" autocomplete="off"><button type="submit">Somar</button></form><button class="ghost" id="wundo" data-act="wundo"${logs.length?'':' disabled'}>Desfazer último</button></div>
-   <div class="tip">Os 500 ml do desjejum entram aqui quando você marca a água das 05:40.</div>
+   ${PLAN.some(m=>m.options.some(o=>o.items.some(it=>it.w)))?'<div class="tip">A água marcada nas refeições entra aqui automaticamente.</div>':''}
   </section>`;
 }
 function mealCard(date,m){
@@ -670,7 +644,7 @@ function stats(dates){
   const cs=dates.map(d=>({d,c:dayCalc(d)})), logged=cs.filter(x=>x.c.status!=='vazio');
   const plano=cs.filter(x=>x.c.status==='plano').length, fora=cs.filter(x=>x.c.status==='fora').length;
   const avg=logged.length?logged.reduce((a,x)=>a+x.c.kcal,0)/logged.length:0;
-  const mealsOk=logged.reduce((a,x)=>a+x.c.ok,0), mealsTot=logged.length*5;
+  const mealsOk=logged.reduce((a,x)=>a+x.c.ok,0), mealsTot=logged.length*PLAN.length;
   const extraK=cs.reduce((a,x)=>a+x.c.extraK,0);
   const freq={}; cs.forEach(x=>x.c.extras.forEach(e=>{const k=e.n.trim();freq[k]=freq[k]||{n:k,q:0,k:0};freq[k].q++;freq[k].k+=+e.kcal||0}));
   const top=Object.values(freq).sort((a,b)=>b.q-a.q||b.k-a.k).slice(0,5);
@@ -788,7 +762,7 @@ document.addEventListener('submit',e=>{
   const date=S.date, num=id=>{const v=parseFloat((document.getElementById(id).value||'').replace(',','.')); return v>0?v:null;};
   if(f.matches('.tform')){ if(!(S.tf.min>0)){document.getElementById('tm').focus();return;} const d=S.days[date]||(S.days[date]={meals:{}}); d.treinos=Array.isArray(d.treinos)?d.treinos:[]; d.treinos.push({t:S.tf.t,min:Math.round(S.tf.min),i:S.tf.i}); save(date); render(); }
   else if(f.matches('.pform')){ const v=num('pw'); if(!v||v<30||v>300){document.getElementById('pw').focus();return;} const d=S.days[date]||(S.days[date]={meals:{}}); d.peso=Math.round(v*10)/10; save(date); render(); }
-  else { S.prof={...S.prof, tmb:num('pf-tmb'), meta:num('pf-meta'), altura:num('pf-alt'), idade:num('pf-idade')}; saveProf(); S.profOpen=false; render(); }
+  else { S.prof={...S.prof, tmb:num('pf-tmb'), meta:num('pf-meta'), altura:num('pf-alt'), idade:num('pf-idade'), agua:num('pf-agua')}; saveProf(); S.profOpen=false; render(); }
 });
 function addWater(date,ml){if(!(ml>0))return; const d=S.days[date]||(S.days[date]={meals:{}}); d.agua=Array.isArray(d.agua)?d.agua:[]; d.agua.push(Math.round(ml)); save(date); render();}
 document.addEventListener('submit',e=>{
