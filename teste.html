@@ -246,6 +246,7 @@ input,select,textarea{font-size:16px}
 .prep input{width:22px;height:22px;flex:none;accent-color:var(--accent)}
 .exc{display:flex;flex-direction:column;gap:6px}
 .exn{font-size:16px}
+.exobs{font-size:13px;color:var(--fg);background:var(--warn-soft);border-radius:8px;padding:6px 8px;margin-top:6px}
 .sethead,.setrow{display:grid;grid-template-columns:36px minmax(0,1fr) 72px 64px 44px;gap:6px;align-items:center}
 .sethead{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:0 2px}
 .setrow{padding:4px 2px;border-radius:10px}
@@ -862,7 +863,14 @@ function semanaDe(date){
 }
 function alvos(e, date){ const sc = Array.isArray(e.s) ? e.s : ((semanaDe(date).w || {}).s || [[3, '10']]); const out = []; sc.forEach(([q, r]) => { for(let i = 0; i < (+q || 0); i++) out.push(String(r)); }); return out; }
 function alvoTxt(e, date){ const sc = Array.isArray(e.s) ? e.s : ((semanaDe(date).w || {}).s || []); return sc.map(([q, r]) => q + '×' + r).join(' + '); }
-function descDe(e){ const T = S.treino || {}; return +e.desc || +((T.desc || {})[e.t]) || 90; }
+function sugeridas(e, date, n){
+  const c = Array.isArray(e.c) ? e.c : (e.c != null ? [e.c] : []); if(!c.length) return [];
+  if(c.length === n) return c.slice();
+  const sc = Array.isArray(e.s) ? e.s : ((semanaDe(date).w || {}).s || []);
+  if(c.length === sc.length){ const out = []; sc.forEach(([q], gi) => { for(let i = 0; i < (+q || 0); i++) out.push(c[gi]); }); return out; }
+  return Array.from({length:n}, (_, i) => c[Math.min(i, c.length - 1)]);
+}
+function descDe(e){ const T = S.treino || {}; if(e.t === 'mob' || e.t === 'cardio') return +e.desc || 0; return +e.desc || +((T.desc || {})[e.t]) || 90; }
 function isRot(){ const T = S.treino; return !!(T && !(T.agenda && Object.keys(T.agenda).length)); }
 function plannedId(date){
   const T = S.treino; if(!T) return null;
@@ -906,7 +914,8 @@ function novoSets(e, date, sessIni, comAquec){
   const T = S.treino || {}, ant = anterior(slug(e.n), sessIni), antW = ant ? ant.sets.filter(x => !x.aq) : [];
   const arr = [];
   if(comAquec) for(let i = 0; i < (+T.aquec || 0); i++) arr.push({aq:1, kg:'', r:'', ok:false});
-  alvos(e, date).forEach((t, i) => arr.push({t, kg: antW[i] && antW[i].kg !== '' ? antW[i].kg : (antW.length ? antW[antW.length - 1].kg : ''), r:'', ok:false}));
+  const al = alvos(e, date), sug = sugeridas(e, date, al.length);
+  al.forEach((t, i) => arr.push({t, kg: antW[i] && antW[i].kg !== '' ? antW[i].kg : (antW.length ? antW[antW.length - 1].kg : (sug[i] != null ? String(sug[i]) : '')), r:'', ok:false}));
   return arr;
 }
 function startSessao(fid){
@@ -937,7 +946,7 @@ function toggleSet(grp, s, i){
     if(!x.aq && numv(x.kg) > 0){ const best = recorde(s, sess.ini); const curBest = okSets(arr).filter(y => y !== x).reduce((m, y) => Math.max(m, numv(y.kg)), 0); if(best && numv(x.kg) > best.kg && numv(x.kg) > curBest){ x.pr = true; toast('Novo recorde: ' + String(x.kg).replace('.', ',') + ' kg em ' + (e ? e.n : 'exercício') + '!'); } }
     else x.pr = false;
     const allDone = Object.values(sess.ex || {}).concat(...Object.values(sess.ext || {}).map(g => Object.values(g))).every(a => a.every(y => y.ok));
-    if(!allDone) startRest(e ? descDe(e) : 90, e ? e.n : '');
+    if(!allDone && (!e || descDe(e) > 0)) startRest(e ? descDe(e) : 90, e ? e.n : '');
   } else { x.pr = false; }
   save(S.date); render();
 }
@@ -1044,7 +1053,7 @@ function exCard(grp, e, arr, sess, readOnly){
   const yt = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(e.n + ' execução academia');
   const doneN = okSets(arr).length, totalN = arr.filter(x => !x.aq).length;
   return `<section class="card exc" aria-label="${esc(e.n)}">
-   <div class="thead"><div style="min-width:0"><b class="exn">${esc(e.n)}</b><div class="sub">${esc(alvoTxt(e, S.date))}${e.t === 'cardio' ? '' : ' · descanso ' + fmtRest(descDe(e))}${e.t === 'multi' ? ' · multiarticular' : e.t === 'mono' ? ' · monoarticular' : e.t === 'cardio' ? ' · cardio' : ''}</div></div><span class="pill ${doneN >= totalN && totalN ? 's-ok' : 's-idle'} num">${doneN}/${totalN}</span></div>
+   <div class="thead"><div style="min-width:0"><b class="exn">${esc(e.n)}</b><div class="sub">${esc(alvoTxt(e, S.date))}${descDe(e) ? ' · descanso ' + fmtRest(descDe(e)) : ''}${e.t === 'multi' ? ' · multiarticular' : e.t === 'mono' ? ' · monoarticular' : e.t === 'cardio' ? ' · cardio' : e.t === 'mob' ? ' · mobilidade' : ''}</div>${e.obs ? `<div class="exobs">${esc(e.obs)}</div>` : ''}${e.c != null && e.c !== '' ? `<div class="sub num">Carga sugerida: ${esc((Array.isArray(e.c) ? e.c : [e.c]).map(v => String(v).replace('.', ',')).join(' / '))} kg</div>` : ''}</div><span class="pill ${doneN >= totalN && totalN ? 's-ok' : 's-idle'} num">${doneN}/${totalN}</span></div>
    <div class="sethead"><span>Série</span><span>Anterior</span><span>kg</span><span>Reps</span><span></span></div>
    ${setRows(grp, e, arr, sess.ini, readOnly)}
    <div class="row exfoot">${readOnly ? '' : `<button class="ghost sm" id="as-${grp.replace(':', '_')}-${s}" data-act="setadd" data-g="${grp}" data-s="${s}">+ Série</button>${arr.length > 1 ? `<button class="ghost sm" id="ds-${grp.replace(':', '_')}-${s}" data-act="setdel" data-g="${grp}" data-s="${s}">− Série</button>` : ''}`}<a class="ghost sm btnlink" href="${yt}" target="_blank" rel="noopener">Ver execução</a>${best ? `<span class="sub num" style="margin-left:auto">Recorde: ${String(best.kg).replace('.', ',')} kg × ${best.r || '–'}</span>` : ''}</div>
@@ -1056,7 +1065,7 @@ function treinoView(){
   if(!f) return `<section class="card"><p class="sub" style="margin:0">A ficha deste treino não existe mais.</p><button class="ghost" id="tv-back" data-act="tback">Voltar</button></section>`;
   ensureTick();
   let h = `<section class="card thero" aria-label="${esc(lbl(f.id))}">
-   <div class="thead"><div><div class="eyebrow">${esc(lbl(f.id))}${sess.sem ? ' · semana ' + sess.sem : ''}</div><h2>${esc(f.nome)}</h2></div><div class="tclock num" id="sessclock">${fmtClock(((sess.fim || Date.now()) - sess.ini) / 1000)}</div></div>
+   <div class="thead"><div><div class="eyebrow">${T.rotulo === 'nome' ? 'Treino ' + (T.fichas.indexOf(f) + 1) + ' de ' + T.fichas.length : esc(lbl(f.id))}${sess.sem ? ' · semana ' + sess.sem : ''}</div><h2>${esc(f.nome)}</h2></div><div class="tclock num" id="sessclock">${fmtClock(((sess.fim || Date.now()) - sess.ini) / 1000)}</div></div>
    ${f.obs ? `<p class="sub" style="margin:0">${esc(f.obs)}</p>` : ''}
    <div class="sub num">${r.series} séries feitas · ${fmt(r.vol)} kg levantados${r.prs ? ' · ' + r.prs + ' recorde(s)' : ''}</div>
    ${f.prep ? `<label class="prep" for="t-prep"><input type="checkbox" id="t-prep" data-act="tprep" ${sess.prep ? 'checked' : ''}${ro ? ' disabled' : ''}> <span>${esc(f.prep)}</span></label>` : ''}
