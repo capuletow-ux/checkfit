@@ -863,7 +863,16 @@ function semanaDe(date){
 function alvos(e, date){ const sc = Array.isArray(e.s) ? e.s : ((semanaDe(date).w || {}).s || [[3, '10']]); const out = []; sc.forEach(([q, r]) => { for(let i = 0; i < (+q || 0); i++) out.push(String(r)); }); return out; }
 function alvoTxt(e, date){ const sc = Array.isArray(e.s) ? e.s : ((semanaDe(date).w || {}).s || []); return sc.map(([q, r]) => q + '×' + r).join(' + '); }
 function descDe(e){ const T = S.treino || {}; return +e.desc || +((T.desc || {})[e.t]) || 90; }
-function plannedId(date){ const T = S.treino; if(!T || !T.agenda) return null; return T.agenda[String(parse(date).getDay())] || null; }
+function isRot(){ const T = S.treino; return !!(T && !(T.agenda && Object.keys(T.agenda).length)); }
+function plannedId(date){
+  const T = S.treino; if(!T) return null;
+  if(!isRot()) return T.agenda[String(parse(date).getDay())] || null;
+  const ids = T.fichas.map(f => f.id); let last = null;
+  Object.keys(S.days).sort().forEach(d => { if(d < date) sessoes(d).forEach(ss => { if(ss.fim) last = ss.f; }); });
+  if(!last) return ids.includes(T.prox) ? T.prox : ids[0];
+  return ids[(ids.indexOf(last) + 1) % ids.length];
+}
+function lbl(id){ const T = S.treino, f = fichaById(id); return T && T.rotulo === 'nome' && f ? f.nome : 'Treino ' + id; }
 function sessoes(date){ const d = S.days[date]; return d && Array.isArray(d.musc) ? d.musc : []; }
 function setsOf(sess, grp, s){ if(!sess) return null; if(grp === 'ex') return (sess.ex || {})[s] || null; const id = grp.slice(4); return ((sess.ext || {})[id] || {})[s] || null; }
 function okSets(arr){ return (arr || []).filter(x => x.ok && !x.aq); }
@@ -952,7 +961,7 @@ function finishSessao(){
   d.treinos.push({t:'musculacao', min:r.min, i:1, sess:sess.ini, f:sess.f});
   stopRest(); wakeOff(); S.mode = 'app'; S.sessIni = null; S.confirmDiscard = false;
   save(S.date); render(); window.scrollTo(0, 0);
-  toast(`Treino ${sess.f} concluído: ${r.min} min, ${r.series} séries${r.prs ? ', ' + r.prs + ' recorde(s)' : ''}.`);
+  toast(`${lbl(sess.f)} concluído: ${r.min} min, ${r.series} séries${r.prs ? ', ' + r.prs + ' recorde(s)' : ''}.`);
 }
 function discardSessao(){
   if(!S.confirmDiscard){ S.confirmDiscard = true; render(); return; }
@@ -998,16 +1007,17 @@ function treinoCard(date){
   const w = semanaDe(date), pid = plannedId(date), pf = pid ? fichaById(pid) : null, ss = sessoes(date), doing = ss.find(x => !x.fim), done = ss.filter(x => x.fim);
   const extras = extrasDoDia(date);
   let h = `<section class="card tcard" aria-label="Treino de musculação">
-   <div class="thead"><div><div class="eyebrow">${WD_LONG[parse(date).getDay()]} · ${pf ? 'Treino ' + esc(pf.id) : 'Descanso'}</div><h2>${pf ? esc(pf.nome) : 'Dia de descanso'}</h2></div>${w.n ? `<span class="pill s-water">Semana ${w.n}/${w.total}</span>` : ''}</div>`;
+   <div class="thead"><div><div class="eyebrow">${WD_LONG[parse(date).getDay()]} · ${pf ? (isRot() ? 'Próximo treino' : esc(lbl(pf.id))) : 'Descanso'}</div><h2>${pf ? esc(pf.nome) : 'Dia de descanso'}</h2></div>${w.n ? `<span class="pill s-water">Semana ${w.n}/${w.total}</span>` : ''}</div>`;
+  if(isRot()) h += `<div class="sub">Sequência: ${T.fichas.map(f => f.id === (pf && pf.id) ? '<b>' + esc(lbl(f.id).replace('Treino ', '')) + '</b>' : esc(lbl(f.id).replace('Treino ', ''))).join(' → ')}${T.meta ? ' · meta de ' + T.meta + ' treinos por semana' : ''}</div>`;
   if(w.w) h += `<div class="sub">${esc(w.w.txt)} · ${+T.aquec ? T.aquec + ' série de aquecimento antes · ' : ''}descanso ${fmtRest((T.desc || {}).multi || 90)} multi / ${fmtRest((T.desc || {}).mono || 90)} mono</div>`;
   if(w.fim) h += `<div class="banner">As ${w.total} semanas desta ficha terminaram. Peça uma ficha nova ao seu personal; até lá, siga a última semana.</div>`;
   if(extras.length && (pf || doing)) h += `<div class="sub">Hoje também: <b>${extras.map(x => esc(x.nome)).join(' e ')}</b> (dia sim, dia não).</div>`;
-  done.forEach(sess => { const r = resumoSessao(sess); h += `<button class="donerow" id="sd-${sess.ini}" data-act="topen" data-ini="${sess.ini}"><span class="ok-dot" aria-hidden="true">✓</span><span><b>Treino ${esc(sess.f)} concluído</b><small class="num">${r.min} min · ${r.series} séries · ${fmt(r.vol)} kg levantados${r.prs ? ' · ' + r.prs + ' recorde(s)' : ''}</small></span><span class="sub">Ver</span></button>`; });
-  if(doing) h += `<button class="primary" id="t-cont" data-act="topen" data-ini="${doing.ini}">Continuar treino ${esc(doing.f)}</button>`;
+  done.forEach(sess => { const r = resumoSessao(sess); h += `<button class="donerow" id="sd-${sess.ini}" data-act="topen" data-ini="${sess.ini}"><span class="ok-dot" aria-hidden="true">✓</span><span><b>${esc(lbl(sess.f))} concluído</b><small class="num">${r.min} min · ${r.series} séries · ${fmt(r.vol)} kg levantados${r.prs ? ' · ' + r.prs + ' recorde(s)' : ''}</small></span><span class="sub">Ver</span></button>`; });
+  if(doing) h += `<button class="primary" id="t-cont" data-act="topen" data-ini="${doing.ini}">Continuar: ${esc(lbl(doing.f))}</button>`;
   else {
-    if(pf && !done.some(x => x.f === pf.id)) h += `<button class="primary" id="t-start" data-act="tstart" data-f="${esc(pf.id)}">Começar treino ${esc(pf.id)}</button>`;
+    if(pf && !done.some(x => x.f === pf.id)) h += `<button class="primary" id="t-start" data-act="tstart" data-f="${esc(pf.id)}">Começar ${esc(lbl(pf.id)).replace('Treino', 'treino')}</button>`;
     const others = T.fichas.filter(f => !pf || f.id !== pf.id || done.some(x => x.f === pf.id));
-    if(others.length) h += `<div class="opts" style="padding:0">${(pf ? '<span class="sub" style="align-self:center">Ou fazer:</span>' : '<span class="sub" style="align-self:center">Treinar mesmo assim:</span>')}${others.map(f => `<button class="chip" id="t-st-${esc(f.id)}" data-act="tstart" data-f="${esc(f.id)}">Treino ${esc(f.id)} · ${esc(f.nome)}</button>`).join('')}</div>`;
+    if(others.length) h += `<div class="opts" style="padding:0">${(pf ? '<span class="sub" style="align-self:center">Ou fazer:</span>' : '<span class="sub" style="align-self:center">Treinar mesmo assim:</span>')}${others.map(f => `<button class="chip" id="t-st-${esc(f.id)}" data-act="tstart" data-f="${esc(f.id)}">${T.rotulo === 'nome' ? esc(f.nome) : 'Treino ' + esc(f.id) + ' · ' + esc(f.nome)}</button>`).join('')}</div>`;
   }
   return h + `</section>`;
 }
@@ -1034,7 +1044,7 @@ function exCard(grp, e, arr, sess, readOnly){
   const yt = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(e.n + ' execução academia');
   const doneN = okSets(arr).length, totalN = arr.filter(x => !x.aq).length;
   return `<section class="card exc" aria-label="${esc(e.n)}">
-   <div class="thead"><div style="min-width:0"><b class="exn">${esc(e.n)}</b><div class="sub">${esc(alvoTxt(e, S.date))} · descanso ${fmtRest(descDe(e))}${e.t ? ' · ' + (e.t === 'multi' ? 'multiarticular' : 'monoarticular') : ''}</div></div><span class="pill ${doneN >= totalN && totalN ? 's-ok' : 's-idle'} num">${doneN}/${totalN}</span></div>
+   <div class="thead"><div style="min-width:0"><b class="exn">${esc(e.n)}</b><div class="sub">${esc(alvoTxt(e, S.date))}${e.t === 'cardio' ? '' : ' · descanso ' + fmtRest(descDe(e))}${e.t === 'multi' ? ' · multiarticular' : e.t === 'mono' ? ' · monoarticular' : e.t === 'cardio' ? ' · cardio' : ''}</div></div><span class="pill ${doneN >= totalN && totalN ? 's-ok' : 's-idle'} num">${doneN}/${totalN}</span></div>
    <div class="sethead"><span>Série</span><span>Anterior</span><span>kg</span><span>Reps</span><span></span></div>
    ${setRows(grp, e, arr, sess.ini, readOnly)}
    <div class="row exfoot">${readOnly ? '' : `<button class="ghost sm" id="as-${grp.replace(':', '_')}-${s}" data-act="setadd" data-g="${grp}" data-s="${s}">+ Série</button>${arr.length > 1 ? `<button class="ghost sm" id="ds-${grp.replace(':', '_')}-${s}" data-act="setdel" data-g="${grp}" data-s="${s}">− Série</button>` : ''}`}<a class="ghost sm btnlink" href="${yt}" target="_blank" rel="noopener">Ver execução</a>${best ? `<span class="sub num" style="margin-left:auto">Recorde: ${String(best.kg).replace('.', ',')} kg × ${best.r || '–'}</span>` : ''}</div>
@@ -1045,8 +1055,9 @@ function treinoView(){
   const f = fichaById(sess.f), T = S.treino || {}, ro = !!sess.fim, r = resumoSessao(sess);
   if(!f) return `<section class="card"><p class="sub" style="margin:0">A ficha deste treino não existe mais.</p><button class="ghost" id="tv-back" data-act="tback">Voltar</button></section>`;
   ensureTick();
-  let h = `<section class="card thero" aria-label="Treino ${esc(f.id)}">
-   <div class="thead"><div><div class="eyebrow">Treino ${esc(f.id)}${sess.sem ? ' · semana ' + sess.sem : ''}</div><h2>${esc(f.nome)}</h2></div><div class="tclock num" id="sessclock">${fmtClock(((sess.fim || Date.now()) - sess.ini) / 1000)}</div></div>
+  let h = `<section class="card thero" aria-label="${esc(lbl(f.id))}">
+   <div class="thead"><div><div class="eyebrow">${esc(lbl(f.id))}${sess.sem ? ' · semana ' + sess.sem : ''}</div><h2>${esc(f.nome)}</h2></div><div class="tclock num" id="sessclock">${fmtClock(((sess.fim || Date.now()) - sess.ini) / 1000)}</div></div>
+   ${f.obs ? `<p class="sub" style="margin:0">${esc(f.obs)}</p>` : ''}
    <div class="sub num">${r.series} séries feitas · ${fmt(r.vol)} kg levantados${r.prs ? ' · ' + r.prs + ' recorde(s)' : ''}</div>
    ${f.prep ? `<label class="prep" for="t-prep"><input type="checkbox" id="t-prep" data-act="tprep" ${sess.prep ? 'checked' : ''}${ro ? ' disabled' : ''}> <span>${esc(f.prep)}</span></label>` : ''}
    <div class="row"><button class="ghost" id="tv-back" data-act="tback">← Diário</button>${ro ? `<button class="ghost" id="tv-reopen" data-act="treopen">Editar treino</button>` : `<button class="primary" id="tv-fin" data-act="tfinish">Finalizar treino</button>`}</div>
@@ -1066,7 +1077,7 @@ function treinoView(){
 }
 
 /* progresso */
-function exerciciosDaFicha(){ const T = S.treino; if(!T) return []; const list = []; T.fichas.forEach(f => f.ex.forEach(e => list.push({s:slug(e.n), n:e.n, g:'Treino ' + f.id}))); (T.extras || []).forEach(x => x.ex.forEach(e => list.push({s:slug(e.n), n:e.n, g:x.nome}))); return list; }
+function exerciciosDaFicha(){ const T = S.treino; if(!T) return []; const list = []; T.fichas.forEach(f => f.ex.forEach(e => list.push({s:slug(e.n), n:e.n, g:lbl(f.id)}))); (T.extras || []).forEach(x => x.ex.forEach(e => list.push({s:slug(e.n), n:e.n, g:x.nome}))); return list; }
 function progressoCard(){
   const list = exerciciosDaFicha(); if(!list.length) return '';
   const withData = list.filter(x => historico(x.s).length);
@@ -1093,7 +1104,8 @@ function progressoCard(){
 }
 function muscStats(dates){
   let feitos = 0, previstos = 0, vol = 0; const td = today();
-  dates.forEach(d => { if(plannedId(d) && d <= td) previstos++; sessoes(d).forEach(ss => { if(ss.fim){ feitos++; vol += resumoSessao(ss).vol; } }); });
+  dates.forEach(d => { if(!isRot() && plannedId(d) && d <= td) previstos++; sessoes(d).forEach(ss => { if(ss.fim){ feitos++; vol += resumoSessao(ss).vol; } }); });
+  if(isRot()) previstos = Math.round((+S.treino.meta || S.treino.fichas.length) * dates.filter(d => d <= td).length / 7);
   return {feitos, previstos, vol};
 }
 
@@ -1193,7 +1205,7 @@ function trainCard(date,c){
   const opts=Object.entries(ACTS).map(([k,a])=>`<option value="${k}"${k===tf.t?' selected':''}>${a.n}</option>`).join('');
   return `<section class="card train" aria-label="Treinos">
    <div class="thead"><div><h2>Treinos e cardio</h2><div class="sub">${tr.list.length?`${tr.list.length} atividade(s) · ${fmt(tr.min)} min`:'Nenhum treino registrado neste dia.'}</div></div><div class="fbig num">−${fmt(tr.kcal)}<span> kcal</span></div></div>
-   ${tr.list.length?`<div class="tlist">${tr.list.map((t,i)=>`<div class="trow"><b>${t.sess?'Musculação · treino '+esc(t.f||''):(ACTS[t.t]||ACTS.outro).n}<small>${fmt(t.min)} min · ${INT[t.i==null?1:t.i]}</small></b><span class="k num">−${fmt(t.kcal)} kcal</span><button class="x" id="rt-${i}" data-act="rmtrain" data-i="${i}" aria-label="Remover treino">✕</button></div>`).join('')}</div>`:''}
+   ${tr.list.length?`<div class="tlist">${tr.list.map((t,i)=>`<div class="trow"><b>${t.sess?'Musculação · '+esc(S.treino?lbl(t.f||''):'treino '+(t.f||'')):(ACTS[t.t]||ACTS.outro).n}<small>${fmt(t.min)} min · ${INT[t.i==null?1:t.i]}</small></b><span class="k num">−${fmt(t.kcal)} kcal</span><button class="x" id="rt-${i}" data-act="rmtrain" data-i="${i}" aria-label="Remover treino">✕</button></div>`).join('')}</div>`:''}
    ${tr.kg?'':'<div class="banner">Registre seu peso no cartão Peso para calcular o gasto dos treinos.</div>'}
    <div class="tquick">${S.treino?'':'<button class="chip" id="tq-musc" data-act="tquick" data-t="musculacao">+ Musculação 1h</button>'}<button class="chip" id="tq-beach" data-act="tquick" data-t="beach">+ Beach tennis 1h</button><button class="chip" id="tq-walk" data-act="tquick" data-t="caminhada">+ Caminhada 1h (6 km/h)</button></div>
    <form class="tform"><select id="tt" aria-label="Atividade">${opts}</select><input id="tm" inputmode="numeric" value="${tf.min||''}" placeholder="min" aria-label="Duração em minutos"><select id="ti" aria-label="Intensidade">${INT.map((n,i)=>`<option value="${i}"${i===tf.i?' selected':''}>${n}</option>`).join('')}</select>
