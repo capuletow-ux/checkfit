@@ -309,6 +309,9 @@ body{padding-bottom:72px}
 details.medd summary{cursor:pointer;font-weight:900;min-height:32px;display:flex;align-items:center;gap:8px}
 .relnota{width:100%;min-height:80px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:16px;margin-top:4px}
 .relbtn{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.relok{margin-top:10px;padding:12px;border:1px solid var(--ok);background:var(--ok-soft);border-radius:12px}
+.relbtnl{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.card a.ghost.relbtnl{color:var(--fg)}
 .rep{--fg:#17200f;--muted:#5b6552;--line:#dfe3d6;--surface:#fff;--accent:#3d6b1f;--ok:#2f7d32;--bad:#b3261e;--water:#1f6fb2;background:#fff;color:#17200f;border-radius:16px;padding:18px 16px;margin-top:12px;border:1px solid #dfe3d6;font-size:12.5px;line-height:1.4}
 .rep h1{font-size:18px;margin:2px 0 4px}.rep h2{font-size:14px;margin:0 0 8px;color:#3d6b1f;text-transform:uppercase;letter-spacing:.5px}.rep h3{font-size:12.5px;margin:10px 0 4px}
 .rbrand{font-weight:900;letter-spacing:1px;font-size:11px;color:#3d6b1f}
@@ -1280,8 +1283,8 @@ function relView(){
   let h = `<section class="card noprint" id="view-rel"><div class="thead"><div><h2>Relatório de ${mes}</h2><div class="sub">Para levar à nutricionista, ao médico ou ao personal.</div></div><button class="ghost" id="rel-back" data-act="relback">Voltar</button></div>
     <label class="sub" for="rel-nota" style="font-weight:700;display:block;margin-top:10px">Observações para o profissional (opcional)</label>
     <textarea id="rel-nota" class="relnota" placeholder="Ex.: senti mais fome à noite; dor no joelho na semana 2; viajei de 10 a 13.">${esc(nota)}</textarea>
-    <button class="primary" id="rel-pdf" data-act="relpdf" style="width:100%;margin-top:10px">Gerar PDF / imprimir</button>
-    <p class="tip" style="margin:8px 0 0">Na tela que abrir, toque no ícone de <b>compartilhar</b> para salvar em Arquivos ou enviar pelo WhatsApp. ${dates.length < n ? 'O mês ainda não terminou: o relatório vai até hoje.' : ''}</p></section>
+    ${relPdfBox()}
+    <p class="tip" style="margin:8px 0 0">${dates.length < n ? 'O mês ainda não terminou: o relatório vai até hoje. ' : ''}Prévia do relatório abaixo. No computador, também dá para <button class="linkbtn" data-act="relprint">imprimir</button>.</p></section>
   <article class="rep" aria-label="Relatório">
    <header class="rh"><div><div class="rbrand">CHECKFIT</div><h1>Relatório mensal · ${mes}</h1><div class="rmeta">${esc(nome)}${P.idade ? ' · ' + esc(P.idade) + ' anos' : ''}${P.altura ? ' · ' + esc(P.altura) + ' cm' : ''} · ${dCurta(ini)} a ${dCurta(fim)} · gerado em ${geradoEm}</div>
     ${PLANINFO && PLANINFO.nutri ? `<div class="rmeta">Plano alimentar: ${esc(PLANINFO.nutri)}${PLANINFO.data ? ' (' + esc(PLANINFO.data) + ')' : ''}</div>` : ''}${S.treino && S.treino.prof ? `<div class="rmeta">Treino: ${esc(S.treino.prof)}${S.treino.objetivo ? ' · ' + esc(S.treino.objetivo) : ''}</div>` : ''}</div></header>
@@ -1313,6 +1316,162 @@ function relView(){
    <footer class="rf">Dados registrados pelo próprio usuário no app CHECKFIT. Calorias aproximadas (tabela TACO e rótulos). Este relatório não substitui avaliação profissional.</footer>
   </article>`;
   return h;
+}
+
+/* ---------- Gerador de PDF próprio (desenha o relatório em páginas A4 e monta o arquivo) ---------- */
+const PDFC = {fg:'#17200f', muted:'#5b6552', line:'#dfe3d6', accent:'#3d6b1f', ok:'#2f7d32', bad:'#b3261e', water:'#1f6fb2', fire:'#c2410c', surface:'#ffffff', warn:'#a15c00'};
+const PG = {W:1190, H:1684, M:70};
+const PFONT = '-apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif';
+function pcol(c){ if(!c || c === 'none') return null; const m = String(c).match(/var\(--([a-z-]+)\)/); return m ? (PDFC[m[1]] || PDFC.fg) : c; }
+function PdfDoc(){ this.pages = []; this.newPage(); }
+PdfDoc.prototype.newPage = function(){
+  const c = document.createElement('canvas'); c.width = PG.W; c.height = PG.H;
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, PG.W, PG.H); x.textBaseline = 'alphabetic';
+  this.c = c; this.x = x; this.y = PG.M; this.pages.push(c);
+  this.font(17); x.fillStyle = PDFC.muted; x.textAlign = 'right'; x.fillText('CHECKFIT · página ' + this.pages.length, PG.W - PG.M, PG.H - 36); x.textAlign = 'left';
+};
+PdfDoc.prototype.font = function(size, bold){ this.x.font = (bold ? '700 ' : '400 ') + size + 'px ' + PFONT; };
+PdfDoc.prototype.room = function(){ return PG.H - PG.M - 30 - this.y; };
+PdfDoc.prototype.ensure = function(h){ if(h > this.room()){ this.newPage(); return true; } return false; };
+PdfDoc.prototype.wrap = function(t, maxW, size, bold){
+  this.font(size, bold); const out = [];
+  String(t).split('\n').forEach(par => {
+    const words = par.split(/\s+/).filter(Boolean); let line = '';
+    if(!words.length){ out.push(''); return; }
+    words.forEach(wd => { const tryL = line ? line + ' ' + wd : wd;
+      if(this.x.measureText(tryL).width <= maxW || !line){ line = tryL; while(this.x.measureText(line).width > maxW && line.length > 1){ let cut = line.length - 1; while(cut > 1 && this.x.measureText(line.slice(0, cut)).width > maxW) cut--; out.push(line.slice(0, cut)); line = line.slice(cut); } }
+      else { out.push(line); line = wd; } });
+    if(line) out.push(line);
+  });
+  return out;
+};
+PdfDoc.prototype.para = function(t, o){
+  o = o || {}; const size = o.size || 20, lh = Math.round(size * 1.38), x0 = o.x != null ? o.x : PG.M, w = o.w || (PG.W - 2 * PG.M);
+  const lines = this.wrap(t, w - (o.bar ? 18 : 0), size, o.bold);
+  lines.forEach(l => { this.ensure(lh); this.font(size, o.bold); this.x.fillStyle = o.color || PDFC.fg; this.x.fillText(l, x0 + (o.bar ? 18 : 0), this.y + size);
+    if(o.bar){ this.x.fillStyle = PDFC.accent; this.x.fillRect(x0, this.y + 2, 5, lh); } this.y += lh; });
+  this.y += o.after != null ? o.after : 6;
+};
+PdfDoc.prototype.hline = function(color, wpx){ this.x.fillStyle = color || PDFC.line; this.x.fillRect(PG.M, this.y, PG.W - 2 * PG.M, wpx || 2); this.y += (wpx || 2); };
+PdfDoc.prototype.h2 = function(t){ this.ensure(110); this.y += 8; this.font(23, true); this.x.fillStyle = PDFC.accent; this.x.fillText(t.toUpperCase(), PG.M, this.y + 23); this.y += 38; };
+PdfDoc.prototype.h3 = function(t){ this.ensure(80); this.y += 6; this.font(20, true); this.x.fillStyle = PDFC.fg; this.x.fillText(t, PG.M, this.y + 20); this.y += 32; };
+PdfDoc.prototype.tiles = function(items){
+  const cols = 4, gap = 12, w = (PG.W - 2 * PG.M - gap * (cols - 1)) / cols;
+  for(let i = 0; i < items.length; i += cols){
+    const row = items.slice(i, i + cols), lab = row.map(it => this.wrap(it[1], w - 24, 16));
+    const h = 22 + 34 + Math.max(...lab.map(l => l.length)) * 21 + 12; this.ensure(h);
+    row.forEach((it, j) => { const x0 = PG.M + j * (w + gap), x = this.x;
+      x.strokeStyle = PDFC.line; x.lineWidth = 2; pRound(x, x0, this.y, w, h, 14); x.stroke();
+      this.font(30, true); x.fillStyle = PDFC.fg; x.fillText(it[0], x0 + 12, this.y + 44);
+      this.font(16); x.fillStyle = PDFC.muted; lab[j].forEach((l, k) => x.fillText(l, x0 + 12, this.y + 70 + k * 21)); });
+    this.y += h + gap;
+  }
+};
+function pRound(x, a, b, w, h, r){ x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); }
+PdfDoc.prototype.table = function(tbl, x0, w, startY){
+  const rowsEl = [...tbl.querySelectorAll('tr')], head = rowsEl.filter(r => r.parentElement.tagName === 'THEAD');
+  const cellTxt = c => c.textContent.replace(/\s+/g, ' ').trim();
+  const rows = rowsEl.map(r => ({el:r, head:head.includes(r), cells:[...r.children].map(c => ({t:cellTxt(c), th:c.tagName === 'TH'}))}));
+  const nc = Math.max(...rows.map(r => r.cells.length)), size = 18, pad = 10, lh = 23;
+  const nat = Array(nc).fill(40);
+  rows.forEach(r => r.cells.forEach((c, i) => { this.font(size, c.th || r.head); nat[i] = Math.max(nat[i], Math.min(this.x.measureText(c.t).width + 2 * pad + 10, w * 0.6)); }));
+  const sum = nat.reduce((a, b) => a + b, 0); const cw = nat.map(v => sum > w ? v * w / sum : v * (w / sum));
+  if(startY != null) this.y = startY;
+  const drawRow = r => {
+    const lines = r.cells.map((c, i) => this.wrap(c.t, cw[i] - 2 * pad, size, c.th || r.head)), h = Math.max(1, ...lines.map(l => l.length)) * lh + 12;
+    if(this.ensure(h) && !r.head && head.length && x0 === PG.M) head.forEach(hr => drawRow(rows.find(z => z.el === hr)));
+    let cx = x0; const st = r.el.className || '';
+    r.cells.forEach((c, i) => { this.x.fillStyle = r.head || c.th ? PDFC.muted : (i === r.cells.length - 1 && st === 'plano') ? PDFC.ok : (i === r.cells.length - 1 && st === 'fora') ? PDFC.bad : PDFC.fg;
+      this.font(size, (r.head || c.th) && r.head); lines[i].forEach((l, k) => this.x.fillText(l, cx + pad, this.y + 6 + size + k * lh)); cx += cw[i]; });
+    this.y += h; this.x.fillStyle = PDFC.line; this.x.fillRect(x0, this.y - 1, w, 1.5);
+  };
+  rows.forEach(drawRow); this.y += 10;
+};
+PdfDoc.prototype.svg = function(svg, x0, w, startY){
+  const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : {width:340, height:150};
+  const s = w / vb.width, h = vb.height * s; if(startY == null) this.ensure(h + 10); else this.y = startY;
+  const x = this.x, oy = this.y, A = (el, k, d) => { const v = el.getAttribute(k); return v == null ? d : v; };
+  [...svg.children].forEach(el => {
+    const t = el.tagName.toLowerCase();
+    if(t === 'line'){ x.beginPath(); x.strokeStyle = pcol(A(el, 'stroke', '#ddd')); x.lineWidth = +A(el, 'stroke-width', 1) * s; const da = A(el, 'stroke-dasharray', ''); x.setLineDash(da ? da.split(/[\s,]+/).map(v => +v * s) : []);
+      x.moveTo(x0 + +A(el, 'x1', 0) * s, oy + +A(el, 'y1', 0) * s); x.lineTo(x0 + +A(el, 'x2', 0) * s, oy + +A(el, 'y2', 0) * s); x.stroke(); x.setLineDash([]); }
+    else if(t === 'polyline'){ const pts = A(el, 'points', '').trim().split(/\s+/).map(p => p.split(',').map(Number)); x.beginPath(); x.strokeStyle = pcol(A(el, 'stroke', PDFC.accent)); x.lineWidth = +A(el, 'stroke-width', 2) * s; x.lineJoin = 'round'; x.lineCap = 'round';
+      pts.forEach(([a, b], i) => { const px = x0 + a * s, py = oy + b * s; if(i) x.lineTo(px, py); else x.moveTo(px, py); }); x.stroke(); }
+    else if(t === 'circle'){ x.beginPath(); x.fillStyle = pcol(A(el, 'fill', PDFC.accent)); x.arc(x0 + +A(el, 'cx', 0) * s, oy + +A(el, 'cy', 0) * s, +A(el, 'r', 3) * s, 0, Math.PI * 2); x.fill(); }
+    else if(t === 'text'){ const fw = A(el, 'font-weight', '400'); x.font = (fw === '700' || fw === '900' ? '700 ' : '400 ') + (+A(el, 'font-size', 10) * s) + 'px ' + PFONT; x.fillStyle = pcol(A(el, 'fill', PDFC.fg));
+      const an = A(el, 'text-anchor', 'start'); x.textAlign = an === 'end' ? 'right' : an === 'middle' ? 'center' : 'left'; x.fillText(el.textContent, x0 + +A(el, 'x', 0) * s, oy + +A(el, 'y', 0) * s); x.textAlign = 'left'; }
+  });
+  return oy + h;
+};
+function pdfRender(rep){
+  const D = new PdfDoc(), full = PG.W - 2 * PG.M;
+  const hd = rep.querySelector('.rh');
+  if(hd){ D.font(18, true); D.x.fillStyle = PDFC.accent; D.x.fillText('CHECKFIT', PG.M, D.y + 18); D.y += 30;
+    const h1 = hd.querySelector('h1'); if(h1) D.para(h1.textContent.trim(), {size:34, bold:true, after:4});
+    hd.querySelectorAll('.rmeta').forEach(m => D.para(m.textContent.replace(/\s+/g, ' ').trim(), {size:18, color:PDFC.muted, after:0}));
+    D.y += 10; D.hline(PDFC.accent, 3); D.y += 16; }
+  rep.querySelectorAll(':scope > section.rs').forEach(sec => {
+    if(sec.hidden) return;
+    [...sec.children].forEach(el => {
+      const t = el.tagName;
+      if(t === 'H2') D.h2(el.textContent.trim());
+      else if(t === 'H3') D.h3(el.textContent.trim());
+      else if(el.classList.contains('rgrid')) D.tiles([...el.children].map(c => [((c.querySelector('b') || {}).textContent || '').trim(), ((c.querySelector('span') || {}).textContent || '').replace(/\s+/g, ' ').trim()]));
+      else if(el.classList.contains('rtwo')){ const sv = el.querySelector('svg'), tb = el.querySelector('table'), lw = Math.round(full * 0.6);
+        const vb = sv && sv.viewBox.baseVal, hh = sv ? vb.height * lw / vb.width : 0; D.ensure(Math.max(hh, 200) + 10); const y0 = D.y;
+        const yA = sv ? D.svg(sv, PG.M, lw, y0) : y0; let yB = y0; if(tb){ D.table(tb, PG.M + lw + 24, full - lw - 24, y0 + 10); yB = D.y; } D.y = Math.max(yA, yB) + 10; }
+      else if(t === 'TABLE') D.table(el, PG.M, full);
+      else if(t === 'svg' || t === 'SVG') { D.svg(el, PG.M, full); D.y += 10; }
+      else if(t === 'P') D.para(el.textContent.replace(/[ \t]+/g, ' ').trim(), {size:18, color:el.classList.contains('rnota') ? PDFC.fg : PDFC.muted, bar:el.classList.contains('rnota')});
+    });
+    D.y += 12;
+  });
+  const ft = rep.querySelector('.rf'); if(ft){ D.ensure(70); D.hline(); D.y += 10; D.para(ft.textContent.trim(), {size:16, color:PDFC.muted}); }
+  return D.pages;
+}
+function pdfBlob(pages){
+  const enc = new TextEncoder(), parts = [], offs = []; let len = 0;
+  const push = b => { if(typeof b === 'string') b = enc.encode(b); parts.push(b); len += b.length; };
+  const obj = (i, fn) => { offs[i] = len; push(i + ' 0 obj\n'); fn(); push('\nendobj\n'); };
+  const imgs = pages.map(c => { const b64 = c.toDataURL('image/jpeg', 0.86).split(',')[1], bin = atob(b64), u = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return {data:u, w:c.width, h:c.height}; });
+  push('%PDF-1.4\n'); push(new Uint8Array([37, 226, 227, 207, 211, 10]));
+  obj(1, () => push('<< /Type /Catalog /Pages 2 0 R >>'));
+  obj(2, () => push('<< /Type /Pages /Kids [' + imgs.map((_, i) => (3 + 3 * i) + ' 0 R').join(' ') + '] /Count ' + imgs.length + ' >>'));
+  imgs.forEach((im, i) => { const p = 3 + 3 * i, cs = 'q 595.28 0 0 841.89 0 0 cm /Im0 Do Q';
+    obj(p, () => push('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 ' + (p + 2) + ' 0 R >> >> /Contents ' + (p + 1) + ' 0 R >>'));
+    obj(p + 1, () => push('<< /Length ' + cs.length + ' >>\nstream\n' + cs + '\nendstream'));
+    obj(p + 2, () => { push('<< /Type /XObject /Subtype /Image /Width ' + im.w + ' /Height ' + im.h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + im.data.length + ' >>\nstream\n'); push(im.data); push('\nendstream'); }); });
+  const total = 3 + 3 * imgs.length, xref = len;
+  push('xref\n0 ' + total + '\n0000000000 65535 f \n' + offs.slice(1).map(o => String(o).padStart(10, '0') + ' 00000 n \n').join(''));
+  push('trailer\n<< /Size ' + total + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF\n');
+  return new Blob(parts, {type:'application/pdf'});
+}
+async function relPdf(){
+  const rep = document.querySelector('.rep'), btn = document.getElementById('rel-pdf'); if(!rep) return;
+  const t = document.getElementById('rel-nota'); if(t) relSetNota(t.value);
+  if(btn){ btn.disabled = true; btn.textContent = 'Gerando o PDF…'; }
+  await new Promise(r => setTimeout(r, 60));
+  try{
+    const blob = pdfBlob(pdfRender(rep)), d0 = parse(S.date);
+    const nome = ('Relatorio-CHECKFIT-' + d0.toLocaleDateString('pt-BR', {month:'long'}) + '-' + d0.getFullYear() + '.pdf').normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if(S.relPdf && S.relPdf.url) try{ URL.revokeObjectURL(S.relPdf.url); }catch(e){}
+    let file = null; try{ file = new File([blob], nome, {type:'application/pdf'}); }catch(e){}
+    S.relPdf = {url:URL.createObjectURL(blob), nome, file, kb:Math.round(blob.size / 1024), share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))};
+  }catch(e){ S.relPdf = {erro:true}; }
+  render();
+}
+async function relShare(){
+  const R = S.relPdf; if(!R || !R.file) return;
+  try{ await navigator.share({files:[R.file], title:'Relatório CHECKFIT'}); }catch(e){}
+}
+function relPdfBox(){
+  const R = S.relPdf;
+  if(!R) return `<button class="primary" id="rel-pdf" data-act="relpdf" style="width:100%;margin-top:10px">Gerar PDF</button>`;
+  if(R.erro) return `<button class="primary" id="rel-pdf" data-act="relpdf" style="width:100%;margin-top:10px">Tentar de novo</button><p class="lmsg">Não consegui gerar o PDF neste aparelho. Use o botão Imprimir abaixo.</p>`;
+  return `<div class="relok"><b>PDF pronto</b> <span class="sub">(${R.kb} KB)</span>
+    <div class="row" style="margin-top:8px">${R.share ? `<button class="primary" id="rel-share" data-act="relshare">Salvar ou enviar</button>` : ''}<a class="${R.share ? 'ghost' : 'primary'} relbtnl" id="rel-dl" href="${R.url}" download="${esc(R.nome)}" target="_blank" rel="noopener">${R.share ? 'Abrir PDF' : 'Baixar PDF'}</a>
+    <button class="ghost" id="rel-pdf" data-act="relpdf">Gerar de novo</button></div>
+    <p class="tip" style="margin:8px 0 0">${R.share ? 'Em "Salvar ou enviar", escolha <b>Salvar em Arquivos</b>, WhatsApp ou e-mail.' : 'Se abrir o PDF numa nova tela, toque no ícone de compartilhar para salvar ou enviar.'} Se mudar as observações, toque em "Gerar de novo".</p></div>`;
 }
 
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
@@ -1925,9 +2084,11 @@ document.addEventListener('click',e=>{
   if(a==='delno'){S.confirmDel=false; render(); return;}
   if(a==='delyes'){deleteAccount(); return;}
   if(a==='afilter'){A.f=b.dataset.v; render(); return;}
-  if(a==='rel'){S.mode='rel'; render(); window.scrollTo(0,0); return;}
+  if(a==='rel'){S.mode='rel'; S.relPdf=null; render(); window.scrollTo(0,0); return;}
   if(a==='relback'){S.mode='app'; render(); window.scrollTo(0,0); return;}
-  if(a==='relpdf'){ const t=document.getElementById('rel-nota'); if(t) relSetNota(t.value); try{ window.print(); }catch(err){} return;}
+  if(a==='relpdf'){ relPdf(); return;}
+  if(a==='relshare'){ relShare(); return;}
+  if(a==='relprint'){ const t=document.getElementById('rel-nota'); if(t) relSetNota(t.value); try{ window.print(); }catch(err){} return;}
   if(a==='aed'){A.selfMsg=''; if(b.dataset.u) edOpen(b.dataset.u,b.dataset.k); return;}
   if(a==='ed'){edOp(b.dataset.op,b.dataset.p,b.dataset.i); return;}
   if(a==='edsave'){edSave(); return;}
