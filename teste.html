@@ -1623,10 +1623,10 @@ function goMeal(id){ const el = document.getElementById('meal-' + id); if(el) el
 function origemPill(orig, quem){
   return orig === 'proprio' ? `<span class="pill s-ok">montado por você</span>` : `<span class="pill s-idle">do profissional</span>`;
 }
-function suporteBtn(txt){
+function suporteBtn(txt, label){
   const z = String((S.cfg && S.cfg.whatsapp) || '').replace(/\D/g, ''); if(!z) return '';
   const num = z.length <= 11 ? '55' + z : z;
-  return `<a class="ghost relbtnl" style="min-height:44px" href="https://wa.me/${num}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Falar no WhatsApp</a>`;
+  return `<a class="ghost relbtnl" style="min-height:44px" href="https://wa.me/${num}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">${label || 'Falar no WhatsApp'}</a>`;
 }
 function planosView(){
   const pOrig = S.planOrig || 'prof', tOrig = S.trnOrig || 'prof', nome = (S.cli && S.cli.nome) || '';
@@ -1636,21 +1636,21 @@ function planosView(){
     <div class="lines" style="margin-top:8px">${PLAN.map(m => `<details class="pm"><summary><span class="num" style="font-weight:800">${esc(m.time || '')}</span> <b>${esc(m.name)}</b><span class="sub"> · ${m.options.length > 1 ? m.options.length + ' opções · ' : ''}${fmt(mealKcal(m))} kcal</span></summary>
       ${m.options.map(o => `<div class="pmo">${m.options.length > 1 ? `<div class="sub" style="font-weight:800">${esc(o.label)}</div>` : ''}<ul>${o.items.map(i => `<li>${esc((i.ch[0] || [])[0] || '')}${(i.ch[0] || [])[1] ? ' · ' + esc(i.ch[0][1]) : ''}${i.opt ? ' <span class="sub">(opcional)</span>' : ''}${i.ch.length > 1 ? `<div class="sub">ou: ${i.ch.slice(1).map(c => esc(c[0])).join(', ')}</div>` : ''}</li>`).join('')}</ul></div>`).join('')}
       ${m.tip ? `<p class="tip" style="margin:6px 0 0">${esc(m.tip)}</p>` : ''}</details>`).join('')}</div>
-    <div class="row" style="margin-top:10px">${pOrig === 'proprio' ? `<button class="primary" id="pl-edit" data-act="ced" data-k="plano">Editar meu plano</button>` : suporteBtn('Olá! Preciso de um ajuste no meu plano alimentar do CheckFit. Sou ' + nome + '.')}</div>
-    ${pOrig !== 'proprio' ? `<p class="tip" style="margin:8px 0 0">Para mudar algo, fale com sua nutricionista. Quando ela atualizar o plano, nós carregamos a nova versão para você.</p>` : `<p class="tip" style="margin:8px 0 0">Plano montado por você. O CheckFit não prescreve dieta: para um plano individual, procure um(a) nutricionista.</p>`}
+    <div class="row" style="margin-top:10px">${pOrig === 'proprio' ? `<button class="primary" id="pl-edit" data-act="ced" data-k="plano">Editar meu plano</button>` : suporteBtn('Olá! Minha nutricionista atualizou meu plano alimentar. Segue o plano novo para carregar no CheckFit. Sou ' + nome + '.', 'Enviar plano atualizado')}</div>
+    ${pOrig !== 'proprio' ? `<p class="tip" style="margin:8px 0 0">Este plano foi prescrito pela sua nutricionista, por isso só ela pode alterá-lo. Quando ela fizer um ajuste, toque em <b>Enviar plano atualizado</b> e mande o plano novo (PDF ou foto) pelo WhatsApp do CheckFit. Nós atualizamos aqui no app para você.</p>` : `<p class="tip" style="margin:8px 0 0">Plano montado por você. O CheckFit não prescreve dieta: para um plano individual, procure um(a) nutricionista.</p>`}
   </section>`;
   // treino
   if(S.treino){
     const t = S.treino;
     h += `<section class="card"><div class="thead"><div><h2>Ficha de treino</h2><div class="sub">${esc(t.prof || (tOrig === 'proprio' ? 'Montada por você' : ''))}${t.objetivo ? ' · ' + esc(t.objetivo) : ''}</div></div>${origemPill(tOrig)}</div>
       <div class="lines" style="margin-top:8px">${t.fichas.map(f => `<details class="pm"><summary><b>${esc(f.id)} · ${esc(f.nome || '')}</b><span class="sub"> · ${f.ex.length} exercício(s)</span></summary><ul>${f.ex.map(e => `<li>${esc(e.n)}${Array.isArray(e.s) ? ' <span class="sub">' + esc(specTxt(e.s)) + '</span>' : ''}</li>`).join('')}</ul></details>`).join('')}</div>
-      <div class="row" style="margin-top:10px">${tOrig === 'proprio' ? `<button class="primary" id="tr-edit" data-act="ced" data-k="treino">Editar minha ficha</button>` : suporteBtn('Olá! Preciso de um ajuste na minha ficha de treino do CheckFit. Sou ' + nome + '.')}</div>
-      ${tOrig !== 'proprio' ? '<p class="tip" style="margin:8px 0 0">Para mudar a ficha, fale com seu professor ou personal.</p>' : ''}</section>`;
+      <div class="row" style="margin-top:10px">${tOrig === 'proprio' ? `<button class="primary" id="tr-edit" data-act="ced" data-k="treino">Editar minha ficha</button>` : suporteBtn('Olá! Meu professor/personal atualizou minha ficha de treino. Segue a ficha nova para carregar no CheckFit. Sou ' + nome + '.', 'Enviar ficha atualizada')}</div>
+      ${tOrig !== 'proprio' ? '<p class="tip" style="margin:8px 0 0">Esta ficha foi montada pelo seu professor ou personal, por isso só ele pode alterá-la. Quando ele fizer um ajuste, toque em <b>Enviar ficha atualizada</b> e mande a ficha nova pelo WhatsApp do CheckFit. Nós atualizamos aqui no app para você.</p>' : ''}</section>`;
   } else {
     h += `<section class="card"><h2>Ficha de treino</h2><p class="sub" style="margin:4px 0 10px">Você ainda não tem ficha de treino.</p>
       <div class="choice">
        <button class="ghost ch" data-act="ced" data-k="treino"><b>Montar minha ficha</b><small>Para quem treina por conta própria.</small></button>
-       <div class="ch2"><b>Tenho personal ou professor</b><small>Envie a ficha dele para o CheckFit, que nós carregamos para você.</small>${suporteBtn('Olá! Quero enviar minha ficha de treino para o CheckFit. Sou ' + nome + '.')}</div>
+       <div class="ch2"><b>Tenho personal ou professor</b><small>Envie a ficha dele para o CheckFit, que nós carregamos para você.</small>${suporteBtn('Olá! Quero enviar minha ficha de treino para o CheckFit. Sou ' + nome + '.', 'Enviar minha ficha')}</div>
       </div></section>`;
   }
   return h;
@@ -1661,7 +1661,7 @@ function caminhoView(){
   const c = (S.cli && S.cli.caminho) || '', nome = (S.cli && S.cli.nome) || '';
   if(c === 'prof') return `<section class="card login" id="caminho"><h2>Seu plano está sendo preparado</h2>
     <p class="sub" style="margin:0">Envie o plano da sua nutricionista (PDF ou foto) pelo WhatsApp. Assim que ele for carregado, o app abre direto no seu diário.</p>
-    <div class="row" style="margin-top:12px">${suporteBtn('Olá! Acabei de criar minha conta no CheckFit e quero enviar meu plano alimentar. Sou ' + nome + '.')}</div>
+    <div class="row" style="margin-top:12px">${suporteBtn('Olá! Acabei de criar minha conta no CheckFit e quero enviar meu plano alimentar. Sou ' + nome + '.', 'Enviar meu plano pelo WhatsApp')}</div>
     <button class="linkbtn" data-act="caminho" data-v="" style="margin-top:6px">Prefiro montar meu próprio plano</button>
     <details class="pm" style="margin-top:6px"><summary class="sub">Recebi um texto de plano</summary>${planView()}</details></section>`;
   return `<section class="card login" id="caminho"><h2>Como você quer começar?</h2>
