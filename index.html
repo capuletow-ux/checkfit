@@ -1272,6 +1272,7 @@ function relView(){
   const P = S.prof || {}, ini = dates[0] || all[0], fim = dates[dates.length - 1] || all[all.length - 1];
   const reg = s.logged.length, pctPlano = s.mealsTot ? Math.round(s.mealsOk / s.mealsTot * 100) : 0;
   const pesoMes = weightList().filter(x => x.d >= ini && x.d <= fim), pesoAntes = weightList().filter(x => x.d < ini).pop();
+  const WL = weightList(), pIni = +P.pini > 0 ? {v:+P.pini, d:P.dini || ''} : (WL.length ? {v:WL[0].w, d:WL[0].d} : null);
   const pesoPts = (pesoAntes ? [{d:ini, v:pesoAntes.w}] : []).concat(pesoMes.map(x => ({d:x.d, v:x.w})));
   // adesão por refeição
   const porRef = PLAN.map(m => { const c = {ok:0, adj:0, extra:0, skip:0, pend:0}; s.logged.forEach(x => { const mm = x.c.meals.find(z => z.m.id === m.id); if(mm) c[mm.c.status] = (c[mm.c.status] || 0) + 1; }); return {m, c}; });
@@ -1301,10 +1302,10 @@ function relView(){
     <div><b>${s.waterAvg ? fmtL(s.waterAvg) + ' L' : '—'}</b><span>água/dia em média (meta ${fmtL(WATER_GOAL)} L)</span></div>
     <div><b>${s.waterDays}</b><span>dias com a meta de água</span></div>
     <div><b>${s.trN}</b><span>treinos no mês</span></div>
-    <div><b>${s.wDelta == null ? '—' : (s.wDelta <= 0 ? '−' : '+') + kgs(Math.abs(s.wDelta)) + ' kg'}</b><span>variação de peso${s.wEnd ? ' (atual ' + kgs(s.wEnd) + ' kg)' : ''}</span></div>
+    <div><b>${s.wDelta == null ? '—' : (s.wDelta <= 0 ? '−' : '+') + kgs(Math.abs(s.wDelta)) + ' kg'}</b><span>variação de peso no mês${s.wEnd ? ' (atual ' + kgs(s.wEnd) + ' kg)' : ''}</span></div>
    </div>${s.deficit > 0 ? `<p class="rnote">Déficit calórico estimado no mês: ${fmt(s.deficit)} kcal (≈ ${kgs(s.deficit / 7700)} kg de gordura), considerando a taxa basal informada × 1,2 mais os treinos.</p>` : ''}</section>
    ${pesoPts.length ? `<section class="rs"><h2>Peso</h2><div class="rtwo"><div>${lineChart(pesoPts, {color:'#0B2E3D', un:'kg', label:'Peso no mês', meta:P.meta})}</div>
-     <table class="rt"><tr><th>Início</th><td>${kgs(pesoPts[0].v)} kg</td></tr><tr><th>Atual</th><td>${kgs(pesoPts[pesoPts.length - 1].v)} kg</td></tr><tr><th>Variação</th><td>${(pesoPts[pesoPts.length - 1].v - pesoPts[0].v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pesoPts[0].v))} kg</td></tr>${P.meta ? `<tr><th>Meta</th><td>${kgs(P.meta)} kg</td></tr>` : ''}<tr><th>Pesagens</th><td>${pesoMes.length}</td></tr></table></div></section>` : ''}
+     <table class="rt"><tr><th>Início do mês</th><td>${kgs(pesoPts[0].v)} kg</td></tr><tr><th>Atual</th><td>${kgs(pesoPts[pesoPts.length - 1].v)} kg</td></tr><tr><th>No mês</th><td>${(pesoPts[pesoPts.length - 1].v - pesoPts[0].v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pesoPts[0].v))} kg</td></tr>${pIni ? `<tr><th>Peso inicial</th><td>${kgs(pIni.v)} kg${pIni.d ? ' <small>' + parse(pIni.d).toLocaleDateString('pt-BR') + '</small>' : ''}</td></tr><tr><th>Desde o início</th><td><b>${(pesoPts[pesoPts.length - 1].v - pIni.v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pIni.v))} kg</b></td></tr>` : ''}${P.meta ? `<tr><th>Meta</th><td>${kgs(P.meta)} kg</td></tr>` : ''}<tr><th>Pesagens no mês</th><td>${pesoMes.length}</td></tr></table></div></section>` : ''}
    ${medRows.length ? `<section class="rs"><h2>Medidas corporais</h2><table class="rt full"><thead><tr><th>Medida</th><th>Início do mês</th><th>Última</th><th>No mês</th><th>Desde o início</th></tr></thead><tbody>
      ${medRows.map(r => `<tr><td>${r.l}</td><td>${fmtM(r.a.v)} ${medUn(r.k)} <small>${dCurta(r.a.d)}</small></td><td>${fmtM(r.b.v)} ${medUn(r.k)} <small>${dCurta(r.b.d)}</small></td><td>${r.a.d !== r.b.d ? medDelta(r.b.v - r.a.v, r.k) : '—'}</td><td>${r.ini.d !== r.b.d ? medDelta(r.b.v - r.ini.v, r.k) + ' <small>desde ' + dCurta(r.ini.d) + '</small>' : '—'}</td></tr>`).join('')}</tbody></table></section>` : ''}
    ${reg ? `<section class="rs"><h2>Alimentação por refeição</h2><table class="rt full"><thead><tr><th>Refeição</th><th>No plano</th><th>Ajustada</th><th>Com extra</th><th>Pulada</th><th>Sem registro</th></tr></thead><tbody>
@@ -1875,6 +1876,8 @@ function profileCard(){
   return `<section class="card"><details class="prof"${open?' open':''}><summary>Meus dados</summary>
    <form class="pgrid" id="profform">
     <label for="pf-tmb">Taxa metabólica basal (kcal)<input id="pf-tmb" inputmode="numeric" value="${p.tmb??''}"></label>
+    <label for="pf-pini">Peso inicial (kg)<input id="pf-pini" inputmode="decimal" value="${p.pini??''}" placeholder="ex.: 102"></label>
+    <label for="pf-dini">Data do peso inicial<input id="pf-dini" type="date" value="${p.dini??''}"></label>
     <label for="pf-meta">Meta de peso (kg)<input id="pf-meta" inputmode="decimal" value="${p.meta??''}"></label>
     <label for="pf-alt">Altura (cm)<input id="pf-alt" inputmode="numeric" value="${p.altura??''}"></label>
     <label for="pf-idade">Idade<input id="pf-idade" inputmode="numeric" value="${p.idade??''}"></label>
@@ -2135,7 +2138,7 @@ document.addEventListener('submit',e=>{
   const date=S.date, num=id=>{const v=parseFloat((document.getElementById(id).value||'').replace(',','.')); return v>0?v:null;};
   if(f.matches('.tform')){ if(!(S.tf.min>0)){document.getElementById('tm').focus();return;} const d=S.days[date]||(S.days[date]={meals:{}}); d.treinos=Array.isArray(d.treinos)?d.treinos:[]; d.treinos.push({t:S.tf.t,min:Math.round(S.tf.min),i:S.tf.i}); save(date); render(); }
   else if(f.matches('.pform')){ const v=num('pw'); if(!v||v<30||v>300){document.getElementById('pw').focus();return;} const d=S.days[date]||(S.days[date]={meals:{}}); d.peso=Math.round(v*10)/10; save(date); render(); }
-  else { S.prof={...S.prof, tmb:num('pf-tmb'), meta:num('pf-meta'), altura:num('pf-alt'), idade:num('pf-idade'), agua:num('pf-agua')}; saveProf(); S.profOpen=false; render(); }
+  else { S.prof={...S.prof, tmb:num('pf-tmb'), meta:num('pf-meta'), altura:num('pf-alt'), idade:num('pf-idade'), agua:num('pf-agua'), pini:num('pf-pini'), dini:(document.getElementById('pf-dini')||{}).value||''}; saveProf(); S.profOpen=false; render(); }
 });
 function addWater(date,ml){if(!(ml>0))return; const d=S.days[date]||(S.days[date]={meals:{}}); d.agua=Array.isArray(d.agua)?d.agua:[]; d.agua.push(Math.round(ml)); save(date); render();}
 document.addEventListener('submit',e=>{
