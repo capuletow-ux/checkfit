@@ -348,6 +348,40 @@ details.medd summary{cursor:pointer;font-weight:900;min-height:32px;display:flex
  .rs h2{break-after:avoid}
  tr{break-inside:avoid}
 }
+
+/* menu inferior e Fase 1 */
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:space-around;align-items:flex-end;gap:2px;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.06)}
+.bnav[hidden]{display:none}
+.bn{flex:1;max-width:96px;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);font-size:11px;font-weight:700;min-height:48px;padding:4px 0}
+.bn svg{width:24px;height:24px}
+.bn.on{color:var(--accent)}
+.bn.plus{flex:0 0 auto;width:58px;height:58px;max-width:none;border-radius:50%;background:var(--btn);color:var(--btn-ink);margin-top:-24px;box-shadow:0 6px 18px rgba(34,197,94,.35);justify-content:center}
+.bn.plus svg{width:28px;height:28px}
+body.hasnav .wrap{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+.home .hello{font-family:var(--display);font-weight:800;font-size:20px;margin-bottom:6px}
+.hgrid{display:grid;grid-template-columns:128px minmax(0,1fr);gap:14px;align-items:center}
+.ring{width:128px;height:128px}
+.hlist{display:flex;flex-direction:column;gap:6px}
+.hl{display:flex;align-items:baseline;gap:6px;font-size:13.5px;flex-wrap:wrap}.hl b{font-size:16px}.hi{width:20px;text-align:center}
+.nmrow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px}
+.ntime{background:var(--accent-soft);color:var(--accent);font-weight:800;border-radius:99px;padding:4px 10px;font-size:13px;white-space:nowrap}
+.sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:30}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--surface);border-radius:20px 20px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:8px;max-height:85vh;overflow:auto}
+.sheeth{display:flex;justify-content:space-between;align-items:center}
+.pqw{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.pq{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:10px 12px;text-align:left;min-height:56px;width:100%}
+.pq b{display:block}.pq small{color:var(--muted);font-size:12.5px}.pqi{font-size:22px}
+.choice{display:flex;flex-direction:column;gap:8px}
+.ch,.ch2{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--bg);width:100%}
+.ch small,.ch2 small{color:var(--muted);font-weight:400;font-size:13px}
+.ch2 a{margin-top:6px}
+details.pm{border-top:1px solid var(--line);padding:8px 0}
+details.pm summary{cursor:pointer;list-style:none;min-height:30px}
+details.pm summary::-webkit-details-marker{display:none}
+details.pm ul{margin:6px 0 0;padding-left:18px}
+.pmo{margin-top:6px}
+.evseg{margin-bottom:12px}
+body.hasnav .toast{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
 </style>
 </head>
 <body>
@@ -368,6 +402,7 @@ details.medd summary{cursor:pointer;font-weight:900;min-height:32px;display:flex
     </div>
   </header>
   <main id="app" aria-live="polite"></main>
+  <nav class="bnav" id="bnav" hidden aria-label="Menu"></nav>
   <div id="restbar" class="restbar" hidden role="timer" aria-live="off"><div class="rfill"></div><span class="rlbl">Descanso</span><b class="rt num">0:00</b><button id="r-plus" data-act="rplus">+15 s</button><button id="r-skip" data-act="rskip">Pular</button></div>
   <div id="toast" class="toast" hidden role="status"></div>
   <datalist id="foods"></datalist>
@@ -410,7 +445,7 @@ function validPlan(p){return p&&Array.isArray(p.meals)&&p.meals.length&&p.meals.
 function setPlan(p){PLANINFO=p||null; PLAN=p?p.meals:[]; REF=computeRef(); const n=document.getElementById('nutri'); if(n) n.textContent=p&&p.nutri?'Plano de '+p.nutri:'Checklist diário de saúde';}
 
 /* ---------- Estado ---------- */
-const S = {view:'dia', date:ymd(new Date()), days:{}, custom:[], db:null, local:false, timers:{}, ready:false, prof:{...PROF_DEF}, tf:{t:'musculacao',min:60,i:1}, profOpen:false};
+const S = {view:'dia', tab:'inicio', date:ymd(new Date()), days:{}, custom:[], db:null, local:false, timers:{}, ready:false, prof:{...PROF_DEF}, tf:{t:'musculacao',min:60,i:1}, profOpen:false};
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function parse(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
 function addDays(s,n){const d=parse(s);d.setDate(d.getDate()+n);return ymd(d)}
@@ -505,8 +540,8 @@ function bindUser(user){
     S.ready=true; render();
   },()=>{ banner('Não consegui ler seus dados. Verifique a internet e recarregue.'); }));
   S.unsubs.push(S.db.doc('config/alimentos').onSnapshot(s=>{ S.custom=(s.exists && s.data().lista)||[]; fillFoods(); },()=>{}));
-  S.unsubs.push(S.db.doc('config/treino').onSnapshot(s=>{ let t=null; if(s.exists){ try{ t=JSON.parse(s.data().json||'null'); }catch(e){} } S.treino=validTreino(t)?t:null; if(S.ready) render(); },()=>{}));
-  S.unsubs.push(S.db.doc('config/plano').onSnapshot(s=>{ let p=null; if(s.exists){ try{ p=JSON.parse(s.data().json||'null'); }catch(e){} } setPlan(validPlan(p)?p:null); S.planReady=true; if(PLAN.length){ const pi=document.getElementById('planimport'); if(pi) pi.remove(); } render(); },()=>{ S.planReady=true; render(); }));
+  S.unsubs.push(S.db.doc('config/treino').onSnapshot(s=>{ S.trnOrig = s.exists ? (s.data().origem||'prof') : null; let t=null; if(s.exists){ try{ t=JSON.parse(s.data().json||'null'); }catch(e){} } S.treino=validTreino(t)?t:null; if(S.ready) render(); },()=>{}));
+  S.unsubs.push(S.db.doc('config/plano').onSnapshot(s=>{ S.planOrig = s.exists ? (s.data().origem||'prof') : null; let p=null; if(s.exists){ try{ p=JSON.parse(s.data().json||'null'); }catch(e){} } setPlan(validPlan(p)?p:null); S.planReady=true; if(PLAN.length){ const pi=document.getElementById('planimport'); if(pi) pi.remove(); } render(); },()=>{ S.planReady=true; render(); }));
   S.unsubs.push(S.db.doc('config/perfil').onSnapshot(s=>{ S.prof={...PROF_DEF,...(s.exists?s.data():{})}; if(S.ready) render(); },()=>{}));
   render();
 }
@@ -573,7 +608,7 @@ async function googleLogin(){
     else if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request'){ loginMsg(authMsg(e)+' Se estiver usando o app da tela inicial, entre com e-mail e senha.'); }
   }
 }
-/* ---------- CHECKFIT: cadastro, assinatura, bloqueio, painel e termos ---------- */
+/* ---------- CheckFit: cadastro, assinatura, bloqueio, painel e termos ---------- */
 const TERMS_V = '2026-11-04';
 const TERMS_DATA = '04/11/2026';
 const DAY_MS = 864e5;
@@ -608,7 +643,7 @@ function mount(key, html, sticky){
     if(actId){ const el = document.getElementById(actId); if(el){ el.focus(); try{ if(caret != null) el.setSelectionRange(caret, caret); }catch(e){} } }
   }
 }
-function head(show){ document.getElementById('tabs').hidden = !show; document.getElementById('navbar').hidden = !show; }
+function head(show){ document.getElementById('tabs').hidden = true; document.getElementById('navbar').hidden = !show; }
 
 /* Assinaturas do próprio usuário, cadastro e configuração pública */
 function bindCheckfit(user){
@@ -628,13 +663,13 @@ function bindConfig(){
 function onboardView(){
   const c = S.cli || {}, again = !!S.cli;
   return `<section class="card login" id="view-onboard" aria-label="Cadastro">
-   <h2>${again ? 'Atualizamos nossos termos' : 'Bem-vindo ao CHECKFIT'}</h2>
+   <h2>${again ? 'Atualizamos nossos termos' : 'Bem-vindo ao CheckFit'}</h2>
    <p class="sub" style="margin:0">${again ? 'Para continuar, leia e aceite a nova versão dos termos.' : 'Antes de começar, complete seu cadastro.'}</p>
    <form id="obform" class="lform">
     <label for="obnome">Nome completo<input id="obnome" autocomplete="name" value="${esc(c.nome || (S.user.displayName || ''))}" required></label>
     <label for="obzap">WhatsApp com DDD<input id="obzap" type="tel" inputmode="tel" autocomplete="tel" placeholder="(91) 90000-0000" value="${esc(c.whatsapp || '')}" required></label>
     <label class="chk" for="obtermos"><input id="obtermos" type="checkbox"> <span>Tenho 18 anos ou mais e li e aceito os <button type="button" class="linkbtn inline" data-act="legal" data-v="termos">Termos de Uso</button> e a <button type="button" class="linkbtn inline" data-act="legal" data-v="privacidade">Política de Privacidade</button>.</span></label>
-    <label class="chk" for="obsaude"><input id="obsaude" type="checkbox"> <span>Autorizo o CHECKFIT a guardar e usar meus dados de saúde (plano alimentar, refeições, água, treinos, peso, altura e idade) só para o funcionamento do app. Posso retirar essa autorização a qualquer momento excluindo minha conta.</span></label>
+    <label class="chk" for="obsaude"><input id="obsaude" type="checkbox"> <span>Autorizo o CheckFit a guardar e usar meus dados de saúde (plano alimentar, refeições, água, treinos, peso, altura e idade) só para o funcionamento do app. Posso retirar essa autorização a qualquer momento excluindo minha conta.</span></label>
     <button type="submit" class="primary">${again ? 'Aceitar e continuar' : 'Concluir cadastro'}</button>
    </form>
    <p class="lmsg" id="obmsg" role="status"></p>
@@ -646,7 +681,7 @@ async function saveOnboard(){
   const nome = document.getElementById('obnome').value.trim(), zap = onlyDigits(document.getElementById('obzap').value);
   if(nome.length < 3){ msg('Digite seu nome completo.'); return; }
   if(zap.length < 10){ msg('Digite o WhatsApp com DDD.'); return; }
-  if(!document.getElementById('obtermos').checked){ msg('Para usar o CHECKFIT, aceite os Termos de Uso e a Política de Privacidade.'); return; }
+  if(!document.getElementById('obtermos').checked){ msg('Para usar o CheckFit, aceite os Termos de Uso e a Política de Privacidade.'); return; }
   if(!document.getElementById('obsaude').checked){ msg('O app precisa da sua autorização para guardar os dados de saúde.'); return; }
   const data = {nome, whatsapp:zap, email:S.user.email || '', termos:{versao:TERMS_V, aceitoEm:NOW_FS(), saude:true}};
   if(!S.cli) data.criadoEm = NOW_FS();
@@ -656,7 +691,7 @@ async function saveOnboard(){
 /* Tela de bloqueio */
 function payBox(){
   const c = cfg();
-  if(!c.pix) return `<div class="banner">Os dados de pagamento ainda não foram configurados. Fale com o responsável pelo CHECKFIT.</div>`;
+  if(!c.pix) return `<div class="banner">Os dados de pagamento ainda não foram configurados. Fale com o responsável pelo CheckFit.</div>`;
   return `<div class="paybox">
     <div class="sub">Chave Pix${c.pixNome ? ' · ' + esc(c.pixNome) : ''}</div>
     <div class="pixkey num" id="pixkey">${esc(c.pix)}</div>
@@ -672,8 +707,8 @@ function blockView(acc){
   const c = cfg(), preco = money(c.preco || 19.9), nome = (S.cli && S.cli.nome) || '';
   const pend = acc.kind === 'pendente';
   const title = pend ? 'Cadastro feito! Falta liberar seu acesso' : acc.kind === 'bloqueado' ? 'Seu acesso está suspenso' : 'Sua assinatura venceu';
-  const intro = pend ? 'Para começar a usar o CHECKFIT:' : (acc.ate ? `O acesso ficou ativo até ${dBR(acc.ate)}. ` : '') + 'Para continuar usando:';
-  const zap = zapLink(`Olá! Sou ${nome} (${S.user.email || ''}). Segue o comprovante do CHECKFIT${pend ? ' e o meu plano alimentar' : ''}.`);
+  const intro = pend ? 'Para começar a usar o CheckFit:' : (acc.ate ? `O acesso ficou ativo até ${dBR(acc.ate)}. ` : '') + 'Para continuar usando:';
+  const zap = zapLink(`Olá! Sou ${nome} (${S.user.email || ''}). Segue o comprovante do CheckFit${pend ? ' e o meu plano alimentar' : ''}.`);
   return `<section class="card login" id="view-block" aria-label="Acesso">
    <h2>${title}</h2>
    <p class="sub" style="margin:0">${intro}</p>
@@ -740,27 +775,27 @@ function legalView(kind){
   const nome = esc(r.nome || '[nome do responsável]'), doc = esc(r.doc || '[CPF]'), cidade = esc(r.cidade || '[cidade/UF]'), email = esc(r.email || '[e-mail de contato]');
   const zap = esc(c.whatsapp || '[WhatsApp]'), preco = money(c.preco || 19.9);
   const back = `<button class="ghost" id="legal-back" data-act="legalback">← Voltar</button>`;
-  const termos = `<h2>Termos de Uso do CHECKFIT</h2><p class="sub">Versão de ${TERMS_DATA}</p>
-   <h3>1. Quem oferece o serviço</h3><p>O CHECKFIT é oferecido por ${nome}, ${doc}, com sede em ${cidade}. Contato: ${email} e WhatsApp ${zap}.</p>
-   <h3>2. O que é o CHECKFIT</h3><p>Um aplicativo para acompanhar, dia a dia, o plano alimentar, a água, os treinos e o peso, a partir de planos prescritos por profissionais habilitados escolhidos por você, como nutricionista e profissional de educação física.</p>
-   <h3>3. O que o CHECKFIT não é</h3><p>O CHECKFIT não presta serviço de nutrição, medicina ou educação física. Não elabora, altera nem avalia dietas ou treinos: o plano mostrado no app reproduz o documento que você enviou. Dúvidas sobre o plano devem ser tiradas com o profissional que o prescreveu.</p><p>Calorias, gasto em treinos e déficit são <b>estimativas</b> feitas com tabelas de referência (como a Tabela TACO, rótulos de produtos e o Compêndio de Atividades Físicas) e podem ser diferentes dos valores reais. O app não substitui acompanhamento profissional. Em caso de mal-estar, procure atendimento de saúde.</p>
+  const termos = `<h2>Termos de Uso do CheckFit</h2><p class="sub">Versão de ${TERMS_DATA}</p>
+   <h3>1. Quem oferece o serviço</h3><p>O CheckFit é oferecido por ${nome}, ${doc}, com sede em ${cidade}. Contato: ${email} e WhatsApp ${zap}.</p>
+   <h3>2. O que é o CheckFit</h3><p>Um aplicativo para acompanhar, dia a dia, o plano alimentar, a água, os treinos e o peso, a partir de planos prescritos por profissionais habilitados escolhidos por você, como nutricionista e profissional de educação física.</p>
+   <h3>3. O que o CheckFit não é</h3><p>O CheckFit não presta serviço de nutrição, medicina ou educação física. Não elabora, altera nem avalia dietas ou treinos: o plano mostrado no app reproduz o documento que você enviou. Dúvidas sobre o plano devem ser tiradas com o profissional que o prescreveu.</p><p>Calorias, gasto em treinos e déficit são <b>estimativas</b> feitas com tabelas de referência (como a Tabela TACO, rótulos de produtos e o Compêndio de Atividades Físicas) e podem ser diferentes dos valores reais. O app não substitui acompanhamento profissional. Em caso de mal-estar, procure atendimento de saúde.</p>
    <h3>4. Cadastro</h3><p>Para usar, você precisa ter 18 anos ou mais, informar dados verdadeiros e manter sua senha em segredo. A conta é pessoal e não pode ser compartilhada.</p>
-   <h3>5. Assinatura e pagamento</h3><p>O CHECKFIT custa R$ ${preco} por mês, pago antecipadamente por Pix. Cada pagamento confirmado libera 30 dias de acesso. Não há renovação automática: se você não renovar, o acesso fica suspenso até o próximo pagamento, e seus dados continuam guardados.</p>
+   <h3>5. Assinatura e pagamento</h3><p>O CheckFit custa R$ ${preco} por mês, pago antecipadamente por Pix. Cada pagamento confirmado libera 30 dias de acesso. Não há renovação automática: se você não renovar, o acesso fica suspenso até o próximo pagamento, e seus dados continuam guardados.</p>
    <h3>6. Direito de arrependimento</h3><p>Na primeira contratação, você pode desistir em até 7 dias depois do pagamento e receber o valor de volta integralmente, conforme o artigo 49 do Código de Defesa do Consumidor. Basta pedir pelos contatos do item 1.</p>
    <h3>7. Cancelamento</h3><p>Para cancelar, basta não renovar. Não há multa. Fora do prazo do item 6, não há devolução proporcional do período já liberado.</p>
    <h3>8. Envio do plano</h3><p>Ao enviar seu plano alimentar ou de treino, você declara que ele foi prescrito para você e autoriza sua transcrição para o app. O conteúdo do plano é de responsabilidade do profissional que o prescreveu. Se notar diferença entre o app e o documento original, vale o documento original: avise para corrigirmos.</p>
    <h3>9. Uso adequado</h3><p>Não é permitido usar o app para fins ilegais, tentar acessar dados de outras pessoas ou prejudicar o funcionamento do serviço. Contas que fizerem isso podem ser suspensas.</p>
-   <h3>10. Disponibilidade</h3><p>O CHECKFIT funciona pela internet e pode ter interrupções por manutenção ou falhas de terceiros. Fazemos o possível para manter o serviço estável. Você pode baixar uma cópia dos seus dados a qualquer momento.</p>
-   <h3>11. Responsabilidade</h3><p>O CHECKFIT responde pelo funcionamento do aplicativo nos termos da lei. Não responde por resultados de saúde, por decisões tomadas sem orientação profissional ou pelo conteúdo dos planos prescritos por terceiros.</p>
+   <h3>10. Disponibilidade</h3><p>O CheckFit funciona pela internet e pode ter interrupções por manutenção ou falhas de terceiros. Fazemos o possível para manter o serviço estável. Você pode baixar uma cópia dos seus dados a qualquer momento.</p>
+   <h3>11. Responsabilidade</h3><p>O CheckFit responde pelo funcionamento do aplicativo nos termos da lei. Não responde por resultados de saúde, por decisões tomadas sem orientação profissional ou pelo conteúdo dos planos prescritos por terceiros.</p>
    <h3>12. Mudanças nestes termos</h3><p>Se estes termos mudarem, você será avisado no app e precisará aceitar a nova versão para continuar usando.</p>
    <h3>13. Foro</h3><p>Fica eleito o foro do domicílio do consumidor para resolver qualquer questão sobre estes termos.</p>`;
-  const priv = `<h2>Política de Privacidade do CHECKFIT</h2><p class="sub">Versão de ${TERMS_DATA}</p>
+  const priv = `<h2>Política de Privacidade do CheckFit</h2><p class="sub">Versão de ${TERMS_DATA}</p>
    <h3>1. Responsável pelos seus dados</h3><p>${nome}, ${doc}, ${cidade}. Contato para assuntos de privacidade: ${email}.</p>
    <h3>2. Dados que coletamos</h3><p><b>Cadastro:</b> nome, e-mail e WhatsApp. <b>Dados de saúde que você informa:</b> plano alimentar, refeições marcadas, água, treinos, peso, altura, idade e taxa metabólica basal. <b>Assinatura:</b> datas de liberação e vencimento. Comprovantes de pagamento chegam pelo WhatsApp; não guardamos dados de cartão ou de conta bancária.</p>
    <h3>3. Para que usamos</h3><p>Para o app funcionar (mostrar seu plano, registrar seu dia e calcular estimativas), controlar a assinatura e falar com você sobre o serviço. Não usamos seus dados para publicidade e não os vendemos.</p>
    <h3>4. Base legal</h3><p>Os dados de cadastro e assinatura são tratados para cumprir o contrato com você. Os dados de saúde são tratados com o seu consentimento específico e destacado, dado no cadastro, como exige o artigo 11 da Lei Geral de Proteção de Dados (Lei 13.709/2018).</p>
    <h3>5. Com quem compartilhamos</h3><p>Os dados ficam no Google Firebase, que fornece o login e o banco de dados, em servidores em São Paulo. As páginas do app são hospedadas no GitHub, sem dados pessoais. Se você falar conosco pelo WhatsApp, a conversa segue as regras do WhatsApp. Não compartilhamos seus dados com mais ninguém, salvo por ordem legal.</p>
-   <h3>6. Quem vê seus dados</h3><p>O responsável pelo CHECKFIT vê seu nome, e-mail, WhatsApp, situação da assinatura e o plano transcrito. Ele não tem acesso ao seu diário de refeições, água, treinos e peso, que ficam visíveis só para você.</p>
+   <h3>6. Quem vê seus dados</h3><p>O responsável pelo CheckFit vê seu nome, e-mail, WhatsApp, situação da assinatura e o plano transcrito. Ele não tem acesso ao seu diário de refeições, água, treinos e peso, que ficam visíveis só para você.</p>
    <h3>7. Segurança</h3><p>O acesso exige login com senha ou conta Google, a conexão é criptografada e as regras do banco de dados só deixam cada pessoa ler e gravar os próprios registros.</p>
    <h3>8. Por quanto tempo guardamos</h3><p>Enquanto sua conta existir. Se a assinatura ficar vencida por mais de 12 meses, podemos excluir os dados depois de avisar você. Você pode excluir tudo antes, quando quiser.</p>
    <h3>9. Seus direitos</h3><p>Você pode pedir acesso, correção, cópia e exclusão dos seus dados, e retirar o consentimento. No app: <b>Meus dados › Baixar cópia dos meus dados</b> e <b>Excluir minha conta</b>. Retirar o consentimento para dados de saúde equivale a excluir a conta, porque o app não funciona sem eles. Para qualquer outro pedido, use o contato do item 1. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).</p>
@@ -801,7 +836,7 @@ function adminView(){
   const fl = rows.filter(r => (A.f === 'todos' || r.st === A.f || (A.f === 'vencido' && r.st === 'bloqueado') || (A.f === 'ativo' && r.st === 'vitalicio')) && (!q || (r.c.nome || '').toLowerCase().includes(q) || (r.c.email || '').toLowerCase().includes(q) || (r.c.whatsapp || '').includes(q)));
   const chips = [['todos','Todos',rows.length],['pendente','Aguardando',n('pendente')],['ativo','Ativos',n('ativo') + n('vitalicio')],['vencendo','Vencem logo',n('vencendo')],['vencido','Vencidos',n('vencido') + n('bloqueado')]];
   let h = `<section class="card sum" id="view-admin" aria-label="Painel">
-   <div class="thead"><div><h2>Painel CHECKFIT</h2><div class="sub">${rows.length} cliente(s) cadastrado(s)</div></div><button class="ghost" id="adm-back" data-act="adminback">Meu diário</button></div>
+   <div class="thead"><div><h2>Painel CheckFit</h2><div class="sub">${rows.length} cliente(s) cadastrado(s)</div></div><button class="ghost" id="adm-back" data-act="adminback">Meu diário</button></div>
    <div class="tiles">
     <div class="tile"><b class="num">${pagantes}</b><span>assinaturas pagas ativas</span></div>
     <div class="tile"><b class="num">R$ ${money(pagantes * preco)}</b><span>por mês, se todos renovarem</span></div>
@@ -898,7 +933,7 @@ async function adminAct(a, uid){
       try{ d = JSON.parse((ta.value || '').trim()); }catch(e){ amsg(uid, 'Esse texto não é válido. Copie do { inicial até o } final.'); return; }
       const t = d && d.treino ? d.treino : d;
       if(!validTreino(t)){ amsg(uid, 'A ficha desse texto está incompleta.'); return; }
-      await FS.collection('users').doc(uid).collection('config').doc('treino').set({json:JSON.stringify(t), atualizado:new Date().toISOString()});
+      await FS.collection('users').doc(uid).collection('config').doc('treino').set({json:JSON.stringify(t), origem:'prof', atualizado:new Date().toISOString()});
       A.trns[uid] = true; A.openT = ''; amsg(uid, 'Ficha de treino salva na conta do cliente.', true); alog('Carregou ficha de treino', uid); render();
     } else if(a === 'aplan'){
       A.open = A.open === uid ? '' : uid; render(); return;
@@ -907,7 +942,7 @@ async function adminAct(a, uid){
       try{ d = JSON.parse((ta.value || '').trim()); }catch(e){ amsg(uid, 'Esse texto não é válido. Copie do { inicial até o } final.'); return; }
       const p = d && d.plano ? d.plano : d;
       if(!validPlan(p)){ amsg(uid, 'O plano desse texto está incompleto.'); return; }
-      await FS.collection('users').doc(uid).collection('config').doc('plano').set({json:JSON.stringify(p), atualizado:new Date().toISOString()});
+      await FS.collection('users').doc(uid).collection('config').doc('plano').set({json:JSON.stringify(p), origem:'prof', atualizado:new Date().toISOString()});
       A.plans[uid] = true; A.open = ''; amsg(uid, 'Plano salvo na conta do cliente.', true); alog('Carregou plano', uid); render();
     }
   }catch(e){ amsg(uid, 'Não consegui salvar. Verifique a internet e tente de novo.'); }
@@ -951,10 +986,10 @@ async function edOpen(uid, kind){
     A.ed = {uid, kind, d, novo, dirty:false, rot:kind === 'treino' && !(d.agenda && Object.keys(d.agenda).length), open:{}, conf:'', msg:'', ok:false};
     if(kind === 'plano' && d.meals[0]) A.ed.open['meals.0'] = true;
     if(kind === 'treino' && d.fichas[0]) A.ed.open['fichas.0'] = true;
-    A.msg[uid] = {t:'', ok:true}; render(); window.scrollTo(0, 0);
+    A.msg[uid] = {t:'', ok:true}; if(S.mode !== 'admin') S.mode = 'ed'; render(); window.scrollTo(0, 0);
   }catch(e){ amsg(uid, 'Não consegui abrir. Verifique a internet e tente de novo.'); }
 }
-function edClose(){ const E = A.ed; if(E && E.dirty && E.conf !== 'close'){ E.conf = 'close'; render(); return; } A.ed = null; render(); window.scrollTo(0, 0); }
+function edClose(){ const E = A.ed; if(E && E.dirty && E.conf !== 'close'){ E.conf = 'close'; render(); return; } A.ed = null; if(S.mode === 'ed') S.mode = 'app'; render(); window.scrollTo(0, 0); }
 
 function fi(label, path, val, o){
   o = o || {}; const id = 'e-' + path.replace(/\./g, '-'), v = esc(val == null ? '' : String(val)), t = o.t || 's';
@@ -980,6 +1015,7 @@ function edView(){
   let h = `<section class="card sum" id="view-aded">
    <div class="thead"><div><h2>${pl ? 'Editar plano alimentar' : 'Editar ficha de treino'}</h2><div class="sub">${nome}${E.novo ? ' · novo, ainda não salvo' : ''}</div></div><button class="ghost" id="ed-back" data-act="edclose">${E.conf === 'close' ? 'Sair sem salvar' : 'Voltar'}</button></div>
    ${E.conf === 'close' ? `<p class="lmsg" style="margin:8px 0 0">Você tem alterações não salvas. Toque de novo em "Sair sem salvar" para descartar, ou salve no fim da página.</p>` : ''}
+   ${S.mode === 'ed' ? `<p class="lmsg ok" style="margin:8px 0 0">${pl ? 'Plano montado por você' : 'Ficha montada por você'}. O CheckFit organiza sua rotina, mas não prescreve dieta nem treino: para um plano individual, procure um(a) nutricionista ou profissional de educação física.</p>` : ''}
    <p class="tip" style="margin:8px 0 0">${pl
      ? 'Cada <b>item</b> é uma linha do checklist do cliente. A <b>1ª linha</b> do item é o padrão (entra na meta de calorias); as linhas de baixo são <b>trocas</b> que o cliente pode escolher. Marque <b>opcional</b> para itens que não contam na meta.'
      : 'As <b>séries</b> se escrevem assim: <b>3x10–12</b> ou <b>1x15 + 2x8–10</b>. Deixe em branco para usar a periodização por semanas. A <b>carga sugerida</b> aceita um valor (20) ou um por série (10 / 12 / 14).'}</p>
@@ -1185,10 +1221,11 @@ async function edSave(){
   if(err){ edFail(err); return; }
   const el = document.getElementById('edmsg'); if(el){ el.textContent = 'Salvando…'; el.className = 'lmsg ok'; }
   try{
-    await FS.collection('users').doc(E.uid).collection('config').doc(E.kind).set({json:JSON.stringify(d), atualizado:new Date().toISOString()});
+    const cliente = S.mode === 'ed'; await FS.collection('users').doc(E.uid).collection('config').doc(E.kind).set({json:JSON.stringify(d), origem:cliente ? 'proprio' : 'prof', atualizado:new Date().toISOString()});
     if(E.kind === 'plano') A.plans[E.uid] = true; else A.trns[E.uid] = true;
     alog(E.kind === 'plano' ? 'Editou plano' : 'Editou ficha de treino', E.uid);
     const uid = E.uid; A.ed = null; const self = S.user && uid === S.user.uid, what = E.kind === 'plano' ? 'Plano salvo.' : 'Ficha salva.'; A.msg[uid] = {t:what + ' O cliente já vê a versão nova.', ok:true}; A.selfMsg = self ? what + ' Já aparece no seu diário.' : '';
+    if(cliente){ S.mode = 'app'; S.tab = 'planos'; toast(E.kind === 'plano' ? 'Plano salvo.' : 'Ficha salva.'); }
     render(); window.scrollTo(0, 0);
   }catch(e){ edFail('Não consegui salvar. Verifique a internet e tente de novo.'); }
 }
@@ -1272,6 +1309,7 @@ function relView(){
   const P = S.prof || {}, ini = dates[0] || all[0], fim = dates[dates.length - 1] || all[all.length - 1];
   const reg = s.logged.length, pctPlano = s.mealsTot ? Math.round(s.mealsOk / s.mealsTot * 100) : 0;
   const pesoMes = weightList().filter(x => x.d >= ini && x.d <= fim), pesoAntes = weightList().filter(x => x.d < ini).pop();
+  const WL = weightList(), pIni = +P.pini > 0 ? {v:+P.pini, d:P.dini || ''} : (WL.length ? {v:WL[0].w, d:WL[0].d} : null);
   const pesoPts = (pesoAntes ? [{d:ini, v:pesoAntes.w}] : []).concat(pesoMes.map(x => ({d:x.d, v:x.w})));
   // adesão por refeição
   const porRef = PLAN.map(m => { const c = {ok:0, adj:0, extra:0, skip:0, pend:0}; s.logged.forEach(x => { const mm = x.c.meals.find(z => z.m.id === m.id); if(mm) c[mm.c.status] = (c[mm.c.status] || 0) + 1; }); return {m, c}; });
@@ -1301,10 +1339,10 @@ function relView(){
     <div><b>${s.waterAvg ? fmtL(s.waterAvg) + ' L' : '—'}</b><span>água/dia em média (meta ${fmtL(WATER_GOAL)} L)</span></div>
     <div><b>${s.waterDays}</b><span>dias com a meta de água</span></div>
     <div><b>${s.trN}</b><span>treinos no mês</span></div>
-    <div><b>${s.wDelta == null ? '—' : (s.wDelta <= 0 ? '−' : '+') + kgs(Math.abs(s.wDelta)) + ' kg'}</b><span>variação de peso${s.wEnd ? ' (atual ' + kgs(s.wEnd) + ' kg)' : ''}</span></div>
+    <div><b>${s.wDelta == null ? '—' : (s.wDelta <= 0 ? '−' : '+') + kgs(Math.abs(s.wDelta)) + ' kg'}</b><span>variação de peso no mês${s.wEnd ? ' (atual ' + kgs(s.wEnd) + ' kg)' : ''}</span></div>
    </div>${s.deficit > 0 ? `<p class="rnote">Déficit calórico estimado no mês: ${fmt(s.deficit)} kcal (≈ ${kgs(s.deficit / 7700)} kg de gordura), considerando a taxa basal informada × 1,2 mais os treinos.</p>` : ''}</section>
    ${pesoPts.length ? `<section class="rs"><h2>Peso</h2><div class="rtwo"><div>${lineChart(pesoPts, {color:'#0B2E3D', un:'kg', label:'Peso no mês', meta:P.meta})}</div>
-     <table class="rt"><tr><th>Início</th><td>${kgs(pesoPts[0].v)} kg</td></tr><tr><th>Atual</th><td>${kgs(pesoPts[pesoPts.length - 1].v)} kg</td></tr><tr><th>Variação</th><td>${(pesoPts[pesoPts.length - 1].v - pesoPts[0].v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pesoPts[0].v))} kg</td></tr>${P.meta ? `<tr><th>Meta</th><td>${kgs(P.meta)} kg</td></tr>` : ''}<tr><th>Pesagens</th><td>${pesoMes.length}</td></tr></table></div></section>` : ''}
+     <table class="rt"><tr><th>Início do mês</th><td>${kgs(pesoPts[0].v)} kg</td></tr><tr><th>Atual</th><td>${kgs(pesoPts[pesoPts.length - 1].v)} kg</td></tr><tr><th>No mês</th><td>${(pesoPts[pesoPts.length - 1].v - pesoPts[0].v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pesoPts[0].v))} kg</td></tr>${pIni ? `<tr><th>Peso inicial</th><td>${kgs(pIni.v)} kg${pIni.d ? ' <small>' + parse(pIni.d).toLocaleDateString('pt-BR') + '</small>' : ''}</td></tr><tr><th>Desde o início</th><td><b>${(pesoPts[pesoPts.length - 1].v - pIni.v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pIni.v))} kg</b></td></tr>` : ''}${P.meta ? `<tr><th>Meta</th><td>${kgs(P.meta)} kg</td></tr>` : ''}<tr><th>Pesagens no mês</th><td>${pesoMes.length}</td></tr></table></div></section>` : ''}
    ${medRows.length ? `<section class="rs"><h2>Medidas corporais</h2><table class="rt full"><thead><tr><th>Medida</th><th>Início do mês</th><th>Última</th><th>No mês</th><th>Desde o início</th></tr></thead><tbody>
      ${medRows.map(r => `<tr><td>${r.l}</td><td>${fmtM(r.a.v)} ${medUn(r.k)} <small>${dCurta(r.a.d)}</small></td><td>${fmtM(r.b.v)} ${medUn(r.k)} <small>${dCurta(r.b.d)}</small></td><td>${r.a.d !== r.b.d ? medDelta(r.b.v - r.a.v, r.k) : '—'}</td><td>${r.ini.d !== r.b.d ? medDelta(r.b.v - r.ini.v, r.k) + ' <small>desde ' + dCurta(r.ini.d) + '</small>' : '—'}</td></tr>`).join('')}</tbody></table></section>` : ''}
    ${reg ? `<section class="rs"><h2>Alimentação por refeição</h2><table class="rt full"><thead><tr><th>Refeição</th><th>No plano</th><th>Ajustada</th><th>Com extra</th><th>Pulada</th><th>Sem registro</th></tr></thead><tbody>
@@ -1318,7 +1356,7 @@ function relView(){
    <section class="rs brk"><h2>Dia a dia</h2><table class="rt full dd"><thead><tr><th>Dia</th><th>kcal</th><th>Água</th><th>Treino</th><th>Peso</th><th>Situação</th></tr></thead><tbody>
      ${s.cs.map(x => { const dd = S.days[x.d] || {}, ms = sessoes(x.d).filter(z => z.fim).length; return `<tr class="${x.c.status}"><td>${parse(x.d).toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit'})}</td><td>${x.c.status === 'vazio' ? '—' : fmt(x.c.kcal)}</td><td>${x.c.water ? fmtL(x.c.water) + ' L' : '—'}</td><td>${x.c.tr.min || ms ? (x.c.tr.min ? fmt(x.c.tr.min) + ' min' : '') + (ms ? (x.c.tr.min ? ' · ' : '') + 'musc.' : '') : '—'}</td><td>${+dd.peso > 0 ? kgs(+dd.peso) : '—'}</td><td>${stTxt(x.c.status)}</td></tr>`; }).join('')}</tbody></table></section>
    <section class="rs"${nota.trim() ? '' : ' hidden'}><h2>Observações do paciente</h2><p class="rnota" id="rel-nota-print">${esc(nota)}</p></section>
-   <footer class="rf">Dados registrados pelo próprio usuário no app CHECKFIT. Calorias aproximadas (tabela TACO e rótulos). Este relatório não substitui avaliação profissional.</footer>
+   <footer class="rf">Dados registrados pelo próprio usuário no app CheckFit. Calorias aproximadas (tabela TACO e rótulos). Este relatório não substitui avaliação profissional.</footer>
   </article>`;
   return h;
 }
@@ -1458,7 +1496,7 @@ async function relPdf(){
   await new Promise(r => setTimeout(r, 60));
   try{
     const blob = pdfBlob(pdfRender(rep)), d0 = parse(S.date);
-    const nome = ('Relatorio-CHECKFIT-' + d0.toLocaleDateString('pt-BR', {month:'long'}) + '-' + d0.getFullYear() + '.pdf').normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const nome = ('Relatorio-CheckFit-' + d0.toLocaleDateString('pt-BR', {month:'long'}) + '-' + d0.getFullYear() + '.pdf').normalize('NFD').replace(/[̀-ͯ]/g, '');
     if(S.relPdf && S.relPdf.url) try{ URL.revokeObjectURL(S.relPdf.url); }catch(e){}
     let file = null; try{ file = new File([blob], nome, {type:'application/pdf'}); }catch(e){}
     S.relPdf = {url:URL.createObjectURL(blob), nome, file, kb:Math.round(blob.size / 1024), share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))};
@@ -1467,7 +1505,7 @@ async function relPdf(){
 }
 async function relShare(){
   const R = S.relPdf; if(!R || !R.file) return;
-  try{ await navigator.share({files:[R.file], title:'Relatório CHECKFIT'}); }catch(e){}
+  try{ await navigator.share({files:[R.file], title:'Relatório CheckFit'}); }catch(e){}
 }
 function relPdfBox(){
   const R = S.relPdf;
@@ -1477,6 +1515,180 @@ function relPdfBox(){
     <div class="row" style="margin-top:8px">${R.share ? `<button class="primary" id="rel-share" data-act="relshare">Salvar ou enviar</button>` : ''}<a class="${R.share ? 'ghost' : 'primary'} relbtnl" id="rel-dl" href="${R.url}" download="${esc(R.nome)}" target="_blank" rel="noopener">${R.share ? 'Abrir PDF' : 'Baixar PDF'}</a>
     <button class="ghost" id="rel-pdf" data-act="relpdf">Gerar de novo</button></div>
     <p class="tip" style="margin:8px 0 0">${R.share ? 'Em "Salvar ou enviar", escolha <b>Salvar em Arquivos</b>, WhatsApp ou e-mail.' : 'Se abrir o PDF numa nova tela, toque no ícone de compartilhar para salvar ou enviar.'} Se mudar as observações, toque em "Gerar de novo".</p></div>`;
+}
+
+/* ---------- Fase 1: menu inferior, Início, Planos, Perfil, registro rápido e tema ---------- */
+const ICO = {
+  inicio:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/>',
+  planos:'<rect x="4" y="4" width="16" height="17" rx="3"/><path d="M8 2.5v3M16 2.5v3M8 10.5h8M8 14.5h5"/>',
+  evol:'<path d="M5 20V12M10 20V6M15 20v-9M20 20V4"/>',
+  perfil:'<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.4-3.8 4.3-5.5 7.5-5.5s6.1 1.7 7.5 5.5"/>',
+  mais:'<path d="M12 5v14M5 12h14"/>'
+};
+const svgI = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg>`;
+function bnavHTML(){
+  const it = (k, l) => `<button class="bn${S.tab === k ? ' on' : ''}" id="bn-${k}" data-act="btab" data-v="${k}" aria-current="${S.tab === k ? 'page' : 'false'}">${svgI(k)}<span>${l}</span></button>`;
+  return it('inicio', 'Início') + it('planos', 'Planos') + `<button class="bn plus" id="bn-mais" data-act="plus" aria-label="Registrar">${svgI('mais')}</button>` + it('evol', 'Evolução') + it('perfil', 'Perfil');
+}
+function setTab(t){
+  S.tab = t; S.plus = false;
+  if(t === 'inicio') S.view = 'dia';
+  else if(t === 'evol') S.view = S.evolV || 'semana';
+  render(); window.scrollTo(0, 0);
+}
+/* tema */
+function temaAtual(){ try{ return localStorage.getItem('checkfit-tema') || 'auto'; }catch(e){ return 'auto'; } }
+function aplicaTema(v){ const r = document.documentElement; if(v === 'claro') r.setAttribute('data-theme', 'light'); else if(v === 'escuro') r.setAttribute('data-theme', 'dark'); else r.removeAttribute('data-theme'); }
+function setTema(v){ try{ localStorage.setItem('checkfit-tema', v); }catch(e){} aplicaTema(v); render(); }
+aplicaTema(temaAtual());
+
+/* Início: anel da meta do dia + próximos passos */
+function ring(pct){
+  const r = 52, c = 2 * Math.PI * r, off = c * (1 - Math.max(0, Math.min(1, pct)));
+  return `<svg class="ring" viewBox="0 0 128 128" role="img" aria-label="${Math.round(pct * 100)}% da meta do dia">
+    <circle cx="64" cy="64" r="${r}" fill="none" stroke="var(--surface2)" stroke-width="12"/>
+    <circle cx="64" cy="64" r="${r}" fill="none" stroke="url(#rg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 64 64)"/>
+    <defs><linearGradient id="rg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#22C55E"/><stop offset="1" stop-color="#A3E635"/></linearGradient></defs>
+    <text x="64" y="66" text-anchor="middle" font-size="30" font-weight="800" fill="var(--fg)" font-family="Montserrat, system-ui, sans-serif">${Math.round(pct * 100)}%</text>
+    <text x="64" y="86" text-anchor="middle" font-size="11" fill="var(--muted)">meta do dia</text></svg>`;
+}
+function metaDia(date, c){
+  const partes = [], tId = S.treino ? plannedId(date) : null, feito = sessoes(date).some(z => z.fim) || c.tr.list.length > 0;
+  partes.push(PLAN.length ? c.ok / PLAN.length : 0);
+  partes.push(WATER_GOAL ? Math.min(1, c.water / WATER_GOAL) : 0);
+  if(tId || feito) partes.push(feito ? 1 : 0);
+  return {pct:partes.reduce((a, b) => a + b, 0) / partes.length, tId, feito};
+}
+function heroInicio(date, c){
+  const m = metaDia(date, c), pct = Math.min(100, c.kcal / REF * 100), over = c.kcal > REF * 1.1;
+  const nome = ((S.cli && S.cli.nome) || '').split(' ')[0];
+  const lin = (ic, v, l, cor) => `<div class="hl"><span class="hi" style="color:${cor}">${ic}</span><b class="num">${v}</b><span class="sub">${l}</span></div>`;
+  return `<section class="card hero home" aria-label="Resumo do dia">
+    ${S.date === today() && nome ? `<div class="hello">Olá, ${esc(nome)}!</div>` : ''}
+    <div class="hgrid">${ring(m.pct)}<div class="hlist">
+      ${lin('🔥', fmt(c.kcal) + ' / ' + fmt(REF), 'kcal', 'var(--fire)')}
+      ${lin('💧', fmtL(c.water) + ' / ' + fmtL(WATER_GOAL), 'L de água', 'var(--water)')}
+      ${m.tId || m.feito ? lin('🏋️', (m.feito ? 1 : 0) + ' / 1', 'treino', 'var(--accent)') : ''}
+      ${lin('🍽️', c.ok + ' / ' + PLAN.length, 'refeições no plano', 'var(--ok)')}
+    </div></div>
+    <div class="row1" style="margin-top:4px">${pill(DAY_STATUS, c.status)}<span class="sub num">${c.extraK ? `extras ${fmt(c.extraK)} kcal` : ''}${c.extraK && c.tr.kcal ? ' · ' : ''}${c.tr.kcal ? `treinos −${fmt(c.tr.kcal)} kcal` : ''}</span></div>
+    <div class="bar"><i class="${over ? 'over' : ''}" style="width:${pct}%"></i></div>
+    <button class="primary" id="allplan" data-act="allplan">Segui o plano em todas as refeições</button>
+  </section>${proximaRefeicao(date)}`;
+}
+function proximaRefeicao(date){
+  if(date !== today() || !PLAN.length) return '';
+  const agora = new Date(), hm = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
+  const pend = PLAN.filter(m => mealCalc(m, rec(date, m.id, false)).status === 'pend');
+  if(!pend.length) return '';
+  const m = pend.find(x => (x.time || '') >= hm) || pend[0], o = m.options[0];
+  const itens = o ? o.items.filter(i => !i.opt).map(i => (i.ch[0] || [])[0]).filter(Boolean).slice(0, 4).join(', ') : '';
+  return `<section class="card nextm" aria-label="Próxima refeição"><div class="sub" style="font-weight:800;text-transform:uppercase;letter-spacing:.4px;font-size:11.5px">Próxima refeição</div>
+    <div class="nmrow"><div><b>${esc(m.name)}</b><div class="sub">${esc(itens)}${itens ? '…' : ''}</div></div><span class="ntime num">${esc(m.time || '')}</span></div>
+    <button class="ghost" data-act="goMeal" data-m="${m.id}" style="width:100%;margin-top:8px">Ir para a refeição</button></section>`;
+}
+
+/* Registro rápido (＋) */
+function plusSheet(){
+  if(!S.plus) return '';
+  const b = (act, ico, t, sub, extra) => `<button class="pq" data-act="${act}" ${extra || ''}><span class="pqi">${ico}</span><span><b>${t}</b><small>${sub}</small></span></button>`;
+  return `<div class="sheetbg" data-act="plusclose"></div><div class="sheet" role="dialog" aria-label="Registrar">
+    <div class="sheeth"><b>Registrar hoje</b><button class="ghost" data-act="plusclose" aria-label="Fechar">Fechar</button></div>
+    <div class="pqw"><button class="wbtn" data-act="plusw" data-ml="200">+200 ml<small>copo</small></button><button class="wbtn" data-act="plusw" data-ml="300">+300 ml<small>copo grande</small></button><button class="wbtn" data-act="plusw" data-ml="500">+500 ml<small>garrafinha</small></button><button class="wbtn" data-act="plusw" data-ml="1000">+1 L<small>garrafa</small></button></div>
+    ${b('plusgo', '🍽️', 'Refeição', 'marcar a próxima refeição', 'data-v="meal"')}
+    ${S.treino ? b('plusgo', '🏋️', 'Treino de musculação', 'abrir o treino do dia', 'data-v="musc"') : ''}
+    ${b('plusgo', '🏃', 'Outra atividade', 'corrida, beach tennis, caminhada…', 'data-v="ativ"')}
+    ${b('plusgo', '⚖️', 'Peso', 'registrar o peso de hoje', 'data-v="peso"')}
+    ${b('plusgo', '📏', 'Medidas', 'cintura, braço, coxa…', 'data-v="med"')}
+  </div>`;
+}
+function plusGo(v){
+  S.plus = false; S.tab = 'inicio'; S.view = 'dia'; S.date = today();
+  if(v === 'med') S.medOpen = true;
+  render();
+  requestAnimationFrame(() => {
+    let el = null, focus = null, fid = v === 'ativ' ? 'tm' : v === 'peso' ? 'pw' : '';
+    if(v === 'meal'){ const pend = PLAN.filter(m => mealCalc(m, rec(S.date, m.id, false)).status === 'pend'); const hm = new Date().toTimeString().slice(0, 5); const m = pend.find(x => (x.time || '') >= hm) || pend[0] || PLAN[0]; el = m && document.getElementById('meal-' + m.id); }
+    else if(v === 'musc') el = document.querySelector('[aria-label="Treino de musculação"]') || document.getElementById('tm');
+    else if(v === 'ativ'){ focus = document.getElementById('tm'); el = focus; }
+    else if(v === 'peso'){ focus = document.getElementById('pw'); el = focus; }
+    else if(v === 'med') el = document.querySelector('details.medd');
+    if(el) el.scrollIntoView({block:'center', behavior:'smooth'});
+    if(fid) setTimeout(() => { const f = document.getElementById(fid); if(f) f.focus(); }, 400);
+  });
+}
+function goMeal(id){ const el = document.getElementById('meal-' + id); if(el) el.scrollIntoView({block:'start', behavior:'smooth'}); }
+
+/* Planos */
+function origemPill(orig, quem){
+  return orig === 'proprio' ? `<span class="pill s-ok">montado por você</span>` : `<span class="pill s-idle">do profissional</span>`;
+}
+function suporteBtn(txt){
+  const z = String((S.cfg && S.cfg.whatsapp) || '').replace(/\D/g, ''); if(!z) return '';
+  const num = z.length <= 11 ? '55' + z : z;
+  return `<a class="ghost relbtnl" style="min-height:44px" href="https://wa.me/${num}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Falar no WhatsApp</a>`;
+}
+function planosView(){
+  const pOrig = S.planOrig || 'prof', tOrig = S.trnOrig || 'prof', nome = (S.cli && S.cli.nome) || '';
+  let h = `<section class="card" id="view-planos"><h2>Meus planos</h2><p class="sub" style="margin:4px 0 0">Seu plano alimentar e sua ficha de treino. Os planos do profissional são carregados pelo CheckFit e não podem ser alterados aqui.</p></section>`;
+  // plano alimentar
+  h += `<section class="card"><div class="thead"><div><h2>Plano alimentar</h2><div class="sub">${PLANINFO && PLANINFO.nutri ? esc(PLANINFO.nutri) : (pOrig === 'proprio' ? 'Montado por você' : '')}${PLANINFO && PLANINFO.data ? ' · ' + esc(PLANINFO.data) : ''}</div></div>${origemPill(pOrig)}</div>
+    <div class="lines" style="margin-top:8px">${PLAN.map(m => `<details class="pm"><summary><span class="num" style="font-weight:800">${esc(m.time || '')}</span> <b>${esc(m.name)}</b><span class="sub"> · ${m.options.length > 1 ? m.options.length + ' opções · ' : ''}${fmt(mealKcal(m))} kcal</span></summary>
+      ${m.options.map(o => `<div class="pmo">${m.options.length > 1 ? `<div class="sub" style="font-weight:800">${esc(o.label)}</div>` : ''}<ul>${o.items.map(i => `<li>${esc((i.ch[0] || [])[0] || '')}${(i.ch[0] || [])[1] ? ' · ' + esc(i.ch[0][1]) : ''}${i.opt ? ' <span class="sub">(opcional)</span>' : ''}${i.ch.length > 1 ? `<div class="sub">ou: ${i.ch.slice(1).map(c => esc(c[0])).join(', ')}</div>` : ''}</li>`).join('')}</ul></div>`).join('')}
+      ${m.tip ? `<p class="tip" style="margin:6px 0 0">${esc(m.tip)}</p>` : ''}</details>`).join('')}</div>
+    <div class="row" style="margin-top:10px">${pOrig === 'proprio' ? `<button class="primary" id="pl-edit" data-act="ced" data-k="plano">Editar meu plano</button>` : suporteBtn('Olá! Preciso de um ajuste no meu plano alimentar do CheckFit. Sou ' + nome + '.')}</div>
+    ${pOrig !== 'proprio' ? `<p class="tip" style="margin:8px 0 0">Para mudar algo, fale com sua nutricionista. Quando ela atualizar o plano, nós carregamos a nova versão para você.</p>` : `<p class="tip" style="margin:8px 0 0">Plano montado por você. O CheckFit não prescreve dieta: para um plano individual, procure um(a) nutricionista.</p>`}
+  </section>`;
+  // treino
+  if(S.treino){
+    const t = S.treino;
+    h += `<section class="card"><div class="thead"><div><h2>Ficha de treino</h2><div class="sub">${esc(t.prof || (tOrig === 'proprio' ? 'Montada por você' : ''))}${t.objetivo ? ' · ' + esc(t.objetivo) : ''}</div></div>${origemPill(tOrig)}</div>
+      <div class="lines" style="margin-top:8px">${t.fichas.map(f => `<details class="pm"><summary><b>${esc(f.id)} · ${esc(f.nome || '')}</b><span class="sub"> · ${f.ex.length} exercício(s)</span></summary><ul>${f.ex.map(e => `<li>${esc(e.n)}${Array.isArray(e.s) ? ' <span class="sub">' + esc(specTxt(e.s)) + '</span>' : ''}</li>`).join('')}</ul></details>`).join('')}</div>
+      <div class="row" style="margin-top:10px">${tOrig === 'proprio' ? `<button class="primary" id="tr-edit" data-act="ced" data-k="treino">Editar minha ficha</button>` : suporteBtn('Olá! Preciso de um ajuste na minha ficha de treino do CheckFit. Sou ' + nome + '.')}</div>
+      ${tOrig !== 'proprio' ? '<p class="tip" style="margin:8px 0 0">Para mudar a ficha, fale com seu professor ou personal.</p>' : ''}</section>`;
+  } else {
+    h += `<section class="card"><h2>Ficha de treino</h2><p class="sub" style="margin:4px 0 10px">Você ainda não tem ficha de treino.</p>
+      <div class="choice">
+       <button class="ghost ch" data-act="ced" data-k="treino"><b>Montar minha ficha</b><small>Para quem treina por conta própria.</small></button>
+       <div class="ch2"><b>Tenho personal ou professor</b><small>Envie a ficha dele para o CheckFit, que nós carregamos para você.</small>${suporteBtn('Olá! Quero enviar minha ficha de treino para o CheckFit. Sou ' + nome + '.')}</div>
+      </div></section>`;
+  }
+  return h;
+}
+
+/* Primeiro acesso sem plano: escolher o caminho */
+function caminhoView(){
+  const c = (S.cli && S.cli.caminho) || '', nome = (S.cli && S.cli.nome) || '';
+  if(c === 'prof') return `<section class="card login" id="caminho"><h2>Seu plano está sendo preparado</h2>
+    <p class="sub" style="margin:0">Envie o plano da sua nutricionista (PDF ou foto) pelo WhatsApp. Assim que ele for carregado, o app abre direto no seu diário.</p>
+    <div class="row" style="margin-top:12px">${suporteBtn('Olá! Acabei de criar minha conta no CheckFit e quero enviar meu plano alimentar. Sou ' + nome + '.')}</div>
+    <button class="linkbtn" data-act="caminho" data-v="" style="margin-top:6px">Prefiro montar meu próprio plano</button>
+    <details class="pm" style="margin-top:6px"><summary class="sub">Recebi um texto de plano</summary>${planView()}</details></section>`;
+  return `<section class="card login" id="caminho"><h2>Como você quer começar?</h2>
+    <p class="sub" style="margin:0">O CheckFit acompanha o seu dia a partir de um plano alimentar. Escolha uma opção:</p>
+    <div class="choice" style="margin-top:12px">
+     <button class="ghost ch" id="cam-prof" data-act="caminho" data-v="prof"><b>Tenho nutricionista</b><small>Você envia o plano dela e nós carregamos no app, do jeito que ela prescreveu.</small></button>
+     <button class="ghost ch" id="cam-prop" data-act="caminho" data-v="proprio"><b>Quero montar o meu</b><small>Você mesmo cadastra suas refeições, alimentos e calorias.</small></button>
+    </div>
+    <p class="tip" style="margin:10px 0 0">O CheckFit organiza e registra a sua rotina, mas não prescreve dieta. Para um plano individual, procure um(a) nutricionista.</p>
+    <details class="pm" style="margin-top:6px"><summary class="sub">Recebi um texto de plano</summary>${planView()}</details></section>`;
+}
+async function setCaminho(v){
+  if(v === 'proprio'){ edOpen(S.user.uid, 'plano'); return; }
+  try{ await FS.collection('clientes').doc(S.user.uid).set({caminho:v}, {merge:true}); }catch(e){}
+  if(S.cli) S.cli.caminho = v; render();
+}
+
+/* Perfil */
+function perfilView(){
+  const t = temaAtual(), ch = (v, l) => `<button class="chip" data-act="tema" data-v="${v}" aria-pressed="${t === v}">${l}</button>`;
+  return `<section class="card" id="view-perfil"><h2>Perfil</h2><div class="sub" style="margin-top:4px">${esc((S.cli && S.cli.nome) || '')} · ${esc((S.user && S.user.email) || '')}</div></section>
+   <section class="card"><h2>Aparência</h2><div class="opts" style="padding:8px 0 0" role="group" aria-label="Tema">${ch('auto', 'Automático')}${ch('claro', 'Claro')}${ch('escuro', 'Escuro')}</div><p class="tip" style="margin:8px 0 0">Automático segue o modo claro ou escuro do celular.</p></section>
+   ${profileCard()}`;
+}
+function evolView(){
+  const seg = `<div class="tabs evseg" role="group" aria-label="Período"><button data-act="tab" data-v="semana" aria-pressed="${S.view === 'semana'}">Semana</button><button data-act="tab" data-v="mes" aria-pressed="${S.view === 'mes'}">Mês</button></div>`;
+  return seg + (S.view === 'mes' ? viewMonth() : viewWeek());
 }
 
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
@@ -1769,10 +1981,14 @@ async function importData(text){
   if(!d||typeof d!=='object'||(!d.dias&&!d.plano&&!d.treino)){ say('Não encontrei plano, ficha de treino nem registros nesse texto.'); return; }
   if(d.treino&&!validTreino(d.treino)){ say('A ficha de treino desse texto está incompleta. Peça um novo texto da ficha.'); return; }
   if(d.plano&&!validPlan(d.plano)){ say('O plano desse texto está incompleto. Peça um novo texto do plano.'); return; }
+  const orig=S.isAdmin?'prof':'proprio', trav=[];
+  if(!S.isAdmin && d.plano && S.planOrig==='prof'){ delete d.plano; trav.push('plano'); }
+  if(!S.isAdmin && d.treino && S.trnOrig==='prof'){ delete d.treino; trav.push('ficha de treino'); }
+  if(trav.length && !d.dias){ say('Seu '+trav.join(' e ')+' é do profissional e só pode ser trocado pelo CheckFit. Fale com o suporte.'); return; }
   try{
     const b=FS.batch(); let n=0;
-    if(d.plano) b.set(S.db.doc('config/plano'),{json:JSON.stringify(d.plano),atualizado:new Date().toISOString()});
-    if(d.treino) b.set(S.db.doc('config/treino'),{json:JSON.stringify(d.treino),atualizado:new Date().toISOString()});
+    if(d.plano) b.set(S.db.doc('config/plano'),{json:JSON.stringify(d.plano),origem:orig,atualizado:new Date().toISOString()});
+    if(d.treino) b.set(S.db.doc('config/treino'),{json:JSON.stringify(d.treino),origem:orig,atualizado:new Date().toISOString()});
     Object.entries(d.dias||{}).forEach(([k,v])=>{ if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&v&&typeof v==='object'){ b.set(S.db.doc('dias/'+k),v); n++; } });
     if(d.perfil&&typeof d.perfil==='object') b.set(S.db.doc('config/perfil'),d.perfil);
     if(Array.isArray(d.alimentos)) b.set(S.db.doc('config/alimentos'),{lista:d.alimentos});
@@ -1799,7 +2015,9 @@ function weekStart(date){const d=parse(date);const w=(d.getDay()+6)%7;d.setDate(
 
 function render(){
   const signed=!!S.user;
-  document.getElementById('tabs').hidden=!signed; document.getElementById('navbar').hidden=!signed;
+  document.getElementById('tabs').hidden=true; document.getElementById('navbar').hidden=!signed;
+  const bnv=document.getElementById('bnav'); bnv.hidden=true; document.body.classList.remove('hasnav');
+  if(S.tab==='inicio') S.view='dia'; else if(S.tab==='evol' && S.view==='dia') S.view=S.evolV||'semana';
   if(!signed){
     const app=document.getElementById('app'), ban=bannerMsg?`<div class="banner">${esc(bannerMsg)}</div>`:'';
     if(S.mode==='legal'){ app.innerHTML=legalView(S.legal); S.lastView='legal'; return; }
@@ -1820,23 +2038,21 @@ function render(){
   const acc=access(); if(!acc.ok){ head(false); mount('block', ban+blockView(acc)); return; }
   WATER_GOAL = (+S.prof.agua>0) ? +S.prof.agua : ((PLANINFO&&+PLANINFO.agua)||2000);
   if(!S.ready||!S.planReady){ app.innerHTML=ban+`<div class="card"><p class="sub" style="margin:0">Abrindo seu diário…</p></div>`; return; }
+  if(S.mode==='ed' && A.ed){ head(false); mount('ed', ban+edView()); return; }
   if(S.mode==='treino'){ head(false); mount('treino', ban+treinoView()); return; }
   if(S.mode==='rel'){ head(false); mount('rel', ban+relView()); return; }
-  if(!PLAN.length){ document.getElementById('tabs').hidden=true; document.getElementById('navbar').hidden=true; if(!document.getElementById('planimport')) app.innerHTML=ban+planView(); S.lastView='plan'; return; }
+  if(!PLAN.length){ document.getElementById('tabs').hidden=true; document.getElementById('navbar').hidden=true; const ta=document.getElementById('impt'); if(!(ta && ta.value) || S.lastView!=='plan') app.innerHTML=ban+caminhoView(); S.lastView='plan'; return; }
   const active=document.activeElement && document.activeElement.id;
   S.lastView='app';
-  app.innerHTML = ban + renewBanner() + (S.view==='dia'?viewDay():S.view==='semana'?viewWeek():viewMonth());
+  document.getElementById('navbar').hidden = !(S.tab==='inicio'||S.tab==='evol');
+  bnv.innerHTML=bnavHTML(); bnv.hidden=false; document.body.classList.add('hasnav');
+  app.innerHTML = ban + renewBanner() + (S.tab==='planos'?planosView():S.tab==='perfil'?perfilView():S.tab==='evol'?evolView():viewDay()) + plusSheet();
   if(active){const el=document.getElementById(active); if(el && el.tagName==='INPUT') el.focus();}
 }
 
 function viewDay(){
   const date=S.date, c=dayCalc(date), pct=Math.min(100,c.kcal/REF*100), over=c.kcal>REF*1.1;
-  let h=`<section class="card hero" aria-label="Total do dia">
-    <div class="row1"><div><div class="big num">${fmt(c.kcal)}<span>kcal</span></div><div class="sub num">Referência do plano ≈ ${fmt(REF)} kcal</div></div>${pill(DAY_STATUS,c.status)}</div>
-    <div class="bar"><i class="${over?'over':''}" style="width:${pct}%"></i></div>
-    <div class="sub num">${c.ok} de ${PLAN.length} refeições no plano${c.extraK?` · extras: ${fmt(c.extraK)} kcal`:''}${c.tr.kcal?` · treinos: −${fmt(c.tr.kcal)} kcal`:''}</div>
-    <button class="primary" id="allplan" data-act="allplan">Segui o plano em todas as refeições</button>
-  </section>`;
+  let h=heroInicio(date,c);
   h+=waterCard(date,c);
   h+=treinoCard(date);
   PLAN.forEach(m=>{h+=mealCard(date,m)});
@@ -1844,7 +2060,6 @@ function viewDay(){
   h+=weightCard(date);
   h+=medidasCard(date);
   h+=daySummary(date,c);
-  h+=profileCard();
   h+=`<p class="note">Calorias aproximadas (tabela TACO e rótulos). Quantidades conforme o plano${PLANINFO&&PLANINFO.data?' de '+esc(PLANINFO.data):''}.</p>`;
   return h;
 }
@@ -1875,6 +2090,8 @@ function profileCard(){
   return `<section class="card"><details class="prof"${open?' open':''}><summary>Meus dados</summary>
    <form class="pgrid" id="profform">
     <label for="pf-tmb">Taxa metabólica basal (kcal)<input id="pf-tmb" inputmode="numeric" value="${p.tmb??''}"></label>
+    <label for="pf-pini">Peso inicial (kg)<input id="pf-pini" inputmode="decimal" value="${p.pini??''}" placeholder="ex.: 102"></label>
+    <label for="pf-dini">Data do peso inicial<input id="pf-dini" type="date" value="${p.dini??''}"></label>
     <label for="pf-meta">Meta de peso (kg)<input id="pf-meta" inputmode="decimal" value="${p.meta??''}"></label>
     <label for="pf-alt">Altura (cm)<input id="pf-alt" inputmode="numeric" value="${p.altura??''}"></label>
     <label for="pf-idade">Idade<input id="pf-idade" inputmode="numeric" value="${p.idade??''}"></label>
@@ -1938,7 +2155,7 @@ function waterCard(date,c){
 }
 function mealCard(date,m){
   const r=rec(date,m.id,false), calc=mealCalc(m,r), oi=(r&&r.opt)||0, opt=m.options[oi];
-  let h=`<section class="card meal" aria-label="${m.name}">
+  let h=`<section class="card meal" id="meal-${m.id}" aria-label="${m.name}">
    <div class="mhead"><div class="mtime num">${m.time}</div><div class="mname">${m.name}<small>${pill(MEAL_STATUS,calc.status)}</small></div><div class="mk num">${fmt(calc.kcal)} kcal</div></div>`;
   if(m.options.length>1) h+=`<div class="opts" role="group" aria-label="Opções">${m.options.map((o,i)=>`<button class="chip" id="opt-${m.id}-${i}" data-act="opt" data-m="${m.id}" data-o="${i}" aria-pressed="${i===oi}">${o.label}</button>`).join('')}</div>`;
   h+=`<div class="items">`;
@@ -2105,7 +2322,16 @@ document.addEventListener('click',e=>{
   if(a==='logout'){ if(AUTH) AUTH.signOut(); return; }
   if(a==='export'){exportData();return;}
   if(a==='import'){const t=document.getElementById('impt'); importData(t?t.value:''); return;}
-  if(a==='tab'){S.view=b.dataset.v;render();}
+  if(a==='tab'){S.view=b.dataset.v; if(S.view!=='dia') S.evolV=S.view; render();}
+  if(a==='btab'){setTab(b.dataset.v); return;}
+  if(a==='plus'){S.plus=true; render(); return;}
+  if(a==='plusclose'){S.plus=false; render(); return;}
+  if(a==='plusw'){addWater(today(), +b.dataset.ml); toast('Água registrada: +'+b.dataset.ml+' ml'); return;}
+  if(a==='plusgo'){plusGo(b.dataset.v); return;}
+  if(a==='goMeal'){goMeal(b.dataset.m); return;}
+  if(a==='ced'){edOpen(S.user.uid, b.dataset.k); return;}
+  if(a==='caminho'){setCaminho(b.dataset.v); return;}
+  if(a==='tema'){setTema(b.dataset.v); return;}
   else if(a==='prev'||a==='next'){const s=a==='prev'?-1:1; if(S.view==='dia')S.date=addDays(S.date,s); else if(S.view==='semana')S.date=addDays(S.date,7*s); else {const d=parse(S.date);S.date=ymd(new Date(d.getFullYear(),d.getMonth()+s,1));} render();}
   else if(a==='today'){S.date=today();render();}
   else if(a==='goday'){S.date=b.dataset.d;S.view='dia';render();window.scrollTo(0,0);}
@@ -2135,7 +2361,7 @@ document.addEventListener('submit',e=>{
   const date=S.date, num=id=>{const v=parseFloat((document.getElementById(id).value||'').replace(',','.')); return v>0?v:null;};
   if(f.matches('.tform')){ if(!(S.tf.min>0)){document.getElementById('tm').focus();return;} const d=S.days[date]||(S.days[date]={meals:{}}); d.treinos=Array.isArray(d.treinos)?d.treinos:[]; d.treinos.push({t:S.tf.t,min:Math.round(S.tf.min),i:S.tf.i}); save(date); render(); }
   else if(f.matches('.pform')){ const v=num('pw'); if(!v||v<30||v>300){document.getElementById('pw').focus();return;} const d=S.days[date]||(S.days[date]={meals:{}}); d.peso=Math.round(v*10)/10; save(date); render(); }
-  else { S.prof={...S.prof, tmb:num('pf-tmb'), meta:num('pf-meta'), altura:num('pf-alt'), idade:num('pf-idade'), agua:num('pf-agua')}; saveProf(); S.profOpen=false; render(); }
+  else { S.prof={...S.prof, tmb:num('pf-tmb'), meta:num('pf-meta'), altura:num('pf-alt'), idade:num('pf-idade'), agua:num('pf-agua'), pini:num('pf-pini'), dini:(document.getElementById('pf-dini')||{}).value||''}; saveProf(); S.profOpen=false; render(); }
 });
 function addWater(date,ml){if(!(ml>0))return; const d=S.days[date]||(S.days[date]={meals:{}}); d.agua=Array.isArray(d.agua)?d.agua:[]; d.agua.push(Math.round(ml)); save(date); render();}
 document.addEventListener('submit',e=>{
