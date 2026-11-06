@@ -273,6 +273,76 @@ input,select,textarea{font-size:16px}
 body{padding-bottom:72px}
 .cname{font-size:16px}
 .admq{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;min-height:44px;width:100%;color:var(--fg)}
+
+/* editor de plano e ficha */
+.eg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ef{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--muted);min-width:0}
+.ef.w{grid-column:1/-1}
+.ef input,.ef select,.ef textarea,.ech input,.ew{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;min-height:42px;color:var(--fg);width:100%;min-width:0;font-family:inherit;font-size:16px;font-weight:400}
+.ef textarea{min-height:70px;resize:vertical}
+.edd>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;min-height:44px}
+.edd>summary::-webkit-details-marker{display:none}
+.edd>summary::before{content:'\25B8';color:var(--muted)}
+.edd[open]>summary::before{content:'\25BE'}
+.edb{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.eopt{border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.eoh{display:flex;gap:8px;align-items:flex-end}.eoh .ef{flex:1}
+.eitem{border-top:1px dashed var(--line);padding-top:8px;display:flex;flex-direction:column;gap:6px}
+.eih{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;font-size:13px}.eih .eb{min-width:34px;padding:4px 8px}
+.eih .sp,.row .sp{flex:1}
+.ck{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--muted)}
+.ck input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
+.ew{width:58px!important;min-height:34px!important;padding:4px 8px!important}
+.ech{display:grid;grid-template-columns:minmax(0,1fr) 72px 58px 36px;gap:6px;align-items:center}
+.ech.alt input:first-child{border-style:dashed}
+.eb{min-height:36px;padding:4px 10px;font-size:13px}
+.eb.add{color:var(--accent);border-style:dashed}
+.eb.big{flex:1;min-height:46px;font-size:14px}
+.eb.danger{color:var(--bad);border-color:var(--bad)}
+.erow.end{justify-content:flex-end;align-items:center;border-top:1px solid var(--line);padding-top:8px}
+.edsave{position:sticky;bottom:8px;z-index:5;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+.eg.ag{grid-template-columns:repeat(4,minmax(0,1fr))}
+.selfed{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+@media(max-width:360px){.ech{grid-template-columns:minmax(0,1fr) 68px 56px 36px}.eg{grid-template-columns:1fr}}
+
+/* medidas e relatório */
+details.medd summary{cursor:pointer;font-weight:900;min-height:32px;display:flex;align-items:center;gap:8px}
+.relnota{width:100%;min-height:80px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:16px;margin-top:4px}
+.relbtn{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.relok{margin-top:10px;padding:12px;border:1px solid var(--ok);background:var(--ok-soft);border-radius:12px}
+.relbtnl{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.card a.ghost.relbtnl{color:var(--fg)}
+.rep{--fg:#17200f;--muted:#5b6552;--line:#dfe3d6;--surface:#fff;--accent:#3d6b1f;--ok:#2f7d32;--bad:#b3261e;--water:#1f6fb2;background:#fff;color:#17200f;border-radius:16px;padding:18px 16px;margin-top:12px;border:1px solid #dfe3d6;font-size:12.5px;line-height:1.4}
+.rep h1{font-size:18px;margin:2px 0 4px}.rep h2{font-size:14px;margin:0 0 8px;color:#3d6b1f;text-transform:uppercase;letter-spacing:.5px}.rep h3{font-size:12.5px;margin:10px 0 4px}
+.rbrand{font-weight:900;letter-spacing:1px;font-size:11px;color:#3d6b1f}
+.rmeta{color:#5b6552;font-size:11.5px}
+.rh{border-bottom:2px solid #3d6b1f;padding-bottom:10px;margin-bottom:12px}
+.rs{margin:0 0 14px;break-inside:avoid;page-break-inside:avoid}
+.rs.brk{break-inside:auto;page-break-inside:auto}
+.rgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.rgrid div{border:1px solid #dfe3d6;border-radius:8px;padding:6px 8px;display:flex;flex-direction:column}
+.rgrid b{font-size:16px}.rgrid span{color:#5b6552;font-size:10.5px;line-height:1.25}
+.rtwo{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:10px;align-items:center}
+.rt{border-collapse:collapse;font-size:11.5px}.rt.full{width:100%}
+.rt th,.rt td{border-bottom:1px solid #dfe3d6;padding:4px 6px;text-align:left;vertical-align:top}
+.rt th{color:#5b6552;font-weight:700}.rt small{color:#5b6552}
+.rt.dd tr.plano td:last-child{color:#2f7d32;font-weight:700}.rt.dd tr.fora td:last-child{color:#b3261e}
+.rnote{color:#5b6552;font-size:11.5px;margin:8px 0 0}
+.rnota{white-space:pre-wrap;margin:0;border-left:3px solid #3d6b1f;padding-left:8px}
+.rf{border-top:1px solid #dfe3d6;padding-top:8px;color:#5b6552;font-size:10px}
+.rep .wchart{width:100%;height:auto}
+@media(max-width:420px){.rgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.rtwo{grid-template-columns:1fr}}
+@media print{
+ @page{margin:12mm}
+ html,body{background:#fff!important}
+ body{padding:0!important}
+ .top,#tabs,#navbar,.noprint,.banner,#toast,#restbar{display:none!important}
+ .wrap{max-width:none!important;padding:0!important}
+ .rep{border:0;border-radius:0;padding:0;margin:0;font-size:11px}
+ .rgrid{grid-template-columns:repeat(4,minmax(0,1fr))!important}.rtwo{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)!important}
+ .rs h2{break-after:avoid}
+ tr{break-inside:avoid}
+}
 </style>
 </head>
 <body>
@@ -526,7 +596,7 @@ function mount(key, html, sticky){
   if(sticky && S.lastView === key && document.getElementById('view-' + key)) return;
   const same = S.lastView === key, keep = {}, act = document.activeElement, actId = act && app.contains(act) ? act.id : '';
   let caret = null; try{ if(actId && typeof act.selectionStart === 'number') caret = act.selectionStart; }catch(e){}
-  if(same) app.querySelectorAll('input[id],textarea[id]').forEach(el => { if(el.type === 'file' || el.dataset.sedit) return; keep[el.id] = el.type === 'checkbox' ? el.checked : el.value; });
+  if(same) app.querySelectorAll('input[id],textarea[id]').forEach(el => { if(el.type === 'file' || el.dataset.sedit || el.dataset.ep) return; keep[el.id] = el.type === 'checkbox' ? el.checked : el.value; });
   app.innerHTML = html; S.lastView = key;
   if(same){
     Object.entries(keep).forEach(([id, v]) => { const el = document.getElementById(id); if(!el) return; if(el.type === 'checkbox') el.checked = v; else el.value = v; });
@@ -701,7 +771,7 @@ function startAdmin(){
   A.unsubs.push(FS.collection('assinaturas').onSnapshot(s => { A.subs = {}; s.docs.forEach(d => { A.subs[d.id] = d.data(); }); render(); }, () => {}));
   A.unsubs.push(FS.collection('log').orderBy('em', 'desc').limit(25).onSnapshot(s => { A.log = s.docs.map(d => d.data()); render(); }, () => {}));
 }
-function stopAdmin(){ A.unsubs.forEach(u => { try{ u(); }catch(e){} }); A.unsubs = []; A.clis = {}; A.subs = {}; A.log = []; A.plans = {}; A.trns = {}; }
+function stopAdmin(){ A.ed = null; A.unsubs.forEach(u => { try{ u(); }catch(e){} }); A.unsubs = []; A.clis = {}; A.subs = {}; A.log = []; A.plans = {}; A.trns = {}; }
 function loadPlans(){
   Object.keys(A.clis).forEach(uid => {
     if(uid in A.plans) return; A.plans[uid] = null;
@@ -732,7 +802,9 @@ function adminView(){
     <div class="tile"><b class="num">R$ ${money(pagantes * preco)}</b><span>por mês, se todos renovarem</span></div>
     <div class="tile"><b class="num" style="color:var(--warn)">${n('vencendo')}</b><span>vencem em até 5 dias</span></div>
     <div class="tile"><b class="num">${n('pendente')}</b><span>aguardando liberação</span></div>
-   </div></section>
+   </div>
+   <div class="selfed"><button class="ghost" id="aed-self-p" data-act="aed" data-u="${S.user ? S.user.uid : ''}" data-k="plano">Editar meu plano</button><button class="ghost" id="aed-self-t" data-act="aed" data-u="${S.user ? S.user.uid : ''}" data-k="treino">Editar minha ficha</button></div>
+   ${A.selfMsg ? `<p class="lmsg ok" role="status">${esc(A.selfMsg)}</p>` : ''}</section>
   <section class="card sum">
    <label for="admq" class="sub" style="font-weight:700">Buscar cliente</label>
    <input id="admq" class="admq" placeholder="Nome, e-mail ou WhatsApp" value="${esc(A.q)}" autocomplete="off">
@@ -758,8 +830,10 @@ function clientCard(r){
    </div>
    <div class="row">
     <button class="primary" id="a30-${uid}" data-act="a30" data-u="${uid}">+30 dias</button>
-    <button class="ghost" id="apl-${uid}" data-act="aplan" data-u="${uid}" aria-expanded="${open}">${plan ? 'Trocar plano' : 'Carregar plano'}</button>
-    <button class="ghost" id="atr-${uid}" data-act="atrn" data-u="${uid}" aria-expanded="${A.openT === uid}">${A.trns[uid] ? 'Trocar treino' : 'Carregar treino'}</button>
+    <button class="ghost" id="aedp-${uid}" data-act="aed" data-u="${uid}" data-k="plano">${plan ? 'Editar plano' : 'Montar plano'}</button>
+    <button class="ghost" id="aedt-${uid}" data-act="aed" data-u="${uid}" data-k="treino">${A.trns[uid] ? 'Editar treino' : 'Montar treino'}</button>
+    <button class="ghost" id="apl-${uid}" data-act="aplan" data-u="${uid}" aria-expanded="${open}">${plan ? 'Colar novo plano' : 'Colar plano'}</button>
+    <button class="ghost" id="atr-${uid}" data-act="atrn" data-u="${uid}" aria-expanded="${A.openT === uid}">${A.trns[uid] ? 'Colar nova ficha' : 'Colar ficha'}</button>
     <button class="ghost" id="avit-${uid}" data-act="avit" data-u="${uid}">${sub && sub.vitalicio ? 'Tirar sem vencimento' : 'Sem vencimento'}</button>
     ${acc.ok && acc.kind !== 'vitalicio' ? `<button class="ghost" id="abl-${uid}" data-act="ablock" data-u="${uid}">${conf ? 'Confirmar bloqueio' : 'Bloquear'}</button>` : ''}
    </div>
@@ -839,6 +913,565 @@ async function saveConfig(){
   const data = {preco: preco > 0 ? preco : 19.9, whatsapp:v('cf-zap'), pix:v('cf-pix'), pixNome:v('cf-pixnome'), resp:{nome:v('cf-rnome'), doc:v('cf-rdoc'), cidade:v('cf-rcid'), email:v('cf-remail')}};
   try{ await FS.collection('app').doc('config').set(data, {merge:true}); A.cfgMsg = 'Configurações salvas.'; A.cfgOk = true; if(m){ m.textContent = A.cfgMsg; m.className = 'lmsg ok'; } }
   catch(e){ if(m){ m.textContent = 'Não consegui salvar. Verifique a internet.'; m.className = 'lmsg'; } }
+}
+
+/* ---------- Editor de plano alimentar e ficha de treino (Painel) ---------- */
+const edKey = () => Math.random().toString(36).slice(2, 8);
+function edGet(o, path){ return String(path).split('.').reduce((a, k) => a == null ? a : a[k], o); }
+function edSet(o, path, v){ const ks = String(path).split('.'), last = ks.pop(), t = ks.reduce((a, k) => a[k], o); if(v === undefined) delete t[last]; else t[last] = v; }
+function specTxt(s){ return Array.isArray(s) ? s.map(([q, r]) => q + 'x' + r).join(' + ') : ''; }
+function specParse(t){
+  t = String(t || '').trim(); if(!t) return null; const out = [];
+  t.split('+').forEach(p => { p = p.trim(); if(!p) return; const m = p.match(/^(\d+)\s*[x×X*]\s*(.*)$/); if(m) out.push([+m[1], (m[2] || '').trim() || '10']); else out.push([1, p]); });
+  return out.length ? out : null;
+}
+function cargaTxt(c){ return Array.isArray(c) ? c.join(' / ') : (c == null ? '' : String(c)); }
+function cargaParse(t){
+  const parts = String(t || '').split(/[\/;]/).map(x => x.trim()).filter(Boolean).map(x => /^\d+([.,]\d+)?$/.test(x) ? numv(x) : x);
+  return !parts.length ? undefined : parts.length === 1 ? parts[0] : parts;
+}
+function edNewItem(){ return {k:'i' + edKey(), ch:[['', '', 0]]}; }
+function edNewPlan(){ return {nutri:'', data:'', agua:2000, meals:[{id:'m' + edKey(), time:'07:00', name:'Café da manhã', tip:'', options:[{label:'Plano', items:[edNewItem()]}]}]}; }
+function edNewEx(){ return {n:'', t:'multi', s:[[3, '10–12']]}; }
+function edNewTreino(){ return {prof:'', objetivo:'', inicio:today(), aquec:0, desc:{multi:90, mono:60}, notas:'', semanas:[], agenda:{'1':'A', '3':'B', '5':'A'}, fichas:[{id:'A', nome:'Treino A', ex:[edNewEx()]}, {id:'B', nome:'Treino B', ex:[edNewEx()]}], extras:[]}; }
+function mealKcal(m){ const o = m.options[0]; return o ? o.items.filter(i => !i.opt).reduce((a, i) => a + (+((i.ch || [])[0] || [])[2] || 0), 0) : 0; }
+
+async function edOpen(uid, kind){
+  amsg(uid, 'Abrindo…', true);
+  try{
+    const s = await FS.collection('users').doc(uid).collection('config').doc(kind).get();
+    let d = null; if(s.exists){ try{ d = JSON.parse(s.data().json || 'null'); }catch(e){ d = null; } }
+    const novo = !d; if(!d) d = kind === 'plano' ? edNewPlan() : edNewTreino();
+    if(kind === 'treino'){ d.desc = d.desc || {}; d.fichas = d.fichas || []; d.extras = d.extras || []; d.semanas = d.semanas || []; }
+    A.ed = {uid, kind, d, novo, dirty:false, rot:kind === 'treino' && !(d.agenda && Object.keys(d.agenda).length), open:{}, conf:'', msg:'', ok:false};
+    if(kind === 'plano' && d.meals[0]) A.ed.open['meals.0'] = true;
+    if(kind === 'treino' && d.fichas[0]) A.ed.open['fichas.0'] = true;
+    A.msg[uid] = {t:'', ok:true}; render(); window.scrollTo(0, 0);
+  }catch(e){ amsg(uid, 'Não consegui abrir. Verifique a internet e tente de novo.'); }
+}
+function edClose(){ const E = A.ed; if(E && E.dirty && E.conf !== 'close'){ E.conf = 'close'; render(); return; } A.ed = null; render(); window.scrollTo(0, 0); }
+
+function fi(label, path, val, o){
+  o = o || {}; const id = 'e-' + path.replace(/\./g, '-'), v = esc(val == null ? '' : String(val)), t = o.t || 's';
+  const attrs = `id="${id}" data-ep="${path}" data-et="${t}"${o.ph ? ` placeholder="${esc(o.ph)}"` : ''}${o.im ? ` inputmode="${o.im}"` : ''} autocomplete="off"`;
+  const ctl = o.area ? `<textarea ${attrs} rows="3">${v}</textarea>` : o.date ? `<input type="date" ${attrs} value="${v}">` : `<input ${attrs} value="${v}">`;
+  return `<label class="ef${o.w ? ' w' : ''}" for="${id}">${label}${ctl}${o.hint ? `<small>${o.hint}</small>` : ''}</label>`;
+}
+function fsel(label, path, val, opts, o){
+  o = o || {}; const id = 'e-' + path.replace(/\./g, '-');
+  return `<label class="ef${o.w ? ' w' : ''}" for="${id}">${label}<select id="${id}" data-ep="${path}" data-et="${o.t || 's'}">${opts.map(([v, l]) => `<option value="${esc(v)}"${String(val == null ? '' : val) === String(v) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></label>`;
+}
+function eb(op, p, i, txt, aria, cls){ return `<button type="button" class="ghost eb${cls ? ' ' + cls : ''}" data-act="ed" data-op="${op}" data-p="${p}" data-i="${i}"${aria ? ` aria-label="${esc(aria)}"` : ''}>${txt}</button>`; }
+function ebDel(p, i, what, confirm){
+  const key = p + '.' + i, c = confirm && A.ed.conf === key;
+  return eb('del', p, i, c ? 'Confirmar' : '✕', 'Apagar ' + what, c ? 'danger' : '');
+}
+function ebMove(p, i, n, what){ return (i > 0 ? eb('up', p, i, '↑', 'Subir ' + what) : '') + (i < n - 1 ? eb('down', p, i, '↓', 'Descer ' + what) : ''); }
+function edDet(key, summary, body){ return `<details class="edd" data-ok="${key}"${A.ed.open[key] ? ' open' : ''}><summary>${summary}</summary><div class="edb">${body}</div></details>`; }
+
+function edView(){
+  const E = A.ed, c = A.clis[E.uid] || {}, self = S.user && E.uid === S.user.uid;
+  const nome = self ? 'Sua conta' : esc(c.nome || c.email || 'Cliente'), pl = E.kind === 'plano';
+  let h = `<section class="card sum" id="view-aded">
+   <div class="thead"><div><h2>${pl ? 'Editar plano alimentar' : 'Editar ficha de treino'}</h2><div class="sub">${nome}${E.novo ? ' · novo, ainda não salvo' : ''}</div></div><button class="ghost" id="ed-back" data-act="edclose">${E.conf === 'close' ? 'Sair sem salvar' : 'Voltar'}</button></div>
+   ${E.conf === 'close' ? `<p class="lmsg" style="margin:8px 0 0">Você tem alterações não salvas. Toque de novo em "Sair sem salvar" para descartar, ou salve no fim da página.</p>` : ''}
+   <p class="tip" style="margin:8px 0 0">${pl
+     ? 'Cada <b>item</b> é uma linha do checklist do cliente. A <b>1ª linha</b> do item é o padrão (entra na meta de calorias); as linhas de baixo são <b>trocas</b> que o cliente pode escolher. Marque <b>opcional</b> para itens que não contam na meta.'
+     : 'As <b>séries</b> se escrevem assim: <b>3x10–12</b> ou <b>1x15 + 2x8–10</b>. Deixe em branco para usar a periodização por semanas. A <b>carga sugerida</b> aceita um valor (20) ou um por série (10 / 12 / 14).'}</p>
+  </section>`;
+  h += pl ? edPlan(E.d) : edTreino(E.d);
+  h += `<section class="card edsave"><div class="row"><button class="primary" id="ed-save" data-act="edsave">Salvar na conta${self ? '' : ' do cliente'}</button><button class="ghost" data-act="edclose">${E.conf === 'close' ? 'Sair sem salvar' : 'Cancelar'}</button></div>
+   <p class="lmsg${E.ok ? ' ok' : ''}" id="edmsg" role="status">${esc(E.msg || '')}</p></section>`;
+  return h;
+}
+
+function edPlan(p){
+  let h = `<section class="card"><h2>Dados do plano</h2><div class="eg">
+    ${fi('Nutricionista', 'nutri', p.nutri, {w:1, ph:'Nome · CRN'})}
+    ${fi('Data do plano', 'data', p.data, {ph:'14/05/2026'})}
+    ${fi('Água por dia (ml)', 'agua', p.agua, {t:'n', im:'numeric', ph:'2000'})}
+   </div></section>`;
+  p.meals.forEach((m, mi) => {
+    const mp = 'meals.' + mi;
+    const sum = `<span><b>${esc(m.time || '--:--')} · ${esc(m.name || 'Refeição')}</b><span class="sub"> · ${m.options.length} ${m.options.length > 1 ? 'opções' : 'opção'} · ${fmt(mealKcal(m))} kcal</span></span>`;
+    const body = `<div class="eg">${fi('Horário', mp + '.time', m.time, {ph:'07:30', im:'numeric'})}${fi('Nome da refeição', mp + '.name', m.name, {w:1})}${fi('Dica, receita ou observação', mp + '.tip', m.tip, {w:1, area:1})}</div>
+      ${m.options.map((o, oi) => edOpt(mp, o, oi, m.options.length)).join('')}
+      <div class="row erow">${eb('add', mp + '.options', '', '+ Nova opção de cardápio', '', 'add')}</div>
+      <div class="row erow end"><span class="sub">Refeição</span>${ebMove('meals', mi, p.meals.length, 'refeição')}${p.meals.length > 1 ? ebDel('meals', mi, 'refeição', true) : ''}</div>`;
+    h += `<section class="card">${edDet(mp, sum, body)}</section>`;
+  });
+  h += `<div class="row">${eb('add', 'meals', '', '+ Nova refeição', '', 'add big')}</div>`;
+  return h;
+}
+function edOpt(mp, o, oi, n){
+  const op = mp + '.options.' + oi;
+  return `<div class="eopt"><div class="eoh">${fi(n > 1 ? 'Opção ' + (oi + 1) : 'Nome da opção', op + '.label', o.label, {w:1, ph:'Ex.: Opção 1 · Panqueca'})}${n > 1 ? ebDel(mp + '.options', oi, 'opção', true) : ''}</div>
+    ${o.items.map((it, ii) => edItem(op, it, ii, o.items.length)).join('')}
+    <div class="row">${eb('add', op + '.items', '', '+ Item', 'Adicionar item nesta opção', 'add')}</div></div>`;
+}
+function edItem(op, it, ii, n){
+  const ip = op + '.items.' + ii, id = 'e-' + ip.replace(/\./g, '-');
+  return `<div class="eitem">
+    <div class="eih"><b>Item ${ii + 1}</b>
+     <label class="ck" for="${id}-opt"><input type="checkbox" id="${id}-opt" data-ep="${ip}.opt" data-et="b"${it.opt ? ' checked' : ''}> opcional</label>
+     <label class="ck" for="${id}-w">água <input id="${id}-w" class="ew num" data-ep="${ip}.w" data-et="n" value="${it.w || ''}" inputmode="numeric" placeholder="ml" aria-label="Água em ml que este item conta"></label>
+     <span class="sp"></span>${ebMove(op + '.items', ii, n, 'item')}${ebDel(op + '.items', ii, 'item')}</div>
+    ${it.ch.map((c, ci) => `<div class="ech${ci ? ' alt' : ''}">
+      <input id="${id}-c${ci}n" data-ep="${ip}.ch.${ci}.0" data-et="s" value="${esc(c[0] || '')}" placeholder="${ci ? 'Troca' : 'Alimento'}" aria-label="${ci ? 'Troca ' + ci : 'Alimento padrão'}" autocomplete="off">
+      <input id="${id}-c${ci}q" data-ep="${ip}.ch.${ci}.1" data-et="s" value="${esc(c[1] || '')}" placeholder="Qtd" aria-label="Quantidade" autocomplete="off">
+      <input id="${id}-c${ci}k" class="num" data-ep="${ip}.ch.${ci}.2" data-et="k" value="${c[2] || c[2] === 0 ? c[2] : ''}" placeholder="kcal" inputmode="numeric" aria-label="Calorias">
+      ${it.ch.length > 1 ? ebDel(ip + '.ch', ci, 'linha') : '<span></span>'}</div>`).join('')}
+    <button type="button" class="ghost eb add" data-act="ed" data-op="add" data-p="${ip}.ch" data-i="">+ Troca</button>
+  </div>`;
+}
+
+const TIPO_EX = [['multi', 'Multiarticular'], ['mono', 'Monoarticular'], ['cardio', 'Cardio'], ['mob', 'Mobilidade / alongamento']];
+const DIAS_ED = [['1', 'Seg'], ['2', 'Ter'], ['3', 'Qua'], ['4', 'Qui'], ['5', 'Sex'], ['6', 'Sáb'], ['0', 'Dom']];
+function edTreino(t){
+  const E = A.ed, ids = t.fichas.map(f => f.id).filter(Boolean), fOpts = [['', '—']].concat(t.fichas.filter(f => f.id).map(f => [f.id, f.id + (f.nome ? ' · ' + f.nome : '')]));
+  let h = `<section class="card"><h2>Dados da ficha</h2><div class="eg">
+    ${fi('Professor(a) / personal', 'prof', t.prof, {w:1})}
+    ${fi('Objetivo', 'objetivo', t.objetivo, {ph:'Hipertrofia'})}
+    ${fi('Início da ficha', 'inicio', t.inicio, {date:1})}
+    ${fi('Descanso multiarticular (seg)', 'desc.multi', (t.desc || {}).multi, {t:'n', im:'numeric', ph:'90'})}
+    ${fi('Descanso monoarticular (seg)', 'desc.mono', (t.desc || {}).mono, {t:'n', im:'numeric', ph:'60'})}
+    ${fi('Séries de aquecimento', 'aquec', t.aquec, {t:'n', im:'numeric', ph:'0'})}
+    ${fi('Orientações gerais', 'notas', t.notas, {w:1, area:1})}
+   </div></section>
+   <section class="card"><h2>Como os treinos se organizam</h2>
+    <div class="opts" style="padding:0" role="group" aria-label="Organização">
+     <button type="button" class="chip" data-act="ed" data-op="mode" data-p="" data-i="0" aria-pressed="${!E.rot}">Dias fixos da semana</button>
+     <button type="button" class="chip" data-act="ed" data-op="mode" data-p="" data-i="1" aria-pressed="${E.rot}">Em sequência (A→B→C…)</button>
+    </div>
+    ${!E.rot
+      ? `<div class="eg ag">${DIAS_ED.map(([k, l]) => fsel(l, 'agenda.' + k, (t.agenda || {})[k] || '', [['', '—']].concat(ids.map(x => [x, x])), {t:'ag'})).join('')}</div>`
+      : `<div class="eg">${fsel('Próximo treino', 'prox', t.prox || ids[0] || '', fOpts.slice(1))}${fi('Meta de treinos por semana', 'meta', t.meta, {t:'n', im:'numeric', ph:'4'})}${fsel('Como chamar os treinos', 'rotulo', t.rotulo || '', [['', 'Treino A, Treino B…'], ['nome', 'Pelo nome (Superior 1…)']])}</div>`}
+   </section>
+   <section class="card"><h2>Periodização por semana</h2><p class="tip" style="margin:0 0 8px">Vale para os exercícios sem séries próprias. A semana 1 começa na data de início.</p>
+    ${t.semanas.map((w, wi) => `<div class="eitem"><div class="eih"><b>Semana ${wi + 1}</b><span class="sp"></span>${ebMove('semanas', wi, t.semanas.length, 'semana')}${ebDel('semanas', wi, 'semana')}</div><div class="eg">
+      ${fi('Séries', 'semanas.' + wi, w._sr != null ? w._sr : specTxt(w.s), {t:'sp', ph:'3x11–13'})}${fi('Descrição', 'semanas.' + wi + '.txt', w.txt, {w:1, ph:'3 séries de 11 a 13 repetições'})}</div></div>`).join('')}
+    <div class="row">${eb('add', 'semanas', '', '+ Semana', '', 'add')}</div>
+   </section>`;
+  t.fichas.forEach((f, fi_) => {
+    const fp = 'fichas.' + fi_;
+    const sum = `<span><b>${esc(f.id || '?')} · ${esc(f.nome || 'Treino')}</b><span class="sub"> · ${f.ex.length} exercício(s)</span></span>`;
+    const body = `<div class="eg">${fi('Letra / código', fp + '.id', f.id, {t:'id', ph:'A'})}${fi('Nome do treino', fp + '.nome', f.nome, {w:1, ph:'Costas, ombro e bíceps'})}${fi('Preparação (antes de começar)', fp + '.prep', f.prep, {w:1})}${fi('Observação do treino', fp + '.obs', f.obs, {w:1})}</div>
+      ${f.ex.map((e, ei) => edEx(fp + '.ex', e, ei, f.ex.length, t.semanas.length > 0)).join('')}
+      <div class="row erow">${eb('add', fp + '.ex', '', '+ Exercício', '', 'add')}</div>
+      <div class="row erow end"><span class="sub">Treino</span>${ebMove('fichas', fi_, t.fichas.length, 'treino')}${t.fichas.length > 1 ? ebDel('fichas', fi_, 'treino', true) : ''}</div>`;
+    h += `<section class="card">${edDet(fp, sum, body)}</section>`;
+  });
+  h += `<div class="row">${eb('add', 'fichas', '', '+ Novo treino', '', 'add big')}</div>`;
+  h += `<section class="card"><h2>Extras</h2><p class="tip" style="margin:0 0 8px">Blocos que o cliente pode somar a qualquer treino, como abdominal ou panturrilha. "A cada N dias": 1 = todo dia, 2 = dia sim, dia não.</p>
+    ${t.extras.map((x, xi) => { const xp = 'extras.' + xi;
+      return `<div class="eopt"><div class="eg">${fi('Nome', xp + '.nome', x.nome, {w:1, ph:'Abdominal'})}${fi('A cada N dias', xp + '.freq', x.freq, {t:'n', im:'numeric', ph:'2'})}</div>
+       ${x.ex.map((e, ei) => edEx(xp + '.ex', e, ei, x.ex.length, false)).join('')}
+       <div class="row">${eb('add', xp + '.ex', '', '+ Exercício', '', 'add')}<span class="sp"></span>${ebDel('extras', xi, 'extra', true)}</div></div>`; }).join('')}
+    <div class="row">${eb('add', 'extras', '', '+ Novo extra', '', 'add')}</div></section>`;
+  return h;
+}
+function edEx(ap, e, ei, n, hasWeeks){
+  const p = ap + '.' + ei;
+  return `<div class="eitem"><div class="eih"><b>${ei + 1}.</b><span class="sp"></span>${ebMove(ap, ei, n, 'exercício')}${ebDel(ap, ei, 'exercício')}</div><div class="eg">
+    ${fi('Exercício', p + '.n', e.n, {w:1, ph:'Supino reto, máquina'})}
+    ${fsel('Tipo', p + '.t', e.t || 'multi', TIPO_EX)}
+    ${fi('Séries', p, e._sr != null ? e._sr : specTxt(e.s), {t:'sp', ph:hasWeeks ? 'em branco = semana' : '3x10–12'})}
+    ${fi('Carga sugerida (kg)', p + '.c', cargaTxt(e.c), {t:'c', ph:'20 ou 10 / 12 / 14', im:'text'})}
+    ${fi('Descanso (seg)', p + '.desc', e.desc, {t:'n', im:'numeric', ph:'padrão'})}
+    ${fi('Observação', p + '.obs', e.obs, {w:1})}
+   </div></div>`;
+}
+
+function edApply(el){
+  const E = A.ed; if(!E) return; const p = el.dataset.ep, t = el.dataset.et || 's';
+  let v = el.type === 'checkbox' ? el.checked : el.value;
+  try{
+    if(t === 'sp'){ const o = edGet(E.d, p); o._sr = v; const s = specParse(v); if(s) o.s = s; else delete o.s; }
+    else if(t === 'n'){ edSet(E.d, p, String(v).trim() === '' ? undefined : numv(v)); }
+    else if(t === 'k'){ edSet(E.d, p, numv(v)); }
+    else if(t === 'b'){ edSet(E.d, p, v ? true : undefined); }
+    else if(t === 'c'){ edSet(E.d, p, cargaParse(v)); }
+    else if(t === 'ag'){ E.d.agenda = E.d.agenda || {}; const k = p.split('.')[1]; if(v) E.d.agenda[k] = v; else delete E.d.agenda[k]; }
+    else if(t === 'id'){ const old = edGet(E.d, p); v = String(v).trim().toUpperCase().replace(/\s+/g, ''); edSet(E.d, p, v);
+      if(old && old !== v){ const ag = E.d.agenda || {}; Object.keys(ag).forEach(k => { if(ag[k] === old) ag[k] = v; }); if(E.d.prox === old) E.d.prox = v; } }
+    else edSet(E.d, p, v);
+  }catch(e){ return; }
+  E.dirty = true; E.conf = ''; E.msg = '';
+}
+function edOp(op, p, i){
+  const E = A.ed; if(!E) return; const d = E.d; i = i === '' ? -1 : +i;
+  if(op === 'mode'){ E.rot = i === 1; if(!E.rot && !(d.agenda && Object.keys(d.agenda).length)){ const ids = d.fichas.map(f => f.id).filter(Boolean); d.agenda = {}; ['1', '2', '3', '4', '5'].forEach((k, j) => { if(ids.length) d.agenda[k] = ids[j % ids.length]; }); } E.dirty = true; render(); return; }
+  const arr = edGet(d, p); if(!Array.isArray(arr)) return;
+  if(op === 'add'){
+    let v;
+    if(p === 'meals'){ v = {id:'m' + edKey(), time:'', name:'Nova refeição', tip:'', options:[{label:'Plano', items:[edNewItem()]}]}; E.open['meals.' + arr.length] = true; }
+    else if(/\.options$/.test(p)) v = {label:'Opção ' + (arr.length + 1), items:[edNewItem()]};
+    else if(/\.items$/.test(p)) v = edNewItem();
+    else if(/\.ch$/.test(p)) v = ['', '', 0];
+    else if(p === 'semanas') v = {txt:'', s:[[3, '10–12']]};
+    else if(p === 'fichas'){ const used = arr.map(f => f.id); let c = 65; while(used.includes(String.fromCharCode(c)) && c < 90) c++; v = {id:String.fromCharCode(c), nome:'Treino ' + String.fromCharCode(c), ex:[edNewEx()]}; E.open['fichas.' + arr.length] = true; }
+    else if(p === 'extras') v = {id:'x' + edKey(), nome:'', freq:2, ex:[{n:'', t:'mono', s:[[3, '15']]}]};
+    else if(/\.ex$/.test(p)) v = /^extras/.test(p) ? {n:'', t:'mono', s:[[3, '15']]} : edNewEx();
+    if(v === undefined) return; arr.push(v);
+  } else if(op === 'del'){
+    const needConf = p === 'meals' || /\.options$/.test(p) || p === 'fichas' || p === 'extras', key = p + '.' + i;
+    if(needConf && E.conf !== key){ E.conf = key; render(); return; }
+    const gone = arr.splice(i, 1)[0]; E.conf = '';
+    if(p === 'fichas' && gone && d.agenda){ Object.keys(d.agenda).forEach(k => { if(d.agenda[k] === gone.id) delete d.agenda[k]; }); }
+    edShiftOpen(p, i, null);
+  } else if(op === 'up' || op === 'down'){
+    const j = op === 'up' ? i - 1 : i + 1; if(j < 0 || j >= arr.length) return;
+    [arr[i], arr[j]] = [arr[j], arr[i]]; edShiftOpen(p, i, j);
+  }
+  E.dirty = true; E.msg = ''; render();
+}
+function edShiftOpen(p, i, j){
+  const E = A.ed, a = p + '.' + i; if(!(p === 'meals' || p === 'fichas')) return;
+  if(j == null){ const n = {}; Object.keys(E.open).forEach(k => { const m = k.match(new RegExp('^' + p + '\\.(\\d+)$')); if(!m) return n[k] = E.open[k]; const x = +m[1]; if(x < i) n[k] = E.open[k]; else if(x > i) n[p + '.' + (x - 1)] = E.open[k]; }); E.open = n; }
+  else { const b = p + '.' + j, t = E.open[a]; E.open[a] = E.open[b]; E.open[b] = t; }
+}
+function edClean(d){ return JSON.parse(JSON.stringify(d, (k, v) => k.startsWith('_') ? undefined : v)); }
+function edFail(t){ const E = A.ed; E.msg = t; E.ok = false; const el = document.getElementById('edmsg'); if(el){ el.textContent = t; el.className = 'lmsg'; } }
+function edPrepPlan(d){
+  d.agua = +d.agua > 0 ? Math.round(+d.agua) : 2000;
+  const seen = {};
+  for(let mi = 0; mi < d.meals.length; mi++){
+    const m = d.meals[mi], nm = (m.name || '').trim() || 'Refeição ' + (mi + 1);
+    if(!(m.name || '').trim()) return 'Dê um nome para a refeição ' + (mi + 1) + '.';
+    if(!m.id || seen[m.id]) m.id = 'm' + edKey(); seen[m.id] = 1;
+    m.time = (m.time || '').trim(); m.tip = (m.tip || '').trim();
+    for(let oi = 0; oi < m.options.length; oi++){
+      const o = m.options[oi]; o.label = (o.label || '').trim() || (m.options.length > 1 ? 'Opção ' + (oi + 1) : 'Plano');
+      const ks = {};
+      o.items.forEach(it => { it.ch = (it.ch || []).filter(c => String(c[0] || '').trim()).map(c => [String(c[0]).trim(), String(c[1] || '').trim(), Math.max(0, Math.round(+c[2] || 0))]); if(!it.k || ks[it.k]) it.k = 'i' + edKey(); ks[it.k] = 1; if(!(+it.w > 0)) delete it.w; if(!it.opt) delete it.opt; });
+      o.items = o.items.filter(it => it.ch.length);
+      if(!o.items.length) return '"' + nm + '" · ' + o.label + ': preencha pelo menos um alimento.';
+    }
+  }
+  return validPlan(d) ? '' : 'O plano está incompleto. Confira as refeições.';
+}
+function edPrepTreino(d, rot){
+  const ids = {};
+  for(let i = 0; i < d.fichas.length; i++){
+    const f = d.fichas[i]; f.id = String(f.id || '').trim().toUpperCase();
+    if(!f.id) return 'Dê uma letra ou código para o treino ' + (i + 1) + '.';
+    if(ids[f.id]) return 'Há dois treinos com o código "' + f.id + '". Use códigos diferentes.'; ids[f.id] = 1;
+    f.nome = (f.nome || '').trim() || 'Treino ' + f.id;
+    ['prep', 'obs'].forEach(k => { if(!(f[k] || '').trim()) delete f[k]; });
+    f.ex = f.ex.filter(e => (e.n || '').trim());
+    if(!f.ex.length) return 'O treino ' + f.id + ' está sem exercícios.';
+    for(const e of f.ex){ e.n = e.n.trim(); if(!Array.isArray(e.s) && !d.semanas.length) return 'Informe as séries de "' + e.n + '" (ex.: 3x10–12) ou crie a periodização por semana.'; ['obs'].forEach(k => { if(!(e[k] || '').trim()) delete e[k]; }); if(!(+e.desc > 0)) delete e.desc; if(e.c === '' || e.c == null) delete e.c; }
+  }
+  d.semanas = d.semanas.filter(w => Array.isArray(w.s) && w.s.length);
+  d.extras = (d.extras || []).filter(x => (x.nome || '').trim() || x.ex.some(e => (e.n || '').trim()));
+  for(const x of d.extras){ x.nome = (x.nome || '').trim() || 'Extra'; x.ex = x.ex.filter(e => (e.n || '').trim()); if(!x.id) x.id = 'x' + edKey(); x.freq = +x.freq > 0 ? Math.round(+x.freq) : 1;
+    for(const e of x.ex){ e.n = e.n.trim(); if(!Array.isArray(e.s)) return 'Informe as séries de "' + e.n + '" em ' + x.nome + ' (ex.: 3x15).'; } }
+  d.extras = d.extras.filter(x => x.ex.length);
+  if(rot){ delete d.agenda; if(!ids[d.prox]) d.prox = d.fichas[0].id; if(!(+d.meta > 0)) delete d.meta; if(d.rotulo !== 'nome') delete d.rotulo; }
+  else { const ag = {}; Object.keys(d.agenda || {}).forEach(k => { if(ids[d.agenda[k]]) ag[k] = d.agenda[k]; }); if(!Object.keys(ag).length) return 'Escolha o treino de pelo menos um dia da semana, ou mude para "Em sequência".'; d.agenda = ag; delete d.prox; delete d.meta; }
+  d.desc = {...(d.desc || {}), multi:+(d.desc || {}).multi || 90, mono:+(d.desc || {}).mono || 60};
+  d.aquec = +d.aquec > 0 ? Math.round(+d.aquec) : 0;
+  if(!d.inicio) d.inicio = today();
+  return validTreino(d) ? '' : 'A ficha está incompleta. Confira os treinos.';
+}
+async function edSave(){
+  const E = A.ed; if(!E) return; const d = edClean(E.d);
+  const err = E.kind === 'plano' ? edPrepPlan(d) : edPrepTreino(d, E.rot);
+  if(err){ edFail(err); return; }
+  const el = document.getElementById('edmsg'); if(el){ el.textContent = 'Salvando…'; el.className = 'lmsg ok'; }
+  try{
+    await FS.collection('users').doc(E.uid).collection('config').doc(E.kind).set({json:JSON.stringify(d), atualizado:new Date().toISOString()});
+    if(E.kind === 'plano') A.plans[E.uid] = true; else A.trns[E.uid] = true;
+    alog(E.kind === 'plano' ? 'Editou plano' : 'Editou ficha de treino', E.uid);
+    const uid = E.uid; A.ed = null; const self = S.user && uid === S.user.uid, what = E.kind === 'plano' ? 'Plano salvo.' : 'Ficha salva.'; A.msg[uid] = {t:what + ' O cliente já vê a versão nova.', ok:true}; A.selfMsg = self ? what + ' Já aparece no seu diário.' : '';
+    render(); window.scrollTo(0, 0);
+  }catch(e){ edFail('Não consegui salvar. Verifique a internet e tente de novo.'); }
+}
+
+/* ---------- Medidas corporais ---------- */
+const MEDS = [['cintura','Cintura'],['abdomen','Abdômen'],['quadril','Quadril'],['peito','Peito'],['bracoD','Braço direito'],['bracoE','Braço esquerdo'],['coxaD','Coxa direita'],['coxaE','Coxa esquerda'],['pantu','Panturrilha'],['gordura','Gordura corporal']];
+const MED_PRAZO = 14;
+const MED_MENOS = ['cintura','abdomen','quadril','gordura'];
+const medCor = (k, v) => Math.abs(v) < 0.05 || !MED_MENOS.includes(k) ? 'var(--fg)' : v < 0 ? 'var(--ok)' : 'var(--bad)';
+const medUn = k => k === 'gordura' ? '%' : 'cm';
+const fmtM = v => (Math.round(v * 10) / 10).toLocaleString('pt-BR');
+const dCurta = d => parse(d).toLocaleDateString('pt-BR', {day:'numeric', month:'short'}).replace('.', '');
+function medList(k){ return Object.keys(S.days).sort().filter(d => S.days[d].med && +S.days[d].med[k] > 0).map(d => ({d, v:+S.days[d].med[k]})); }
+function medDates(){ return Object.keys(S.days).sort().filter(d => S.days[d].med && Object.keys(S.days[d].med).length); }
+function medKeysWithData(){ return MEDS.filter(([k]) => medList(k).length); }
+function medDelta(v, k){ if(Math.abs(v) < 0.05) return '<span class="num">0 ' + medUn(k) + '</span>'; return `<span class="num">${v < 0 ? '−' : '+'}${fmtM(Math.abs(v))} ${medUn(k)}</span>`; }
+function medDue(){
+  const ds = medDates(); if(!ds.length) return {nunca:true, dias:null};
+  const dias = Math.round((parse(today()) - parse(ds[ds.length - 1])) / DAY_MS);
+  return {nunca:false, dias, ultima:ds[ds.length - 1], vencida:dias >= MED_PRAZO};
+}
+function medidasCard(date){
+  const here = (day(date).med) || {}, due = medDue(), keys = medKeysWithData(), open = S.medOpen || Object.keys(here).length > 0;
+  const aviso = due.nunca ? 'Registre suas medidas para acompanhar a evolução além do peso.'
+    : due.vencida ? `Hora de medir de novo: a última medida foi há ${due.dias} dias.`
+    : `Última medida em ${dCurta(due.ultima)}. Próxima em ${MED_PRAZO - due.dias} dia(s).`;
+  const resumo = keys.map(([k, l]) => { const L = medList(k), f = L[0], u = L[L.length - 1];
+    return `<div class="line"><span>${l}: <b class="num">${fmtM(u.v)} ${medUn(k)}</b></span>${L.length > 1 ? `<span style="color:${medCor(k, u.v - f.v)}">${medDelta(u.v - f.v, k)} desde ${dCurta(f.d)}</span>` : '<span class="sub">primeira medida</span>'}</div>`; }).join('');
+  return `<section class="card" aria-label="Medidas corporais"><details class="medd"${open ? ' open' : ''}><summary>Medidas corporais${due.vencida || due.nunca ? ' <span class="pill s-warn">medir</span>' : ''}</summary>
+    <p class="tip" style="margin:8px 0">${aviso} Meça sempre no mesmo horário, de preferência em jejum, com a fita sem apertar.</p>
+    ${resumo ? `<div class="lines" style="margin-bottom:10px">${resumo}</div>` : ''}
+    <form class="pgrid" id="medform">${MEDS.map(([k, l]) => { const L = medList(k), last = L.length ? L[L.length - 1].v : null;
+      return `<label for="md-${k}">${l} (${medUn(k)})<input id="md-${k}" inputmode="decimal" value="${here[k] != null ? String(here[k]).replace('.', ',') : ''}" placeholder="${last ? 'último: ' + fmtM(last) : ''}" autocomplete="off"></label>`; }).join('')}
+     <button type="submit" class="primary" style="grid-column:1/-1">${Object.keys(here).length ? 'Atualizar medidas deste dia' : 'Salvar medidas deste dia'}</button>
+    </form><p class="lmsg ok" id="medmsg" role="status">${esc(S.medMsg || '')}</p></details></section>`;
+}
+function saveMedidas(date){
+  const med = {}; let bad = '';
+  MEDS.forEach(([k, l]) => { const el = document.getElementById('md-' + k); if(!el) return; const t = (el.value || '').trim(); if(!t) return; const v = numv(t);
+    const ok = k === 'gordura' ? v > 2 && v < 70 : v > 10 && v < 250; if(!ok){ if(!bad) bad = l; return; } med[k] = Math.round(v * 10) / 10; });
+  if(bad){ const m = document.getElementById('medmsg'); if(m){ m.textContent = 'Confira o valor de ' + bad.toLowerCase() + '.'; m.className = 'lmsg'; } return; }
+  const d = S.days[date] || (S.days[date] = {meals:{}});
+  if(Object.keys(med).length) d.med = med; else delete d.med;
+  S.medMsg = Object.keys(med).length ? 'Medidas salvas.' : 'Medidas deste dia apagadas.'; S.medOpen = true;
+  save(date); render(); setTimeout(() => { S.medMsg = ''; }, 4000);
+}
+function lineChart(pts, o){
+  o = o || {}; const W = 340, H = o.h || 150, pl = 36, pr = 14, pt = 16, pb = 22, col = o.color || 'var(--accent)';
+  const vals = pts.map(p => p.v).concat(o.meta ? [o.meta] : []); let mn = Math.min(...vals), mx = Math.max(...vals); const pad = Math.max(0.5, (mx - mn) * 0.15); mn = Math.floor(mn - pad); mx = Math.ceil(mx + pad);
+  const t0 = parse(pts[0].d).getTime(), t1 = Math.max(parse(pts[pts.length - 1].d).getTime(), t0 + 7 * DAY_MS);
+  const X = d => pts.length === 1 ? (pl + W - pr) / 2 : pl + (parse(d).getTime() - t0) / (t1 - t0) * (W - pl - pr), Y = v => pt + (mx - v) / ((mx - mn) || 1) * (H - pt - pb);
+  const ticks = [mn, Math.round((mn + mx) / 2), mx], last = pts[pts.length - 1];
+  return `<svg class="wchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label || 'Gráfico')}">
+    ${ticks.map(v => `<line x1="${pl}" x2="${W - pr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)" stroke-width="1"/><text x="${pl - 6}" y="${(Y(v) + 3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="var(--muted)">${v}</text>`).join('')}
+    ${o.meta ? `<line x1="${pl}" x2="${W - pr}" y1="${Y(o.meta).toFixed(1)}" y2="${Y(o.meta).toFixed(1)}" stroke="var(--ok)" stroke-width="1.5" stroke-dasharray="5 4"/>` : ''}
+    <polyline points="${pts.map(p => X(p.d).toFixed(1) + ',' + Y(p.v).toFixed(1)).join(' ')}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map((p, i) => `<circle cx="${X(p.d).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="${i === pts.length - 1 ? 5 : 3.5}" fill="${col}"/>`).join('')}
+    <text x="${X(last.d).toFixed(1)}" y="${(Y(last.v) - 10).toFixed(1)}" text-anchor="${X(last.d) > W / 2 ? 'end' : 'start'}" font-size="11" font-weight="900" fill="var(--fg)">${fmtM(last.v)}${o.un ? '\u00a0' + o.un : ''}</text>
+    <text x="${pl}" y="${H - 6}" font-size="10" fill="var(--muted)">${dCurta(pts[0].d)}</text>
+    <text x="${W - pr}" y="${H - 6}" text-anchor="end" font-size="10" fill="var(--muted)">${dCurta(ymd(new Date(t1)))}</text></svg>`;
+}
+function medChartCard(){
+  const keys = medKeysWithData(); if(!keys.length) return '';
+  const sel = S.medEx && keys.some(([k]) => k === S.medEx) ? S.medEx : keys[0][0], L = medList(sel), lab = (MEDS.find(m => m[0] === sel) || [])[1];
+  const f = L[0], u = L[L.length - 1];
+  return `<section class="card sum" aria-label="Evolução das medidas"><h2>Evolução das medidas</h2>
+    <label class="sub" for="medsel" style="font-weight:700">Medida</label><select id="medsel" class="admq">${keys.map(([k, l]) => `<option value="${k}"${k === sel ? ' selected' : ''}>${l}</option>`).join('')}</select>
+    ${lineChart(L, {color:'var(--water)', un:medUn(sel), label:lab})}
+    <div class="sub">${L.length > 1 ? `${lab}: ${fmtM(f.v)} → ${fmtM(u.v)} ${medUn(sel)} (${u.v - f.v <= 0 ? '−' : '+'}${fmtM(Math.abs(u.v - f.v))} ${medUn(sel)}) desde ${dCurta(f.d)}.` : 'Registre de novo daqui a duas semanas para ver a evolução.'}</div>
+    <div class="lines" style="margin-top:8px">${keys.map(([k, l]) => { const M = medList(k), a = M[0], b = M[M.length - 1]; return `<div class="line"><span>${l}</span><span>${fmtM(b.v)} ${medUn(k)}${M.length > 1 ? ' · ' + medDelta(b.v - a.v, k) : ''}</span></div>`; }).join('')}</div></section>`;
+}
+
+/* ---------- Relatório mensal (para imprimir ou salvar em PDF) ---------- */
+function relNotaKey(){ return 'checkfit-nota-' + (S.user ? S.user.uid : '') + '-' + S.date.slice(0, 7); }
+function relNota(){ try{ return localStorage.getItem(relNotaKey()) || ''; }catch(e){ return S.relNotaMem || ''; } }
+function relSetNota(v){ S.relNotaMem = v; try{ localStorage.setItem(relNotaKey(), v); }catch(e){} const p = document.getElementById('rel-nota-print'); if(p){ p.textContent = v; p.parentElement.hidden = !v.trim(); } }
+function relView(){
+  const d0 = parse(S.date), y = d0.getFullYear(), mo = d0.getMonth(), n = new Date(y, mo + 1, 0).getDate();
+  const td = today(), all = [...Array(n)].map((_, i) => ymd(new Date(y, mo, i + 1))), dates = all.filter(d => d <= td);
+  const s = stats(dates.length ? dates : all), nome = (S.cli && S.cli.nome) || (S.user && S.user.email) || '', mes = d0.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
+  const P = S.prof || {}, ini = dates[0] || all[0], fim = dates[dates.length - 1] || all[all.length - 1];
+  const reg = s.logged.length, pctPlano = s.mealsTot ? Math.round(s.mealsOk / s.mealsTot * 100) : 0;
+  const pesoMes = weightList().filter(x => x.d >= ini && x.d <= fim), pesoAntes = weightList().filter(x => x.d < ini).pop();
+  const pesoPts = (pesoAntes ? [{d:ini, v:pesoAntes.w}] : []).concat(pesoMes.map(x => ({d:x.d, v:x.w})));
+  // adesão por refeição
+  const porRef = PLAN.map(m => { const c = {ok:0, adj:0, extra:0, skip:0, pend:0}; s.logged.forEach(x => { const mm = x.c.meals.find(z => z.m.id === m.id); if(mm) c[mm.c.status] = (c[mm.c.status] || 0) + 1; }); return {m, c}; });
+  // medidas do mês
+  const medRows = MEDS.map(([k, l]) => { const L = medList(k); if(!L.length) return null; const noMes = L.filter(x => x.d >= ini && x.d <= fim), antes = L.filter(x => x.d < ini).pop();
+    const a = antes || noMes[0], b = noMes.length ? noMes[noMes.length - 1] : null; return {k, l, ini:L[0], a, b}; }).filter(r => r && r.b);
+  // treinos
+  const grp = {}; s.cs.forEach(x => x.c.tr.list.forEach(t => { const k = t.t; grp[k] = grp[k] || {n:(ACTS[k] || ACTS.outro).n, q:0, min:0, k:0}; grp[k].q++; grp[k].min += +t.min || 0; grp[k].k += t.kcal; }));
+  const cargas = S.treino ? exerciciosDaFicha().map(x => { const h = historico(x.s).filter(z => z.date >= ini && z.date <= fim).reverse(); if(!h.length) return null;
+    const mx = z => Math.max(0, ...okSets(z.sets).map(q => numv(q.kg))); const a = mx(h[0]), b = mx(h[h.length - 1]); return b > 0 ? {n:x.n, a, b, q:h.length} : null; }).filter(Boolean) : [];
+  const nota = relNota(), geradoEm = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'});
+  const kgs = v => String(Math.round(v * 10) / 10).replace('.', ',');
+  const stTxt = st => (DAY_STATUS[st] || ['—'])[0];
+  let h = `<section class="card noprint" id="view-rel"><div class="thead"><div><h2>Relatório de ${mes}</h2><div class="sub">Para levar à nutricionista, ao médico ou ao personal.</div></div><button class="ghost" id="rel-back" data-act="relback">Voltar</button></div>
+    <label class="sub" for="rel-nota" style="font-weight:700;display:block;margin-top:10px">Observações para o profissional (opcional)</label>
+    <textarea id="rel-nota" class="relnota" placeholder="Ex.: senti mais fome à noite; dor no joelho na semana 2; viajei de 10 a 13.">${esc(nota)}</textarea>
+    ${relPdfBox()}
+    <p class="tip" style="margin:8px 0 0">${dates.length < n ? 'O mês ainda não terminou: o relatório vai até hoje. ' : ''}Prévia do relatório abaixo. No computador, também dá para <button class="linkbtn" data-act="relprint">imprimir</button>.</p></section>
+  <article class="rep" aria-label="Relatório">
+   <header class="rh"><div><div class="rbrand">CHECKFIT</div><h1>Relatório mensal · ${mes}</h1><div class="rmeta">${esc(nome)}${P.idade ? ' · ' + esc(P.idade) + ' anos' : ''}${P.altura ? ' · ' + esc(P.altura) + ' cm' : ''} · ${dCurta(ini)} a ${dCurta(fim)} · gerado em ${geradoEm}</div>
+    ${PLANINFO && PLANINFO.nutri ? `<div class="rmeta">Plano alimentar: ${esc(PLANINFO.nutri)}${PLANINFO.data ? ' (' + esc(PLANINFO.data) + ')' : ''}</div>` : ''}${S.treino && S.treino.prof ? `<div class="rmeta">Treino: ${esc(S.treino.prof)}${S.treino.objetivo ? ' · ' + esc(S.treino.objetivo) : ''}</div>` : ''}</div></header>
+   <section class="rs"><h2>Resumo</h2><div class="rgrid">
+    <div><b>${reg}</b><span>dias registrados de ${dates.length || n}</span></div>
+    <div><b>${s.plano}</b><span>dias com o plano completo</span></div>
+    <div><b>${s.mealsTot ? pctPlano + '%' : '—'}</b><span>das refeições dentro do plano</span></div>
+    <div><b>${reg ? fmt(s.avg) : '—'}</b><span>kcal/dia em média (meta ≈ ${fmt(REF)})</span></div>
+    <div><b>${s.waterAvg ? fmtL(s.waterAvg) + ' L' : '—'}</b><span>água/dia em média (meta ${fmtL(WATER_GOAL)} L)</span></div>
+    <div><b>${s.waterDays}</b><span>dias com a meta de água</span></div>
+    <div><b>${s.trN}</b><span>treinos no mês</span></div>
+    <div><b>${s.wDelta == null ? '—' : (s.wDelta <= 0 ? '−' : '+') + kgs(Math.abs(s.wDelta)) + ' kg'}</b><span>variação de peso${s.wEnd ? ' (atual ' + kgs(s.wEnd) + ' kg)' : ''}</span></div>
+   </div>${s.deficit > 0 ? `<p class="rnote">Déficit calórico estimado no mês: ${fmt(s.deficit)} kcal (≈ ${kgs(s.deficit / 7700)} kg de gordura), considerando a taxa basal informada × 1,2 mais os treinos.</p>` : ''}</section>
+   ${pesoPts.length ? `<section class="rs"><h2>Peso</h2><div class="rtwo"><div>${lineChart(pesoPts, {color:'#3d6b1f', un:'kg', label:'Peso no mês', meta:P.meta})}</div>
+     <table class="rt"><tr><th>Início</th><td>${kgs(pesoPts[0].v)} kg</td></tr><tr><th>Atual</th><td>${kgs(pesoPts[pesoPts.length - 1].v)} kg</td></tr><tr><th>Variação</th><td>${(pesoPts[pesoPts.length - 1].v - pesoPts[0].v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pesoPts[0].v))} kg</td></tr>${P.meta ? `<tr><th>Meta</th><td>${kgs(P.meta)} kg</td></tr>` : ''}<tr><th>Pesagens</th><td>${pesoMes.length}</td></tr></table></div></section>` : ''}
+   ${medRows.length ? `<section class="rs"><h2>Medidas corporais</h2><table class="rt full"><thead><tr><th>Medida</th><th>Início do mês</th><th>Última</th><th>No mês</th><th>Desde o início</th></tr></thead><tbody>
+     ${medRows.map(r => `<tr><td>${r.l}</td><td>${fmtM(r.a.v)} ${medUn(r.k)} <small>${dCurta(r.a.d)}</small></td><td>${fmtM(r.b.v)} ${medUn(r.k)} <small>${dCurta(r.b.d)}</small></td><td>${r.a.d !== r.b.d ? medDelta(r.b.v - r.a.v, r.k) : '—'}</td><td>${r.ini.d !== r.b.d ? medDelta(r.b.v - r.ini.v, r.k) + ' <small>desde ' + dCurta(r.ini.d) + '</small>' : '—'}</td></tr>`).join('')}</tbody></table></section>` : ''}
+   ${reg ? `<section class="rs"><h2>Alimentação por refeição</h2><table class="rt full"><thead><tr><th>Refeição</th><th>No plano</th><th>Ajustada</th><th>Com extra</th><th>Pulada</th><th>Sem registro</th></tr></thead><tbody>
+     ${porRef.map(({m, c}) => `<tr><td>${esc(m.time ? m.time + ' · ' : '')}${esc(m.name)}</td><td>${c.ok}</td><td>${c.adj}</td><td>${c.extra}</td><td>${c.skip}</td><td>${c.pend}</td></tr>`).join('')}</tbody></table>
+     ${s.top.length ? `<h3>Fora do plano mais registrados</h3><table class="rt full"><tbody>${s.top.map(t => `<tr><td>${esc(t.n)}</td><td>${t.q}×</td><td>${fmt(t.k)} kcal no total</td></tr>`).join('')}</tbody></table>` : ''}
+     <p class="rnote">Extras somaram ${fmt(s.extraK)} kcal no mês. ${s.skipped ? s.skipped + ' refeição(ões) puladas.' : 'Nenhuma refeição pulada.'}</p></section>` : ''}
+   ${Object.keys(grp).length || s.mu.feitos ? `<section class="rs"><h2>Atividade física</h2>
+     ${S.treino ? `<p class="rnote" style="margin-top:0">Musculação: ${s.mu.feitos} treino(s) concluído(s)${s.mu.previstos ? ' de ' + s.mu.previstos + ' previsto(s)' : ''} · ${fmt(s.mu.vol)} kg levantados no total.</p>` : ''}
+     ${Object.keys(grp).length ? `<table class="rt full"><thead><tr><th>Atividade</th><th>Vezes</th><th>Minutos</th><th>Gasto extra</th></tr></thead><tbody>${Object.values(grp).sort((a, b) => b.k - a.k).map(x => `<tr><td>${x.n}</td><td>${x.q}</td><td>${fmt(x.min)}</td><td>${fmt(x.k)} kcal</td></tr>`).join('')}</tbody></table>` : ''}
+     ${cargas.length ? `<h3>Evolução das cargas no mês</h3><table class="rt full"><thead><tr><th>Exercício</th><th>Primeiro treino</th><th>Último treino</th><th>Treinos</th></tr></thead><tbody>${cargas.map(c => `<tr><td>${esc(c.n)}</td><td>${kgs(c.a)} kg</td><td>${kgs(c.b)} kg${c.b > c.a ? ' ▲' : ''}</td><td>${c.q}</td></tr>`).join('')}</tbody></table>` : ''}</section>` : ''}
+   <section class="rs brk"><h2>Dia a dia</h2><table class="rt full dd"><thead><tr><th>Dia</th><th>kcal</th><th>Água</th><th>Treino</th><th>Peso</th><th>Situação</th></tr></thead><tbody>
+     ${s.cs.map(x => { const dd = S.days[x.d] || {}, ms = sessoes(x.d).filter(z => z.fim).length; return `<tr class="${x.c.status}"><td>${parse(x.d).toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit'})}</td><td>${x.c.status === 'vazio' ? '—' : fmt(x.c.kcal)}</td><td>${x.c.water ? fmtL(x.c.water) + ' L' : '—'}</td><td>${x.c.tr.min || ms ? (x.c.tr.min ? fmt(x.c.tr.min) + ' min' : '') + (ms ? (x.c.tr.min ? ' · ' : '') + 'musc.' : '') : '—'}</td><td>${+dd.peso > 0 ? kgs(+dd.peso) : '—'}</td><td>${stTxt(x.c.status)}</td></tr>`; }).join('')}</tbody></table></section>
+   <section class="rs"${nota.trim() ? '' : ' hidden'}><h2>Observações do paciente</h2><p class="rnota" id="rel-nota-print">${esc(nota)}</p></section>
+   <footer class="rf">Dados registrados pelo próprio usuário no app CHECKFIT. Calorias aproximadas (tabela TACO e rótulos). Este relatório não substitui avaliação profissional.</footer>
+  </article>`;
+  return h;
+}
+
+/* ---------- Gerador de PDF próprio (desenha o relatório em páginas A4 e monta o arquivo) ---------- */
+const PDFC = {fg:'#17200f', muted:'#5b6552', line:'#dfe3d6', accent:'#3d6b1f', ok:'#2f7d32', bad:'#b3261e', water:'#1f6fb2', fire:'#c2410c', surface:'#ffffff', warn:'#a15c00'};
+const PG = {W:1190, H:1684, M:70};
+const PFONT = '-apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif';
+function pcol(c){ if(!c || c === 'none') return null; const m = String(c).match(/var\(--([a-z-]+)\)/); return m ? (PDFC[m[1]] || PDFC.fg) : c; }
+function PdfDoc(){ this.pages = []; this.newPage(); }
+PdfDoc.prototype.newPage = function(){
+  const c = document.createElement('canvas'); c.width = PG.W; c.height = PG.H;
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, PG.W, PG.H); x.textBaseline = 'alphabetic';
+  this.c = c; this.x = x; this.y = PG.M; this.pages.push(c);
+  this.font(17); x.fillStyle = PDFC.muted; x.textAlign = 'right'; x.fillText('CHECKFIT · página ' + this.pages.length, PG.W - PG.M, PG.H - 36); x.textAlign = 'left';
+};
+PdfDoc.prototype.font = function(size, bold){ this.x.font = (bold ? '700 ' : '400 ') + size + 'px ' + PFONT; };
+PdfDoc.prototype.room = function(){ return PG.H - PG.M - 30 - this.y; };
+PdfDoc.prototype.ensure = function(h){ if(h > this.room()){ this.newPage(); return true; } return false; };
+PdfDoc.prototype.wrap = function(t, maxW, size, bold){
+  this.font(size, bold); const out = [];
+  String(t).split('\n').forEach(par => {
+    const words = par.split(/\s+/).filter(Boolean); let line = '';
+    if(!words.length){ out.push(''); return; }
+    words.forEach(wd => { const tryL = line ? line + ' ' + wd : wd;
+      if(this.x.measureText(tryL).width <= maxW || !line){ line = tryL; while(this.x.measureText(line).width > maxW && line.length > 1){ let cut = line.length - 1; while(cut > 1 && this.x.measureText(line.slice(0, cut)).width > maxW) cut--; out.push(line.slice(0, cut)); line = line.slice(cut); } }
+      else { out.push(line); line = wd; } });
+    if(line) out.push(line);
+  });
+  return out;
+};
+PdfDoc.prototype.para = function(t, o){
+  o = o || {}; const size = o.size || 20, lh = Math.round(size * 1.38), x0 = o.x != null ? o.x : PG.M, w = o.w || (PG.W - 2 * PG.M);
+  const lines = this.wrap(t, w - (o.bar ? 18 : 0), size, o.bold);
+  lines.forEach(l => { this.ensure(lh); this.font(size, o.bold); this.x.fillStyle = o.color || PDFC.fg; this.x.fillText(l, x0 + (o.bar ? 18 : 0), this.y + size);
+    if(o.bar){ this.x.fillStyle = PDFC.accent; this.x.fillRect(x0, this.y + 2, 5, lh); } this.y += lh; });
+  this.y += o.after != null ? o.after : 6;
+};
+PdfDoc.prototype.hline = function(color, wpx){ this.x.fillStyle = color || PDFC.line; this.x.fillRect(PG.M, this.y, PG.W - 2 * PG.M, wpx || 2); this.y += (wpx || 2); };
+PdfDoc.prototype.h2 = function(t){ this.ensure(110); this.y += 8; this.font(23, true); this.x.fillStyle = PDFC.accent; this.x.fillText(t.toUpperCase(), PG.M, this.y + 23); this.y += 38; };
+PdfDoc.prototype.h3 = function(t){ this.ensure(80); this.y += 6; this.font(20, true); this.x.fillStyle = PDFC.fg; this.x.fillText(t, PG.M, this.y + 20); this.y += 32; };
+PdfDoc.prototype.tiles = function(items){
+  const cols = 4, gap = 12, w = (PG.W - 2 * PG.M - gap * (cols - 1)) / cols;
+  for(let i = 0; i < items.length; i += cols){
+    const row = items.slice(i, i + cols), lab = row.map(it => this.wrap(it[1], w - 24, 16));
+    const h = 22 + 34 + Math.max(...lab.map(l => l.length)) * 21 + 12; this.ensure(h);
+    row.forEach((it, j) => { const x0 = PG.M + j * (w + gap), x = this.x;
+      x.strokeStyle = PDFC.line; x.lineWidth = 2; pRound(x, x0, this.y, w, h, 14); x.stroke();
+      this.font(30, true); x.fillStyle = PDFC.fg; x.fillText(it[0], x0 + 12, this.y + 44);
+      this.font(16); x.fillStyle = PDFC.muted; lab[j].forEach((l, k) => x.fillText(l, x0 + 12, this.y + 70 + k * 21)); });
+    this.y += h + gap;
+  }
+};
+function pRound(x, a, b, w, h, r){ x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); }
+PdfDoc.prototype.table = function(tbl, x0, w, startY){
+  const rowsEl = [...tbl.querySelectorAll('tr')], head = rowsEl.filter(r => r.parentElement.tagName === 'THEAD');
+  const cellTxt = c => c.textContent.replace(/\s+/g, ' ').trim();
+  const rows = rowsEl.map(r => ({el:r, head:head.includes(r), cells:[...r.children].map(c => ({t:cellTxt(c), th:c.tagName === 'TH'}))}));
+  const nc = Math.max(...rows.map(r => r.cells.length)), size = 18, pad = 10, lh = 23;
+  const nat = Array(nc).fill(40);
+  rows.forEach(r => r.cells.forEach((c, i) => { this.font(size, c.th || r.head); nat[i] = Math.max(nat[i], Math.min(this.x.measureText(c.t).width + 2 * pad + 10, w * 0.6)); }));
+  const sum = nat.reduce((a, b) => a + b, 0); const cw = nat.map(v => sum > w ? v * w / sum : v * (w / sum));
+  if(startY != null) this.y = startY;
+  const drawRow = r => {
+    const lines = r.cells.map((c, i) => this.wrap(c.t, cw[i] - 2 * pad, size, c.th || r.head)), h = Math.max(1, ...lines.map(l => l.length)) * lh + 12;
+    if(this.ensure(h) && !r.head && head.length && x0 === PG.M) head.forEach(hr => drawRow(rows.find(z => z.el === hr)));
+    let cx = x0; const st = r.el.className || '';
+    r.cells.forEach((c, i) => { this.x.fillStyle = r.head || c.th ? PDFC.muted : (i === r.cells.length - 1 && st === 'plano') ? PDFC.ok : (i === r.cells.length - 1 && st === 'fora') ? PDFC.bad : PDFC.fg;
+      this.font(size, (r.head || c.th) && r.head); lines[i].forEach((l, k) => this.x.fillText(l, cx + pad, this.y + 6 + size + k * lh)); cx += cw[i]; });
+    this.y += h; this.x.fillStyle = PDFC.line; this.x.fillRect(x0, this.y - 1, w, 1.5);
+  };
+  rows.forEach(drawRow); this.y += 10;
+};
+PdfDoc.prototype.svg = function(svg, x0, w, startY){
+  const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : {width:340, height:150};
+  const s = w / vb.width, h = vb.height * s; if(startY == null) this.ensure(h + 10); else this.y = startY;
+  const x = this.x, oy = this.y, A = (el, k, d) => { const v = el.getAttribute(k); return v == null ? d : v; };
+  [...svg.children].forEach(el => {
+    const t = el.tagName.toLowerCase();
+    if(t === 'line'){ x.beginPath(); x.strokeStyle = pcol(A(el, 'stroke', '#ddd')); x.lineWidth = +A(el, 'stroke-width', 1) * s; const da = A(el, 'stroke-dasharray', ''); x.setLineDash(da ? da.split(/[\s,]+/).map(v => +v * s) : []);
+      x.moveTo(x0 + +A(el, 'x1', 0) * s, oy + +A(el, 'y1', 0) * s); x.lineTo(x0 + +A(el, 'x2', 0) * s, oy + +A(el, 'y2', 0) * s); x.stroke(); x.setLineDash([]); }
+    else if(t === 'polyline'){ const pts = A(el, 'points', '').trim().split(/\s+/).map(p => p.split(',').map(Number)); x.beginPath(); x.strokeStyle = pcol(A(el, 'stroke', PDFC.accent)); x.lineWidth = +A(el, 'stroke-width', 2) * s; x.lineJoin = 'round'; x.lineCap = 'round';
+      pts.forEach(([a, b], i) => { const px = x0 + a * s, py = oy + b * s; if(i) x.lineTo(px, py); else x.moveTo(px, py); }); x.stroke(); }
+    else if(t === 'circle'){ x.beginPath(); x.fillStyle = pcol(A(el, 'fill', PDFC.accent)); x.arc(x0 + +A(el, 'cx', 0) * s, oy + +A(el, 'cy', 0) * s, +A(el, 'r', 3) * s, 0, Math.PI * 2); x.fill(); }
+    else if(t === 'text'){ const fw = A(el, 'font-weight', '400'); x.font = (fw === '700' || fw === '900' ? '700 ' : '400 ') + (+A(el, 'font-size', 10) * s) + 'px ' + PFONT; x.fillStyle = pcol(A(el, 'fill', PDFC.fg));
+      const an = A(el, 'text-anchor', 'start'); x.textAlign = an === 'end' ? 'right' : an === 'middle' ? 'center' : 'left'; x.fillText(el.textContent, x0 + +A(el, 'x', 0) * s, oy + +A(el, 'y', 0) * s); x.textAlign = 'left'; }
+  });
+  return oy + h;
+};
+function pdfRender(rep){
+  const D = new PdfDoc(), full = PG.W - 2 * PG.M;
+  const hd = rep.querySelector('.rh');
+  if(hd){ D.font(18, true); D.x.fillStyle = PDFC.accent; D.x.fillText('CHECKFIT', PG.M, D.y + 18); D.y += 30;
+    const h1 = hd.querySelector('h1'); if(h1) D.para(h1.textContent.trim(), {size:34, bold:true, after:4});
+    hd.querySelectorAll('.rmeta').forEach(m => D.para(m.textContent.replace(/\s+/g, ' ').trim(), {size:18, color:PDFC.muted, after:0}));
+    D.y += 10; D.hline(PDFC.accent, 3); D.y += 16; }
+  rep.querySelectorAll(':scope > section.rs').forEach(sec => {
+    if(sec.hidden) return;
+    [...sec.children].forEach(el => {
+      const t = el.tagName;
+      if(t === 'H2') D.h2(el.textContent.trim());
+      else if(t === 'H3') D.h3(el.textContent.trim());
+      else if(el.classList.contains('rgrid')) D.tiles([...el.children].map(c => [((c.querySelector('b') || {}).textContent || '').trim(), ((c.querySelector('span') || {}).textContent || '').replace(/\s+/g, ' ').trim()]));
+      else if(el.classList.contains('rtwo')){ const sv = el.querySelector('svg'), tb = el.querySelector('table'), lw = Math.round(full * 0.6);
+        const vb = sv && sv.viewBox.baseVal, hh = sv ? vb.height * lw / vb.width : 0; D.ensure(Math.max(hh, 200) + 10); const y0 = D.y;
+        const yA = sv ? D.svg(sv, PG.M, lw, y0) : y0; let yB = y0; if(tb){ D.table(tb, PG.M + lw + 24, full - lw - 24, y0 + 10); yB = D.y; } D.y = Math.max(yA, yB) + 10; }
+      else if(t === 'TABLE') D.table(el, PG.M, full);
+      else if(t === 'svg' || t === 'SVG') { D.svg(el, PG.M, full); D.y += 10; }
+      else if(t === 'P') D.para(el.textContent.replace(/[ \t]+/g, ' ').trim(), {size:18, color:el.classList.contains('rnota') ? PDFC.fg : PDFC.muted, bar:el.classList.contains('rnota')});
+    });
+    D.y += 12;
+  });
+  const ft = rep.querySelector('.rf'); if(ft){ D.ensure(70); D.hline(); D.y += 10; D.para(ft.textContent.trim(), {size:16, color:PDFC.muted}); }
+  return D.pages;
+}
+function pdfBlob(pages){
+  const enc = new TextEncoder(), parts = [], offs = []; let len = 0;
+  const push = b => { if(typeof b === 'string') b = enc.encode(b); parts.push(b); len += b.length; };
+  const obj = (i, fn) => { offs[i] = len; push(i + ' 0 obj\n'); fn(); push('\nendobj\n'); };
+  const imgs = pages.map(c => { const b64 = c.toDataURL('image/jpeg', 0.86).split(',')[1], bin = atob(b64), u = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return {data:u, w:c.width, h:c.height}; });
+  push('%PDF-1.4\n'); push(new Uint8Array([37, 226, 227, 207, 211, 10]));
+  obj(1, () => push('<< /Type /Catalog /Pages 2 0 R >>'));
+  obj(2, () => push('<< /Type /Pages /Kids [' + imgs.map((_, i) => (3 + 3 * i) + ' 0 R').join(' ') + '] /Count ' + imgs.length + ' >>'));
+  imgs.forEach((im, i) => { const p = 3 + 3 * i, cs = 'q 595.28 0 0 841.89 0 0 cm /Im0 Do Q';
+    obj(p, () => push('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 ' + (p + 2) + ' 0 R >> >> /Contents ' + (p + 1) + ' 0 R >>'));
+    obj(p + 1, () => push('<< /Length ' + cs.length + ' >>\nstream\n' + cs + '\nendstream'));
+    obj(p + 2, () => { push('<< /Type /XObject /Subtype /Image /Width ' + im.w + ' /Height ' + im.h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + im.data.length + ' >>\nstream\n'); push(im.data); push('\nendstream'); }); });
+  const total = 3 + 3 * imgs.length, xref = len;
+  push('xref\n0 ' + total + '\n0000000000 65535 f \n' + offs.slice(1).map(o => String(o).padStart(10, '0') + ' 00000 n \n').join(''));
+  push('trailer\n<< /Size ' + total + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF\n');
+  return new Blob(parts, {type:'application/pdf'});
+}
+async function relPdf(){
+  const rep = document.querySelector('.rep'), btn = document.getElementById('rel-pdf'); if(!rep) return;
+  const t = document.getElementById('rel-nota'); if(t) relSetNota(t.value);
+  if(btn){ btn.disabled = true; btn.textContent = 'Gerando o PDF…'; }
+  await new Promise(r => setTimeout(r, 60));
+  try{
+    const blob = pdfBlob(pdfRender(rep)), d0 = parse(S.date);
+    const nome = ('Relatorio-CHECKFIT-' + d0.toLocaleDateString('pt-BR', {month:'long'}) + '-' + d0.getFullYear() + '.pdf').normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if(S.relPdf && S.relPdf.url) try{ URL.revokeObjectURL(S.relPdf.url); }catch(e){}
+    let file = null; try{ file = new File([blob], nome, {type:'application/pdf'}); }catch(e){}
+    S.relPdf = {url:URL.createObjectURL(blob), nome, file, kb:Math.round(blob.size / 1024), share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))};
+  }catch(e){ S.relPdf = {erro:true}; }
+  render();
+}
+async function relShare(){
+  const R = S.relPdf; if(!R || !R.file) return;
+  try{ await navigator.share({files:[R.file], title:'Relatório CHECKFIT'}); }catch(e){}
+}
+function relPdfBox(){
+  const R = S.relPdf;
+  if(!R) return `<button class="primary" id="rel-pdf" data-act="relpdf" style="width:100%;margin-top:10px">Gerar PDF</button>`;
+  if(R.erro) return `<button class="primary" id="rel-pdf" data-act="relpdf" style="width:100%;margin-top:10px">Tentar de novo</button><p class="lmsg">Não consegui gerar o PDF neste aparelho. Use o botão Imprimir abaixo.</p>`;
+  return `<div class="relok"><b>PDF pronto</b> <span class="sub">(${R.kb} KB)</span>
+    <div class="row" style="margin-top:8px">${R.share ? `<button class="primary" id="rel-share" data-act="relshare">Salvar ou enviar</button>` : ''}<a class="${R.share ? 'ghost' : 'primary'} relbtnl" id="rel-dl" href="${R.url}" download="${esc(R.nome)}" target="_blank" rel="noopener">${R.share ? 'Abrir PDF' : 'Baixar PDF'}</a>
+    <button class="ghost" id="rel-pdf" data-act="relpdf">Gerar de novo</button></div>
+    <p class="tip" style="margin:8px 0 0">${R.share ? 'Em "Salvar ou enviar", escolha <b>Salvar em Arquivos</b>, WhatsApp ou e-mail.' : 'Se abrir o PDF numa nova tela, toque no ícone de compartilhar para salvar ou enviar.'} Se mudar as observações, toque em "Gerar de novo".</p></div>`;
 }
 
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
@@ -1178,11 +1811,12 @@ function render(){
   if(S.mode==='legal'){ head(false); mount('legal-'+S.legal, ban+legalView(S.legal)); return; }
   if(!S.cliReady||!S.subReady){ head(false); mount('loading', ban+'<div class="card" id="view-loading"><p class="sub" style="margin:0">Abrindo…</p></div>'); return; }
   if(!S.cli || !S.cli.termos || S.cli.termos.versao!==TERMS_V){ head(false); mount('onboard', ban+onboardView()); return; }
-  if(S.mode==='admin' && S.isAdmin){ head(false); startAdmin(); mount('admin', ban+adminView()); return; }
+  if(S.mode==='admin' && S.isAdmin){ head(false); startAdmin(); if(A.ed) mount('aded', ban+edView()); else mount('admin', ban+adminView()); return; }
   const acc=access(); if(!acc.ok){ head(false); mount('block', ban+blockView(acc)); return; }
   WATER_GOAL = (+S.prof.agua>0) ? +S.prof.agua : ((PLANINFO&&+PLANINFO.agua)||2000);
   if(!S.ready||!S.planReady){ app.innerHTML=ban+`<div class="card"><p class="sub" style="margin:0">Abrindo seu diário…</p></div>`; return; }
   if(S.mode==='treino'){ head(false); mount('treino', ban+treinoView()); return; }
+  if(S.mode==='rel'){ head(false); mount('rel', ban+relView()); return; }
   if(!PLAN.length){ document.getElementById('tabs').hidden=true; document.getElementById('navbar').hidden=true; if(!document.getElementById('planimport')) app.innerHTML=ban+planView(); S.lastView='plan'; return; }
   const active=document.activeElement && document.activeElement.id;
   S.lastView='app';
@@ -1203,6 +1837,7 @@ function viewDay(){
   PLAN.forEach(m=>{h+=mealCard(date,m)});
   h+=trainCard(date,c);
   h+=weightCard(date);
+  h+=medidasCard(date);
   h+=daySummary(date,c);
   h+=profileCard();
   h+=`<p class="note">Calorias aproximadas (tabela TACO e rótulos). Quantidades conforme o plano${PLANINFO&&PLANINFO.data?' de '+esc(PLANINFO.data):''}.</p>`;
@@ -1405,7 +2040,7 @@ function viewWeek(){
    <div class="legend"><span><i style="background:var(--water)"></i>Bateu a meta</span><span><i style="background:var(--water-soft);border:1px solid var(--water)"></i>Abaixo da meta</span></div></section>`;
   h+=`<section class="card sum"><h2>Resumo da semana</h2><p style="margin:0">${summaryText(s,'nesta semana')}</p>
    <div class="daylist">${s.cs.map(x=>{const d=parse(x.d);return `<button class="dayrow" id="wr-${x.d}" data-act="goday" data-d="${x.d}"><span class="dn">${d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric'})}</span><span style="display:flex;gap:8px;align-items:center"><span class="num sub">${x.c.status==='vazio'?'':fmt(x.c.kcal)+' kcal · '+fmtL(x.c.water)+' L'}</span>${pill(DAY_STATUS,x.c.status)}</span></button>`}).join('')}</div></section>`;
-  return h+trainList(s,false)+progressoCard()+weightChart()+topList(s);
+  return h+trainList(s,false)+progressoCard()+weightChart()+medChartCard()+topList(s);
 }
 function viewMonth(){
   const d=parse(S.date), y=d.getFullYear(), mo=d.getMonth(), n=new Date(y,mo+1,0).getDate();
@@ -1413,12 +2048,12 @@ function viewMonth(){
   const lead=(new Date(y,mo,1).getDay()+6)%7, td=today();
   let cal=['seg','ter','qua','qui','sex','sáb','dom'].map(w=>`<div class="h">${w}</div>`).join('')+'<div></div>'.repeat(lead);
   s.cs.forEach(x=>{const st=x.c.status;cal+=`<button id="cal-${x.d}" data-act="goday" data-d="${x.d}" class="${x.d===td?'today':''}" style="background:${softOf(st)};color:${inkOf(st)}" aria-label="Dia ${parse(x.d).getDate()}: ${DAY_STATUS[st][0]}"><span class="num">${parse(x.d).getDate()}</span>${st!=='vazio'?`<small class="num">${fmt(x.c.kcal)}</small>`:''}${x.c.waterOk?'<span class="drop"></span>':''}</button>`});
-  let h=tiles(s,n);
+  let h=`<section class="card relbtn"><div><b>Relatório do mês</b><div class="sub">Resumo em PDF para a nutricionista ou o médico.</div></div><button class="primary" id="rel-open" data-act="rel">Gerar</button></section>`+tiles(s,n);
   h+=`<section class="card sum" aria-label="Calendário"><h2>Calendário do mês</h2><div class="cal">${cal}</div>
    <div class="legend"><span><i style="background:var(--ok-soft);border:1px solid var(--ok)"></i>Fiz tudo</span><span><i style="background:var(--bad-soft);border:1px solid var(--bad)"></i>Não fiz tudo</span><span><i style="background:var(--surface);border:1px solid var(--line)"></i>Sem registro</span><span><i style="background:var(--water);border-radius:50%"></i>Meta de água</span></div></section>`;
   h+=`<section class="card sum"><h2>Resumo do mês</h2><p style="margin:0">${summaryText(s,'neste mês')}</p>
    <div class="lines"><div class="line"><span>Dias com tudo feito</span><span class="num">${s.plano}</span></div><div class="line"><span>Dias fora do plano</span><span class="num">${s.fora}</span></div><div class="line"><span>Dias com meta de água</span><span class="num">${s.waterDays}</span></div><div class="line"><span>Total consumido no mês</span><span class="num">${fmt(s.cs.reduce((a,x)=>a+x.c.kcal,0))} kcal</span></div><div class="line"><span>Melhor sequência no plano</span><span class="num">${s.best} dia(s)</span></div></div></section>`;
-  return h+weightChart()+progressoCard()+trainList(s,true)+topList(s);
+  return h+weightChart()+medChartCard()+progressoCard()+trainList(s,true)+topList(s);
 }
 
 /* ---------- Ações ---------- */
@@ -1449,6 +2084,15 @@ document.addEventListener('click',e=>{
   if(a==='delno'){S.confirmDel=false; render(); return;}
   if(a==='delyes'){deleteAccount(); return;}
   if(a==='afilter'){A.f=b.dataset.v; render(); return;}
+  if(a==='rel'){S.mode='rel'; S.relPdf=null; render(); window.scrollTo(0,0); return;}
+  if(a==='relback'){S.mode='app'; render(); window.scrollTo(0,0); return;}
+  if(a==='relpdf'){ relPdf(); return;}
+  if(a==='relshare'){ relShare(); return;}
+  if(a==='relprint'){ const t=document.getElementById('rel-nota'); if(t) relSetNota(t.value); try{ window.print(); }catch(err){} return;}
+  if(a==='aed'){A.selfMsg=''; if(b.dataset.u) edOpen(b.dataset.u,b.dataset.k); return;}
+  if(a==='ed'){edOp(b.dataset.op,b.dataset.p,b.dataset.i); return;}
+  if(a==='edsave'){edSave(); return;}
+  if(a==='edclose'){edClose(); return;}
   if(['a30','avit','ablock','aplan','aplansave','atrn','atrnsave'].includes(a)){adminAct(a,b.dataset.u); return;}
   if(a==='glogin'){googleLogin();return;}
   if(a==='signup'){emailSignup();return;}
@@ -1511,6 +2155,13 @@ document.addEventListener('input',e=>{ if(e.target.id==='admq'){ A.q=e.target.va
 document.addEventListener('change',e=>{ const t=e.target; if(t.id==='progsel'){ S.progEx=t.value; render(); } else if(t.dataset && t.dataset.fill && t.files && t.files[0]){ const r=new FileReader(), dest=t.dataset.fill; r.onload=()=>{ const ta=document.getElementById(dest); if(ta) ta.value=String(r.result||'').trim(); }; r.readAsText(t.files[0]); t.value=''; } });
 document.addEventListener('click',e=>{ const s=e.target.closest('details.prof > summary'); if(s && S.mode==='admin') A.cfgOpen=!s.parentElement.open; });
 document.addEventListener('change',e=>{ if(e.target.id==='impf' && e.target.files && e.target.files[0]){ const r=new FileReader(); r.onload=()=>importData(String(r.result||'')); r.readAsText(e.target.files[0]); e.target.value=''; } });
+document.addEventListener('input',e=>{ const t=e.target; if(t.dataset && t.dataset.ep && t.type!=='checkbox' && t.tagName!=='SELECT') edApply(t); });
+document.addEventListener('change',e=>{ const t=e.target; if(t.dataset && t.dataset.ep && (t.type==='checkbox' || t.tagName==='SELECT')){ edApply(t); if(t.dataset.ep.endsWith('.id') || t.tagName==='SELECT') render(); } });
+document.addEventListener('click',e=>{ const s=e.target.closest('details.edd > summary'); if(s && A.ed){ const k=s.parentElement.dataset.ok; A.ed.open[k]=!s.parentElement.open; } });
+document.addEventListener('submit',e=>{ if(e.target.id==='medform'){ e.preventDefault(); saveMedidas(S.date); } });
+document.addEventListener('change',e=>{ if(e.target.id==='medsel'){ S.medEx=e.target.value; render(); } });
+document.addEventListener('input',e=>{ if(e.target.id==='rel-nota') relSetNota(e.target.value); });
+document.addEventListener('click',e=>{ const s=e.target.closest('details.medd > summary'); if(s) S.medOpen=!s.parentElement.open; });
 fillFoods();
 init();
 })();
