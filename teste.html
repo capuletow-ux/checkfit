@@ -382,6 +382,16 @@ details.pm ul{margin:6px 0 0;padding-left:18px}
 .pmo{margin-top:6px}
 .evseg{margin-bottom:12px}
 body.hasnav .toast{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+
+.chip.mine{border-style:dashed}.chip.mine::after{content:" · seu";font-weight:600;opacity:.75}
+.ajb{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.ajrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ajit{border-top:1px dashed var(--line);padding-top:8px;display:flex;flex-direction:column;gap:6px}
+.ajmine{font-size:13.5px;background:var(--accent-soft);border-radius:10px;padding:6px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ajmine .x,.ajit .x{margin-left:auto}
+.ajit>.eb.add{align-self:flex-start;border:0;background:none;padding:0 2px;min-height:30px}
+.ajform{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.ajform.col{flex-direction:column;align-items:stretch;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}
+.ajin{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;min-height:42px;color:var(--fg);font-family:inherit;font-size:16px;flex:1;min-width:0}
 </style>
 </head>
 <body>
@@ -445,7 +455,7 @@ function validPlan(p){return p&&Array.isArray(p.meals)&&p.meals.length&&p.meals.
 function setPlan(p){PLANINFO=p||null; PLAN=p?p.meals:[]; REF=computeRef(); const n=document.getElementById('nutri'); if(n) n.textContent=p&&p.nutri?'Plano de '+p.nutri:'Checklist diário de saúde';}
 
 /* ---------- Estado ---------- */
-const S = {view:'dia', tab:'inicio', date:ymd(new Date()), days:{}, custom:[], db:null, local:false, timers:{}, ready:false, prof:{...PROF_DEF}, tf:{t:'musculacao',min:60,i:1}, profOpen:false};
+const S = {view:'dia', tab:'inicio', aj:ajVazio(), date:ymd(new Date()), days:{}, custom:[], db:null, local:false, timers:{}, ready:false, prof:{...PROF_DEF}, tf:{t:'musculacao',min:60,i:1}, profOpen:false};
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function parse(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
 function addDays(s,n){const d=parse(s);d.setDate(d.getDate()+n);return ymd(d)}
@@ -540,8 +550,9 @@ function bindUser(user){
     S.ready=true; render();
   },()=>{ banner('Não consegui ler seus dados. Verifique a internet e recarregue.'); }));
   S.unsubs.push(S.db.doc('config/alimentos').onSnapshot(s=>{ S.custom=(s.exists && s.data().lista)||[]; fillFoods(); },()=>{}));
-  S.unsubs.push(S.db.doc('config/treino').onSnapshot(s=>{ S.trnOrig = s.exists ? (s.data().origem||'prof') : null; let t=null; if(s.exists){ try{ t=JSON.parse(s.data().json||'null'); }catch(e){} } S.treino=validTreino(t)?t:null; if(S.ready) render(); },()=>{}));
-  S.unsubs.push(S.db.doc('config/plano').onSnapshot(s=>{ S.planOrig = s.exists ? (s.data().origem||'prof') : null; let p=null; if(s.exists){ try{ p=JSON.parse(s.data().json||'null'); }catch(e){} } setPlan(validPlan(p)?p:null); S.planReady=true; if(PLAN.length){ const pi=document.getElementById('planimport'); if(pi) pi.remove(); } render(); },()=>{ S.planReady=true; render(); }));
+  S.unsubs.push(S.db.doc('config/treino').onSnapshot(s=>{ S.trnOrig = s.exists ? (s.data().origem||'prof') : null; let t=null; if(s.exists){ try{ t=JSON.parse(s.data().json||'null'); }catch(e){} } S.treinoBase=validTreino(t)?t:null; aplicaAjustes(); if(S.ready) render(); },()=>{}));
+  S.unsubs.push(S.db.doc('config/plano').onSnapshot(s=>{ S.planOrig = s.exists ? (s.data().origem||'prof') : null; let p=null; if(s.exists){ try{ p=JSON.parse(s.data().json||'null'); }catch(e){} } S.planBase=validPlan(p)?p:null; aplicaAjustes(); S.planReady=true; if(PLAN.length){ const pi=document.getElementById('planimport'); if(pi) pi.remove(); } render(); },()=>{ S.planReady=true; render(); }));
+  S.unsubs.push(S.db.doc('config/ajustes').onSnapshot(s=>{ let a=null; if(s.exists){ try{ a=JSON.parse(s.data().json||'null'); }catch(e){} } S.aj=ajNorm(a); aplicaAjustes(); if(S.ready) render(); },()=>{}));
   S.unsubs.push(S.db.doc('config/perfil').onSnapshot(s=>{ S.prof={...PROF_DEF,...(s.exists?s.data():{})}; if(S.ready) render(); },()=>{}));
   render();
 }
@@ -815,8 +826,10 @@ function stopAdmin(){ A.ed = null; A.unsubs.forEach(u => { try{ u(); }catch(e){}
 function loadPlans(){
   Object.keys(A.clis).forEach(uid => {
     if(uid in A.plans) return; A.plans[uid] = null;
-    FS.collection('users').doc(uid).collection('config').doc('plano').get().then(s => { A.plans[uid] = s.exists; render(); }).catch(() => { A.plans[uid] = false; });
-    FS.collection('users').doc(uid).collection('config').doc('treino').get().then(s => { A.trns[uid] = s.exists; render(); }).catch(() => { A.trns[uid] = false; });
+    A.pj = A.pj || {}; A.tj = A.tj || {}; A.ajs = A.ajs || {};
+    FS.collection('users').doc(uid).collection('config').doc('plano').get().then(s => { A.plans[uid] = s.exists; try{ A.pj[uid] = s.exists ? JSON.parse(s.data().json || 'null') : null; }catch(e){} render(); }).catch(() => { A.plans[uid] = false; });
+    FS.collection('users').doc(uid).collection('config').doc('ajustes').get().then(s => { try{ A.ajs[uid] = s.exists ? JSON.parse(s.data().json || 'null') : null; }catch(e){} render(); }).catch(() => {});
+    FS.collection('users').doc(uid).collection('config').doc('treino').get().then(s => { A.trns[uid] = s.exists; try{ A.tj[uid] = s.exists ? JSON.parse(s.data().json || 'null') : null; }catch(e){} render(); }).catch(() => { A.trns[uid] = false; });
   });
 }
 function rowsAdmin(){
@@ -865,6 +878,7 @@ function clientCard(r){
     <div class="line"><span>Assinatura</span><span class="num">${until}</span></div>
     <div class="line"><span>Plano alimentar</span><span>${plan == null ? '…' : plan ? 'Carregado' : 'Falta carregar'}</span></div>
     <div class="line"><span>Ficha de treino</span><span>${A.trns[uid] == null ? '…' : A.trns[uid] ? 'Carregada' : 'Não enviada'}</span></div>
+    ${(() => { const L = A.ajs && A.ajs[uid] ? ajLinhas(A.ajs[uid], (A.pj || {})[uid], (A.tj || {})[uid]) : []; return L.length ? `<details class="pm"><summary class="line" style="display:flex;justify-content:space-between"><span>Ajustes do cliente</span><span>${L.length} · ver</span></summary><ul style="margin:6px 0 0;padding-left:18px">${L.map(l => `<li>${esc(l)}</li>`).join('')}</ul></details>` : ''; })()}
     <div class="line"><span>WhatsApp</span><span class="num">${zap ? `<a href="https://wa.me/${zap.length <= 11 ? '55' + zap : zap}" target="_blank" rel="noopener">${esc(c.whatsapp)}</a>` : '—'}</span></div>
     <div class="line"><span>Cadastro</span><span class="num">${dBR(toDate(c.criadoEm))}${c.termos && c.termos.versao === TERMS_V ? ' · termos aceitos' : ' · termos pendentes'}</span></div>
    </div>
@@ -1353,6 +1367,7 @@ function relView(){
      ${S.treino ? `<p class="rnote" style="margin-top:0">Musculação: ${s.mu.feitos} treino(s) concluído(s)${s.mu.previstos ? ' de ' + s.mu.previstos + ' previsto(s)' : ''} · ${fmt(s.mu.vol)} kg levantados no total.</p>` : ''}
      ${Object.keys(grp).length ? `<table class="rt full"><thead><tr><th>Atividade</th><th>Vezes</th><th>Minutos</th><th>Gasto extra</th></tr></thead><tbody>${Object.values(grp).sort((a, b) => b.k - a.k).map(x => `<tr><td>${x.n}</td><td>${x.q}</td><td>${fmt(x.min)}</td><td>${fmt(x.k)} kcal</td></tr>`).join('')}</tbody></table>` : ''}
      ${cargas.length ? `<h3>Evolução das cargas no mês</h3><table class="rt full"><thead><tr><th>Exercício</th><th>Primeiro treino</th><th>Último treino</th><th>Treinos</th></tr></thead><tbody>${cargas.map(c => `<tr><td>${esc(c.n)}</td><td>${kgs(c.a)} kg</td><td>${kgs(c.b)} kg${c.b > c.a ? ' ▲' : ''}</td><td>${c.q}</td></tr>`).join('')}</tbody></table>` : ''}</section>` : ''}
+   ${(() => { const L = ajLinhas(S.aj, S.planBase, S.treinoBase); return L.length ? `<section class="rs"><h2>Ajustes feitos pelo paciente</h2><p class="rnote" style="margin:0 0 6px">Mudanças que o paciente fez por conta própria sobre o plano e a ficha originais.</p><table class="rt full"><tbody>${L.map(l => `<tr><td>${esc(l)}</td></tr>`).join('')}</tbody></table></section>` : ''; })()}
    <section class="rs brk"><h2>Dia a dia</h2><table class="rt full dd"><thead><tr><th>Dia</th><th>kcal</th><th>Água</th><th>Treino</th><th>Peso</th><th>Situação</th></tr></thead><tbody>
      ${s.cs.map(x => { const dd = S.days[x.d] || {}, ms = sessoes(x.d).filter(z => z.fim).length; return `<tr class="${x.c.status}"><td>${parse(x.d).toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit'})}</td><td>${x.c.status === 'vazio' ? '—' : fmt(x.c.kcal)}</td><td>${x.c.water ? fmtL(x.c.water) + ' L' : '—'}</td><td>${x.c.tr.min || ms ? (x.c.tr.min ? fmt(x.c.tr.min) + ' min' : '') + (ms ? (x.c.tr.min ? ' · ' : '') + 'musc.' : '') : '—'}</td><td>${+dd.peso > 0 ? kgs(+dd.peso) : '—'}</td><td>${stTxt(x.c.status)}</td></tr>`; }).join('')}</tbody></table></section>
    <section class="rs"${nota.trim() ? '' : ' hidden'}><h2>Observações do paciente</h2><p class="rnota" id="rel-nota-print">${esc(nota)}</p></section>
@@ -1634,18 +1649,18 @@ function planosView(){
   // plano alimentar
   h += `<section class="card"><div class="thead"><div><h2>Plano alimentar</h2><div class="sub">${PLANINFO && PLANINFO.nutri ? esc(PLANINFO.nutri) : (pOrig === 'proprio' ? 'Montado por você' : '')}${PLANINFO && PLANINFO.data ? ' · ' + esc(PLANINFO.data) : ''}</div></div>${origemPill(pOrig)}</div>
     <div class="lines" style="margin-top:8px">${PLAN.map(m => `<details class="pm"><summary><span class="num" style="font-weight:800">${esc(m.time || '')}</span> <b>${esc(m.name)}</b><span class="sub"> · ${m.options.length > 1 ? m.options.length + ' opções · ' : ''}${fmt(mealKcal(m))} kcal</span></summary>
-      ${m.options.map(o => `<div class="pmo">${m.options.length > 1 ? `<div class="sub" style="font-weight:800">${esc(o.label)}</div>` : ''}<ul>${o.items.map(i => `<li>${esc((i.ch[0] || [])[0] || '')}${(i.ch[0] || [])[1] ? ' · ' + esc(i.ch[0][1]) : ''}${i.opt ? ' <span class="sub">(opcional)</span>' : ''}${i.ch.length > 1 ? `<div class="sub">ou: ${i.ch.slice(1).map(c => esc(c[0])).join(', ')}</div>` : ''}</li>`).join('')}</ul></div>`).join('')}
+      ${m.options.map(o => `<div class="pmo">${m.options.length > 1 ? `<div class="sub" style="font-weight:800">${esc(o.label)}${o.aj ? ' <span class="pill s-ok">seu ajuste</span>' : ''}</div>` : ''}<ul>${o.items.map(i => `<li>${esc((i.ch[0] || [])[0] || '')}${(i.ch[0] || [])[1] ? ' · ' + esc(i.ch[0][1]) : ''}${i.opt ? ' <span class="sub">(opcional)</span>' : ''}${i.ch.length > 1 ? `<div class="sub">ou: ${i.ch.slice(1).map(c => esc(c[0])).join(', ')}</div>` : ''}</li>`).join('')}</ul></div>`).join('')}
       ${m.tip ? `<p class="tip" style="margin:6px 0 0">${esc(m.tip)}</p>` : ''}</details>`).join('')}</div>
-    <div class="row" style="margin-top:10px">${pOrig === 'proprio' ? `<button class="primary" id="pl-edit" data-act="ced" data-k="plano">Editar meu plano</button>` : suporteBtn('Olá! Minha nutricionista atualizou meu plano alimentar. Segue o plano novo para carregar no CheckFit. Sou ' + nome + '.', 'Enviar plano atualizado')}</div>
-    ${pOrig !== 'proprio' ? `<p class="tip" style="margin:8px 0 0">Este plano foi prescrito pela sua nutricionista, por isso só ela pode alterá-lo. Quando ela fizer um ajuste, toque em <b>Enviar plano atualizado</b> e mande o plano novo (PDF ou foto) pelo WhatsApp do CheckFit. Nós atualizamos aqui no app para você.</p>` : `<p class="tip" style="margin:8px 0 0">Plano montado por você. O CheckFit não prescreve dieta: para um plano individual, procure um(a) nutricionista.</p>`}
+    <div class="row" style="margin-top:10px">${pOrig === 'proprio' ? `<button class="primary" id="pl-edit" data-act="ced" data-k="plano">Editar meu plano</button>` : `<button class="primary" id="aj-plano" data-act="majustes" data-k="plano">Meus ajustes</button>` + suporteBtn('Olá! Minha nutricionista atualizou meu plano alimentar. Segue o plano novo para carregar no CheckFit. Sou ' + nome + '.', 'Enviar plano atualizado')}</div>
+    ${pOrig !== 'proprio' ? `<p class="tip" style="margin:8px 0 0">Este plano foi prescrito pela sua nutricionista. Em <b>Meus ajustes</b> você pode incluir trocas de alimentos, opções próprias (como um YoPro no dia corrido) e mudar horários, sem alterar o original. Quando a nutricionista mudar o plano, toque em <b>Enviar plano atualizado</b> e mande o plano novo (PDF ou foto) pelo WhatsApp do CheckFit. Nós atualizamos aqui no app para você.</p>` : `<p class="tip" style="margin:8px 0 0">Plano montado por você. O CheckFit não prescreve dieta: para um plano individual, procure um(a) nutricionista.</p>`}
   </section>`;
   // treino
   if(S.treino){
     const t = S.treino;
     h += `<section class="card"><div class="thead"><div><h2>Ficha de treino</h2><div class="sub">${esc(t.prof || (tOrig === 'proprio' ? 'Montada por você' : ''))}${t.objetivo ? ' · ' + esc(t.objetivo) : ''}</div></div>${origemPill(tOrig)}</div>
-      <div class="lines" style="margin-top:8px">${t.fichas.map(f => `<details class="pm"><summary><b>${esc(f.id)} · ${esc(f.nome || '')}</b><span class="sub"> · ${f.ex.length} exercício(s)</span></summary><ul>${f.ex.map(e => `<li>${esc(e.n)}${Array.isArray(e.s) ? ' <span class="sub">' + esc(specTxt(e.s)) + '</span>' : ''}</li>`).join('')}</ul></details>`).join('')}</div>
-      <div class="row" style="margin-top:10px">${tOrig === 'proprio' ? `<button class="primary" id="tr-edit" data-act="ced" data-k="treino">Editar minha ficha</button>` : suporteBtn('Olá! Meu professor/personal atualizou minha ficha de treino. Segue a ficha nova para carregar no CheckFit. Sou ' + nome + '.', 'Enviar ficha atualizada')}</div>
-      ${tOrig !== 'proprio' ? '<p class="tip" style="margin:8px 0 0">Esta ficha foi montada pelo seu professor ou personal, por isso só ele pode alterá-la. Quando ele fizer um ajuste, toque em <b>Enviar ficha atualizada</b> e mande a ficha nova pelo WhatsApp do CheckFit. Nós atualizamos aqui no app para você.</p>' : ''}</section>`;
+      <div class="lines" style="margin-top:8px">${t.fichas.map(f => `<details class="pm"><summary><b>${esc(f.id)} · ${esc(f.nome || '')}</b><span class="sub"> · ${f.ex.length} exercício(s)</span></summary><ul>${f.ex.map(e => `<li>${esc(e.n)}${e.aj ? ' <span class="pill s-ok">seu ajuste</span>' : ''}${Array.isArray(e.s) ? ' <span class="sub">' + esc(specTxt(e.s)) + '</span>' : ''}</li>`).join('')}</ul></details>`).join('')}</div>
+      <div class="row" style="margin-top:10px">${tOrig === 'proprio' ? `<button class="primary" id="tr-edit" data-act="ced" data-k="treino">Editar minha ficha</button>` : `<button class="primary" id="aj-treino" data-act="majustes" data-k="treino">Meus ajustes</button>` + suporteBtn('Olá! Meu professor/personal atualizou minha ficha de treino. Segue a ficha nova para carregar no CheckFit. Sou ' + nome + '.', 'Enviar ficha atualizada')}</div>
+      ${tOrig !== 'proprio' ? '<p class="tip" style="margin:8px 0 0">Esta ficha foi montada pelo seu professor ou personal. Em <b>Meus ajustes</b> você pode trocar um exercício por outro ou acrescentar exercícios, sem alterar o original. Quando o professor mudar a ficha, toque em <b>Enviar ficha atualizada</b> e mande a ficha nova pelo WhatsApp do CheckFit. Nós atualizamos aqui no app para você.</p>' : ''}</section>`;
   } else {
     h += `<section class="card"><h2>Ficha de treino</h2><p class="sub" style="margin:4px 0 10px">Você ainda não tem ficha de treino.</p>
       <div class="choice">
@@ -1689,6 +1704,122 @@ function perfilView(){
 function evolView(){
   const seg = `<div class="tabs evseg" role="group" aria-label="Período"><button data-act="tab" data-v="semana" aria-pressed="${S.view === 'semana'}">Semana</button><button data-act="tab" data-v="mes" aria-pressed="${S.view === 'mes'}">Mês</button></div>`;
   return seg + (S.view === 'mes' ? viewMonth() : viewWeek());
+}
+
+/* ---------- Meus ajustes: pequenas mudanças do cliente por cima do plano e da ficha do profissional ---------- */
+function ajVazio(){ return {plano:{trocas:{}, opcoes:{}, horario:{}}, treino:{troca:{}, extra:{}}}; }
+function ajNorm(a){ const v = ajVazio(); a = a || {}; ['trocas', 'opcoes', 'horario'].forEach(k => { v.plano[k] = (a.plano && a.plano[k]) || {}; }); ['troca', 'extra'].forEach(k => { v.treino[k] = (a.treino && a.treino[k]) || {}; }); return v; }
+function mergePlan(base, aj){
+  if(!base) return null; const p = JSON.parse(JSON.stringify(base)), A_ = (aj && aj.plano) || {};
+  p.meals.forEach(m => {
+    const h = (A_.horario || {})[m.id]; if(h) m.time = h;
+    const tr = (A_.trocas || {})[m.id] || {};
+    m.options.forEach((o, oi) => o.items.forEach(it => { (tr[oi + '.' + it.k] || []).forEach(c => it.ch.push([c[0], c[1] || '', +c[2] || 0, 1])); }));
+    ((A_.opcoes || {})[m.id] || []).forEach(o => { if(o && Array.isArray(o.items) && o.items.length) m.options.push({label:o.label || 'Minha opção', aj:1, items:o.items.map(i => ({k:i.k, opt:i.opt, ch:i.ch.map(c => [c[0], c[1] || '', +c[2] || 0, 1])}))}); });
+  });
+  p.meals.sort((a, b) => String(a.time || '').localeCompare(String(b.time || '')));
+  return p;
+}
+function mergeTreino(base, aj){
+  if(!base) return null; const t = JSON.parse(JSON.stringify(base)), A_ = (aj && aj.treino) || {};
+  t.fichas.forEach(f => {
+    const tr = (A_.troca || {})[f.id] || {};
+    f.ex = f.ex.map(e => { const n = tr[slug(e.n)]; return n && n.n ? {...e, n:n.n, t:n.t || e.t, _orig:e.n, aj:1} : e; });
+    ((A_.extra || {})[f.id] || []).forEach(e => { if(e && e.n) f.ex.push({n:e.n, t:e.t || 'multi', s:Array.isArray(e.s) ? e.s : [[3, '10–12']], aj:1}); });
+  });
+  return t;
+}
+function aplicaAjustes(){
+  if(S.planBase !== undefined) setPlan(S.planBase && validPlan(S.planBase) ? mergePlan(S.planBase, S.aj) : null);
+  if(S.treinoBase !== undefined){ const t = S.treinoBase && validTreino(S.treinoBase) ? mergeTreino(S.treinoBase, S.aj) : null; S.treino = t && validTreino(t) ? t : (S.treinoBase && validTreino(S.treinoBase) ? S.treinoBase : null); }
+}
+async function ajSalvar(msg){
+  try{ await S.db.doc('config/ajustes').set({json:JSON.stringify(S.aj), atualizado:new Date().toISOString()}); if(msg) toast(msg); }
+  catch(e){ toast('Não consegui salvar o ajuste. Verifique a internet.'); }
+}
+function ajLinhas(aj, base, tbase){
+  aj = ajNorm(aj); const L = [], mealNome = id => { const m = base && base.meals.find(x => x.id === id); return m ? m.name : 'Refeição'; };
+  Object.entries(aj.plano.horario).forEach(([id, h]) => { const m = base && base.meals.find(x => x.id === id); L.push(`${mealNome(id)}: horário ${m && m.time ? m.time + ' → ' : ''}${h}`); });
+  Object.entries(aj.plano.trocas).forEach(([id, o]) => Object.entries(o).forEach(([key, arr]) => { const [oi, k] = key.split('.'), m = base && base.meals.find(x => x.id === id), it = m && m.options[+oi] && m.options[+oi].items.find(i => i.k === k), orig = it ? it.ch[0][0] : 'item';
+    (arr || []).forEach(c => L.push(`${mealNome(id)}: troca para "${orig}" → ${c[0]}${c[1] ? ' (' + c[1] + ')' : ''}, ${fmt(+c[2] || 0)} kcal`)); }));
+  Object.entries(aj.plano.opcoes).forEach(([id, arr]) => (arr || []).forEach(o => L.push(`${mealNome(id)}: nova opção "${o.label}" — ${o.items.map(i => i.ch[0][0] + (i.ch[0][1] ? ' ' + i.ch[0][1] : '')).join(', ')} (${fmt(o.items.reduce((a, i) => a + (+i.ch[0][2] || 0), 0))} kcal)`)));
+  Object.entries(aj.treino.troca).forEach(([fid, o]) => Object.entries(o).forEach(([sl, n]) => { const f = tbase && tbase.fichas.find(x => x.id === fid), e = f && f.ex.find(x => slug(x.n) === sl); L.push(`Treino ${fid}: "${e ? e.n : sl}" trocado por "${n.n}"`); }));
+  Object.entries(aj.treino.extra).forEach(([fid, arr]) => (arr || []).forEach(e => L.push(`Treino ${fid}: exercício adicionado "${e.n}"${Array.isArray(e.s) ? ' ' + specTxt(e.s) : ''}`)));
+  return L;
+}
+
+/* tela de ajustes */
+function ajView(){
+  const k = S.ajKind || 'plano', D = S.ajd || {};
+  let h = `<section class="card" id="view-aj"><div class="thead"><div><h2>${k === 'plano' ? 'Ajustes no meu plano' : 'Ajustes na minha ficha'}</h2><div class="sub">Pequenas mudanças suas, por cima do ${k === 'plano' ? 'plano da nutricionista' : 'treino do professor'}.</div></div><button class="ghost" id="aj-back" data-act="ajback">Voltar</button></div>
+   <p class="tip" style="margin:8px 0 0">${k === 'plano' ? 'O plano original continua igual. Seus ajustes aparecem marcados com <b>seu ajuste</b> e saem no relatório do mês, para a nutricionista ver.' : 'A ficha original continua igual. Seus ajustes aparecem marcados e saem no relatório do mês, para o professor ver.'}</p></section>`;
+  if(k === 'plano'){
+    const base = S.planBase; if(!base) return h;
+    base.meals.forEach(m => {
+      const aj = S.aj.plano, open = S.ajOpen === m.id, hora = aj.horario[m.id] || '', minhas = aj.opcoes[m.id] || [], trs = aj.trocas[m.id] || {};
+      const nAj = (hora ? 1 : 0) + minhas.length + Object.values(trs).reduce((a, x) => a + (x || []).length, 0);
+      h += `<section class="card"><details class="pm"${open ? ' open' : ''} data-aj="${m.id}"><summary><span class="num" style="font-weight:800">${esc(hora || m.time || '')}</span> <b>${esc(m.name)}</b>${nAj ? ` <span class="pill s-ok">${nAj} ajuste(s)</span>` : ''}</summary>
+       <div class="ajb">
+        <div class="ajrow"><label for="ajh-${m.id}" class="sub" style="font-weight:700">Horário</label><input id="ajh-${m.id}" type="time" value="${esc(hora || m.time || '')}" class="ajin" style="max-width:130px"><button class="ghost eb" data-act="ajhora" data-m="${m.id}">Salvar</button>${hora ? `<button class="ghost eb" data-act="ajhora" data-m="${m.id}" data-clear="1">Voltar ao original (${esc(m.time || '')})</button>` : ''}</div>
+        <div class="sub" style="font-weight:800;margin-top:6px">Minhas opções para esta refeição</div>
+        ${minhas.map((o, i) => `<div class="ajmine"><b>${esc(o.label)}</b> — ${o.items.map(x => esc(x.ch[0][0])).join(', ')} · ${fmt(o.items.reduce((a, x) => a + (+x.ch[0][2] || 0), 0))} kcal <button class="x" data-act="ajdelopc" data-m="${m.id}" data-i="${i}" aria-label="Apagar opção">✕</button></div>`).join('')}
+        ${D.opc === m.id ? ajOpcForm(m.id) : `<button class="ghost eb add" data-act="ajnovaopc" data-m="${m.id}">+ nova opção (ex.: YoPro no dia corrido)</button>`}
+        <div class="sub" style="font-weight:800;margin-top:10px">Trocas nos itens</div>
+        ${m.options.map((o, oi) => `${m.options.length > 1 ? `<div class="sub" style="margin-top:6px">${esc(o.label)}</div>` : ''}${o.items.map(it => { const key = oi + '.' + it.k, mine = trs[key] || [], fid = `${m.id}-${oi}-${it.k}`;
+          return `<div class="ajit"><div><b>${esc(it.ch[0][0])}</b> <span class="sub">${esc(it.ch[0][1] || '')}</span>${it.ch.length > 1 ? `<div class="sub">trocas do plano: ${it.ch.slice(1).map(c => esc(c[0])).join(', ')}</div>` : ''}
+            ${mine.map((c, ci) => `<div class="ajmine">seu ajuste: <b>${esc(c[0])}</b> ${esc(c[1] || '')} · ${fmt(+c[2] || 0)} kcal <button class="x" data-act="ajdeltroca" data-m="${m.id}" data-key="${key}" data-i="${ci}" aria-label="Apagar troca">✕</button></div>`).join('')}</div>
+            ${D.troca === fid ? `<div class="ajform"><input id="ajtn" list="foods" placeholder="Troca (ex.: Tapioca)" class="ajin" autocomplete="off"><input id="ajtq" placeholder="Qtd" class="ajin" style="max-width:90px" autocomplete="off"><input id="ajtk" inputmode="numeric" placeholder="kcal" class="ajin" style="max-width:76px"><button class="primary eb" data-act="ajaddtroca" data-m="${m.id}" data-key="${key}">Salvar</button><button class="ghost eb" data-act="ajcancel">Cancelar</button></div>`
+              : `<button class="ghost eb add" data-act="ajnovatroca" data-v="${fid}">+ troca</button>`}</div>`; }).join('')}`).join('')}
+       </div></details></section>`;
+    });
+  } else {
+    const base = S.treinoBase; if(!base) return h; const aj = S.aj.treino;
+    base.fichas.forEach(f => {
+      const tr = aj.troca[f.id] || {}, ex = aj.extra[f.id] || [], open = S.ajOpen === 'f' + f.id, nAj = Object.keys(tr).length + ex.length;
+      h += `<section class="card"><details class="pm"${open ? ' open' : ''} data-aj="f${f.id}"><summary><b>${esc(f.id)} · ${esc(f.nome || '')}</b>${nAj ? ` <span class="pill s-ok">${nAj} ajuste(s)</span>` : ''}</summary><div class="ajb">
+        ${f.ex.map(e => { const sl = slug(e.n), t = tr[sl], fid = f.id + '-' + sl;
+          return `<div class="ajit"><div>${t ? `<s class="sub">${esc(e.n)}</s> → <b>${esc(t.n)}</b> <span class="pill s-ok">seu ajuste</span>` : `<b>${esc(e.n)}</b>`}</div>
+            ${D.ex === fid ? `<div class="ajform"><input id="ajen" placeholder="Novo exercício" class="ajin" autocomplete="off" value="${esc(t ? t.n : '')}"><button class="primary eb" data-act="ajtrocaex" data-f="${f.id}" data-s="${sl}">Salvar</button><button class="ghost eb" data-act="ajcancel">Cancelar</button></div>`
+              : `<div class="row" style="gap:6px">${t ? `<button class="ghost eb" data-act="ajdesfazex" data-f="${f.id}" data-s="${sl}">Desfazer troca</button>` : `<button class="ghost eb" data-act="ajnovoex" data-v="${fid}">Trocar exercício</button>`}</div>`}</div>`; }).join('')}
+        ${ex.map((e, i) => `<div class="ajmine">adicionado: <b>${esc(e.n)}</b> ${Array.isArray(e.s) ? esc(specTxt(e.s)) : ''} <button class="x" data-act="ajdelex" data-f="${f.id}" data-i="${i}" aria-label="Apagar exercício">✕</button></div>`).join('')}
+        ${D.add === f.id ? `<div class="ajform"><input id="ajan" placeholder="Exercício" class="ajin" autocomplete="off"><input id="ajas" placeholder="3x10–12" class="ajin" style="max-width:110px" autocomplete="off"><select id="ajat" class="ajin" style="max-width:150px">${TIPO_EX.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select><button class="primary eb" data-act="ajaddex" data-f="${f.id}">Salvar</button><button class="ghost eb" data-act="ajcancel">Cancelar</button></div>`
+          : `<button class="ghost eb add" data-act="ajnovoadd" data-f="${f.id}">+ adicionar exercício</button>`}
+      </div></details></section>`;
+    });
+  }
+  return h;
+}
+function ajOpcForm(mid){
+  const n = (S.ajd && S.ajd.n) || 2;
+  return `<div class="ajform col"><input id="ajol" placeholder="Nome da opção (ex.: YoPro, dia corrido)" class="ajin" autocomplete="off">
+    ${[...Array(n)].map((_, i) => `<div class="ajform"><input id="ajon${i}" list="foods" placeholder="${i ? 'Outro item (opcional)' : 'Alimento (ex.: YoPro)'}" class="ajin" autocomplete="off"><input id="ajoq${i}" placeholder="Qtd" class="ajin" style="max-width:90px" autocomplete="off"><input id="ajok${i}" inputmode="numeric" placeholder="kcal" class="ajin" style="max-width:76px"></div>`).join('')}
+    <div class="row"><button class="ghost eb add" data-act="ajmaisitem">+ item</button><span class="sp"></span><button class="primary eb" data-act="ajaddopc" data-m="${mid}">Salvar opção</button><button class="ghost eb" data-act="ajcancel">Cancelar</button></div></div>`;
+}
+const ajVal = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+function ajKcalAuto(nomeId, kId){ const n = ajVal(nomeId).toLowerCase(), k = document.getElementById(kId); if(!k || k.value) return; const f = [...S.custom.map(x => [x.n, x.kcal]), ...FOODS].find(x => String(x[0]).toLowerCase() === n); if(f) k.value = f[1]; }
+function ajAct(a, b){
+  const aj = S.aj, d = b.dataset; let msg = '';
+  if(a === 'ajback'){ S.mode = 'app'; S.ajd = null; render(); window.scrollTo(0, 0); return; }
+  if(a === 'ajcancel'){ S.ajd = null; render(); return; }
+  if(a === 'ajnovatroca'){ S.ajd = {troca:d.v}; render(); setTimeout(() => { const e = document.getElementById('ajtn'); if(e) e.focus(); }, 50); return; }
+  if(a === 'ajnovaopc'){ S.ajd = {opc:d.m, n:2}; render(); setTimeout(() => { const e = document.getElementById('ajol'); if(e) e.focus(); }, 50); return; }
+  if(a === 'ajmaisitem'){ const keep = {}; document.querySelectorAll('.ajform input').forEach(i => { keep[i.id] = i.value; }); S.ajd.n = (S.ajd.n || 2) + 1; render(); Object.entries(keep).forEach(([id, v]) => { const e = document.getElementById(id); if(e) e.value = v; }); return; }
+  if(a === 'ajnovoex'){ S.ajd = {ex:d.v}; render(); setTimeout(() => { const e = document.getElementById('ajen'); if(e) e.focus(); }, 50); return; }
+  if(a === 'ajnovoadd'){ S.ajd = {add:d.f}; render(); setTimeout(() => { const e = document.getElementById('ajan'); if(e) e.focus(); }, 50); return; }
+  if(a === 'ajhora'){ if(d.clear) delete aj.plano.horario[d.m]; else { const v = ajVal('ajh-' + d.m); if(!/^\d{2}:\d{2}$/.test(v)){ toast('Informe o horário.'); return; } const m = S.planBase.meals.find(x => x.id === d.m); if(m && m.time === v) delete aj.plano.horario[d.m]; else aj.plano.horario[d.m] = v; } msg = 'Horário salvo.'; S.ajOpen = d.m; }
+  if(a === 'ajaddtroca'){ ajKcalAuto('ajtn', 'ajtk'); const n = ajVal('ajtn'), k = numv(ajVal('ajtk')); if(!n){ toast('Escreva o alimento da troca.'); return; }
+    const o = aj.plano.trocas[d.m] = aj.plano.trocas[d.m] || {}; (o[d.key] = o[d.key] || []).push([n, ajVal('ajtq'), Math.round(k)]); S.ajd = null; msg = 'Troca adicionada.'; S.ajOpen = d.m; }
+  if(a === 'ajdeltroca'){ const o = aj.plano.trocas[d.m] || {}; (o[d.key] || []).splice(+d.i, 1); if(o[d.key] && !o[d.key].length) delete o[d.key]; if(!Object.keys(o).length) delete aj.plano.trocas[d.m]; msg = 'Troca removida.'; S.ajOpen = d.m; }
+  if(a === 'ajaddopc'){ const label = ajVal('ajol'), items = [];
+    for(let i = 0; i < ((S.ajd && S.ajd.n) || 2); i++){ ajKcalAuto('ajon' + i, 'ajok' + i); const n = ajVal('ajon' + i); if(n) items.push({k:'a' + edKey(), ch:[[n, ajVal('ajoq' + i), Math.round(numv(ajVal('ajok' + i)))]]}); }
+    if(!items.length){ toast('Escreva pelo menos um alimento.'); return; }
+    (aj.plano.opcoes[d.m] = aj.plano.opcoes[d.m] || []).push({label:label || items[0].ch[0][0], items}); S.ajd = null; msg = 'Opção adicionada.'; S.ajOpen = d.m; }
+  if(a === 'ajdelopc'){ (aj.plano.opcoes[d.m] || []).splice(+d.i, 1); if(!(aj.plano.opcoes[d.m] || []).length) delete aj.plano.opcoes[d.m]; msg = 'Opção removida.'; S.ajOpen = d.m; }
+  if(a === 'ajtrocaex'){ const n = ajVal('ajen'); if(!n){ toast('Escreva o novo exercício.'); return; } (aj.treino.troca[d.f] = aj.treino.troca[d.f] || {})[d.s] = {n}; S.ajd = null; msg = 'Exercício trocado.'; S.ajOpen = 'f' + d.f; }
+  if(a === 'ajdesfazex'){ const o = aj.treino.troca[d.f] || {}; delete o[d.s]; if(!Object.keys(o).length) delete aj.treino.troca[d.f]; msg = 'Troca desfeita.'; S.ajOpen = 'f' + d.f; }
+  if(a === 'ajaddex'){ const n = ajVal('ajan'); if(!n){ toast('Escreva o exercício.'); return; } (aj.treino.extra[d.f] = aj.treino.extra[d.f] || []).push({n, t:ajVal('ajat') || 'multi', s:specParse(ajVal('ajas')) || [[3, '10–12']]}); S.ajd = null; msg = 'Exercício adicionado.'; S.ajOpen = 'f' + d.f; }
+  if(a === 'ajdelex'){ (aj.treino.extra[d.f] || []).splice(+d.i, 1); if(!(aj.treino.extra[d.f] || []).length) delete aj.treino.extra[d.f]; msg = 'Exercício removido.'; S.ajOpen = 'f' + d.f; }
+  aplicaAjustes(); render(); ajSalvar(msg);
 }
 
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
@@ -2039,6 +2170,7 @@ function render(){
   WATER_GOAL = (+S.prof.agua>0) ? +S.prof.agua : ((PLANINFO&&+PLANINFO.agua)||2000);
   if(!S.ready||!S.planReady){ app.innerHTML=ban+`<div class="card"><p class="sub" style="margin:0">Abrindo seu diário…</p></div>`; return; }
   if(S.mode==='ed' && A.ed){ head(false); mount('ed', ban+edView()); return; }
+  if(S.mode==='aj'){ head(false); mount('aj-'+(S.ajKind||'plano'), ban+ajView()); return; }
   if(S.mode==='treino'){ head(false); mount('treino', ban+treinoView()); return; }
   if(S.mode==='rel'){ head(false); mount('rel', ban+relView()); return; }
   if(!PLAN.length){ document.getElementById('tabs').hidden=true; document.getElementById('navbar').hidden=true; const ta=document.getElementById('impt'); if(!(ta && ta.value) || S.lastView!=='plan') app.innerHTML=ban+caminhoView(); S.lastView='plan'; return; }
@@ -2157,7 +2289,7 @@ function mealCard(date,m){
   const r=rec(date,m.id,false), calc=mealCalc(m,r), oi=(r&&r.opt)||0, opt=m.options[oi];
   let h=`<section class="card meal" id="meal-${m.id}" aria-label="${m.name}">
    <div class="mhead"><div class="mtime num">${m.time}</div><div class="mname">${m.name}<small>${pill(MEAL_STATUS,calc.status)}</small></div><div class="mk num">${fmt(calc.kcal)} kcal</div></div>`;
-  if(m.options.length>1) h+=`<div class="opts" role="group" aria-label="Opções">${m.options.map((o,i)=>`<button class="chip" id="opt-${m.id}-${i}" data-act="opt" data-m="${m.id}" data-o="${i}" aria-pressed="${i===oi}">${o.label}</button>`).join('')}</div>`;
+  if(m.options.length>1) h+=`<div class="opts" role="group" aria-label="Opções">${m.options.map((o,i)=>`<button class="chip${o.aj?' mine':''}" id="opt-${m.id}-${i}" data-act="opt" data-m="${m.id}" data-o="${i}" aria-pressed="${i===oi}">${o.label}</button>`).join('')}</div>`;
   h+=`<div class="items">`;
   opt.items.forEach(it=>{
     const ir=itemRec(r,oi,it.k), ch=it.ch[ir.c||0]||it.ch[0], mult=ir.m||1;
@@ -2165,7 +2297,7 @@ function mealCard(date,m){
     h+=`<div class="item">
       <button class="check" id="chk-${id}" data-act="check" data-m="${m.id}" data-k="${it.k}" aria-pressed="${!!ir.on}" aria-label="Comi ${esc(ch[0])}">${CHECK}</button>
       <div class="iname"><b>${esc(ch[0])}</b><span class="q">${esc(ch[1])}</span>
-      ${it.ch.length>1?`<div class="choices" role="group" aria-label="Trocar por">${it.ch.map((x,i)=>`<button class="chip" id="ch-${id}-${i}" data-act="choice" data-m="${m.id}" data-k="${it.k}" data-c="${i}" aria-pressed="${i===(ir.c||0)}">${esc(x[0])}</button>`).join('')}</div>`:''}</div>
+      ${it.ch.length>1?`<div class="choices" role="group" aria-label="Trocar por">${it.ch.map((x,i)=>`<button class="chip${x[3]?' mine':''}" id="ch-${id}-${i}" data-act="choice" data-m="${m.id}" data-k="${it.k}" data-c="${i}" aria-pressed="${i===(ir.c||0)}">${esc(x[0])}</button>`).join('')}</div>`:''}</div>
       <div class="right"><div class="step"><button id="dn-${id}" data-act="mult" data-m="${m.id}" data-k="${it.k}" data-d="-0.5" aria-label="Menos">−</button><span class="num">${String(mult).replace('.',',')}×</span><button id="up-${id}" data-act="mult" data-m="${m.id}" data-k="${it.k}" data-d="0.5" aria-label="Mais">+</button></div><span class="ik num">${ir.on?fmt(ch[2]*mult):fmt(ch[2]*mult)} kcal</span></div>
     </div>`;
   });
@@ -2324,6 +2456,8 @@ document.addEventListener('click',e=>{
   if(a==='import'){const t=document.getElementById('impt'); importData(t?t.value:''); return;}
   if(a==='tab'){S.view=b.dataset.v; if(S.view!=='dia') S.evolV=S.view; render();}
   if(a==='btab'){setTab(b.dataset.v); return;}
+  if(a==='majustes'){S.mode='aj'; S.ajKind=b.dataset.k; S.ajOpen=null; S.ajd=null; render(); window.scrollTo(0,0); return;}
+  if(/^aj[a-z]/.test(a)){ajAct(a,b); return;}
   if(a==='plus'){S.plus=true; render(); return;}
   if(a==='plusclose'){S.plus=false; render(); return;}
   if(a==='plusw'){addWater(today(), +b.dataset.ml); toast('Água registrada: +'+b.dataset.ml+' ml'); return;}
@@ -2392,7 +2526,7 @@ document.addEventListener('click',e=>{ const s=e.target.closest('details.edd > s
 document.addEventListener('submit',e=>{ if(e.target.id==='medform'){ e.preventDefault(); saveMedidas(S.date); } });
 document.addEventListener('change',e=>{ if(e.target.id==='medsel'){ S.medEx=e.target.value; render(); } });
 document.addEventListener('input',e=>{ if(e.target.id==='rel-nota') relSetNota(e.target.value); });
-document.addEventListener('click',e=>{ const s=e.target.closest('details.medd > summary'); if(s) S.medOpen=!s.parentElement.open; });
+document.addEventListener('click',e=>{ const s=e.target.closest('details.medd > summary'); if(s) S.medOpen=!s.parentElement.open; const q=e.target.closest('details[data-aj] > summary'); if(q) S.ajOpen=q.parentElement.open?null:q.parentElement.dataset.aj; });
 fillFoods();
 init();
 })();
