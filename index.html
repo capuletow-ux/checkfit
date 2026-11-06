@@ -348,6 +348,50 @@ details.medd summary{cursor:pointer;font-weight:900;min-height:32px;display:flex
  .rs h2{break-after:avoid}
  tr{break-inside:avoid}
 }
+
+/* menu inferior e Fase 1 */
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:space-around;align-items:flex-end;gap:2px;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.06)}
+.bnav[hidden]{display:none}
+.bn{flex:1;max-width:96px;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);font-size:11px;font-weight:700;min-height:48px;padding:4px 0}
+.bn svg{width:24px;height:24px}
+.bn.on{color:var(--accent)}
+.bn.plus{flex:0 0 auto;width:58px;height:58px;max-width:none;border-radius:50%;background:var(--btn);color:var(--btn-ink);margin-top:-24px;box-shadow:0 6px 18px rgba(34,197,94,.35);justify-content:center}
+.bn.plus svg{width:28px;height:28px}
+body.hasnav .wrap{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+.home .hello{font-family:var(--display);font-weight:800;font-size:20px;margin-bottom:6px}
+.hgrid{display:grid;grid-template-columns:128px minmax(0,1fr);gap:14px;align-items:center}
+.ring{width:128px;height:128px}
+.hlist{display:flex;flex-direction:column;gap:6px}
+.hl{display:flex;align-items:baseline;gap:6px;font-size:13.5px;flex-wrap:wrap}.hl b{font-size:16px}.hi{width:20px;text-align:center}
+.nmrow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px}
+.ntime{background:var(--accent-soft);color:var(--accent);font-weight:800;border-radius:99px;padding:4px 10px;font-size:13px;white-space:nowrap}
+.sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:30}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--surface);border-radius:20px 20px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:8px;max-height:85vh;overflow:auto}
+.sheeth{display:flex;justify-content:space-between;align-items:center}
+.pqw{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.pq{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:10px 12px;text-align:left;min-height:56px;width:100%}
+.pq b{display:block}.pq small{color:var(--muted);font-size:12.5px}.pqi{font-size:22px}
+.choice{display:flex;flex-direction:column;gap:8px}
+.ch,.ch2{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--bg);width:100%}
+.ch small,.ch2 small{color:var(--muted);font-weight:400;font-size:13px}
+.ch2 a{margin-top:6px}
+details.pm{border-top:1px solid var(--line);padding:8px 0}
+details.pm summary{cursor:pointer;list-style:none;min-height:30px}
+details.pm summary::-webkit-details-marker{display:none}
+details.pm ul{margin:6px 0 0;padding-left:18px}
+.pmo{margin-top:6px}
+.evseg{margin-bottom:12px}
+body.hasnav .toast{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+
+.chip.mine{border-style:dashed}.chip.mine::after{content:" · seu";font-weight:600;opacity:.75}
+.ajb{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.ajrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ajit{border-top:1px dashed var(--line);padding-top:8px;display:flex;flex-direction:column;gap:6px}
+.ajmine{font-size:13.5px;background:var(--accent-soft);border-radius:10px;padding:6px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ajmine .x,.ajit .x{margin-left:auto}
+.ajit>.eb.add{align-self:flex-start;border:0;background:none;padding:0 2px;min-height:30px}
+.ajform{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.ajform.col{flex-direction:column;align-items:stretch;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}
+.ajin{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;min-height:42px;color:var(--fg);font-family:inherit;font-size:16px;flex:1;min-width:0}
 </style>
 </head>
 <body>
@@ -368,6 +412,7 @@ details.medd summary{cursor:pointer;font-weight:900;min-height:32px;display:flex
     </div>
   </header>
   <main id="app" aria-live="polite"></main>
+  <nav class="bnav" id="bnav" hidden aria-label="Menu"></nav>
   <div id="restbar" class="restbar" hidden role="timer" aria-live="off"><div class="rfill"></div><span class="rlbl">Descanso</span><b class="rt num">0:00</b><button id="r-plus" data-act="rplus">+15 s</button><button id="r-skip" data-act="rskip">Pular</button></div>
   <div id="toast" class="toast" hidden role="status"></div>
   <datalist id="foods"></datalist>
@@ -410,7 +455,7 @@ function validPlan(p){return p&&Array.isArray(p.meals)&&p.meals.length&&p.meals.
 function setPlan(p){PLANINFO=p||null; PLAN=p?p.meals:[]; REF=computeRef(); const n=document.getElementById('nutri'); if(n) n.textContent=p&&p.nutri?'Plano de '+p.nutri:'Checklist diário de saúde';}
 
 /* ---------- Estado ---------- */
-const S = {view:'dia', date:ymd(new Date()), days:{}, custom:[], db:null, local:false, timers:{}, ready:false, prof:{...PROF_DEF}, tf:{t:'musculacao',min:60,i:1}, profOpen:false};
+const S = {view:'dia', tab:'inicio', aj:ajVazio(), date:ymd(new Date()), days:{}, custom:[], db:null, local:false, timers:{}, ready:false, prof:{...PROF_DEF}, tf:{t:'musculacao',min:60,i:1}, profOpen:false};
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function parse(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
 function addDays(s,n){const d=parse(s);d.setDate(d.getDate()+n);return ymd(d)}
@@ -505,8 +550,9 @@ function bindUser(user){
     S.ready=true; render();
   },()=>{ banner('Não consegui ler seus dados. Verifique a internet e recarregue.'); }));
   S.unsubs.push(S.db.doc('config/alimentos').onSnapshot(s=>{ S.custom=(s.exists && s.data().lista)||[]; fillFoods(); },()=>{}));
-  S.unsubs.push(S.db.doc('config/treino').onSnapshot(s=>{ let t=null; if(s.exists){ try{ t=JSON.parse(s.data().json||'null'); }catch(e){} } S.treino=validTreino(t)?t:null; if(S.ready) render(); },()=>{}));
-  S.unsubs.push(S.db.doc('config/plano').onSnapshot(s=>{ let p=null; if(s.exists){ try{ p=JSON.parse(s.data().json||'null'); }catch(e){} } setPlan(validPlan(p)?p:null); S.planReady=true; if(PLAN.length){ const pi=document.getElementById('planimport'); if(pi) pi.remove(); } render(); },()=>{ S.planReady=true; render(); }));
+  S.unsubs.push(S.db.doc('config/treino').onSnapshot(s=>{ S.trnOrig = s.exists ? (s.data().origem||'prof') : null; let t=null; if(s.exists){ try{ t=JSON.parse(s.data().json||'null'); }catch(e){} } S.treinoBase=validTreino(t)?t:null; aplicaAjustes(); if(S.ready) render(); },()=>{}));
+  S.unsubs.push(S.db.doc('config/plano').onSnapshot(s=>{ S.planOrig = s.exists ? (s.data().origem||'prof') : null; let p=null; if(s.exists){ try{ p=JSON.parse(s.data().json||'null'); }catch(e){} } S.planBase=validPlan(p)?p:null; aplicaAjustes(); S.planReady=true; if(PLAN.length){ const pi=document.getElementById('planimport'); if(pi) pi.remove(); } render(); },()=>{ S.planReady=true; render(); }));
+  S.unsubs.push(S.db.doc('config/ajustes').onSnapshot(s=>{ let a=null; if(s.exists){ try{ a=JSON.parse(s.data().json||'null'); }catch(e){} } S.aj=ajNorm(a); aplicaAjustes(); if(S.ready) render(); },()=>{}));
   S.unsubs.push(S.db.doc('config/perfil').onSnapshot(s=>{ S.prof={...PROF_DEF,...(s.exists?s.data():{})}; if(S.ready) render(); },()=>{}));
   render();
 }
@@ -573,7 +619,7 @@ async function googleLogin(){
     else if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request'){ loginMsg(authMsg(e)+' Se estiver usando o app da tela inicial, entre com e-mail e senha.'); }
   }
 }
-/* ---------- CHECKFIT: cadastro, assinatura, bloqueio, painel e termos ---------- */
+/* ---------- CheckFit: cadastro, assinatura, bloqueio, painel e termos ---------- */
 const TERMS_V = '2026-11-04';
 const TERMS_DATA = '04/11/2026';
 const DAY_MS = 864e5;
@@ -608,7 +654,7 @@ function mount(key, html, sticky){
     if(actId){ const el = document.getElementById(actId); if(el){ el.focus(); try{ if(caret != null) el.setSelectionRange(caret, caret); }catch(e){} } }
   }
 }
-function head(show){ document.getElementById('tabs').hidden = !show; document.getElementById('navbar').hidden = !show; }
+function head(show){ document.getElementById('tabs').hidden = true; document.getElementById('navbar').hidden = !show; }
 
 /* Assinaturas do próprio usuário, cadastro e configuração pública */
 function bindCheckfit(user){
@@ -628,13 +674,13 @@ function bindConfig(){
 function onboardView(){
   const c = S.cli || {}, again = !!S.cli;
   return `<section class="card login" id="view-onboard" aria-label="Cadastro">
-   <h2>${again ? 'Atualizamos nossos termos' : 'Bem-vindo ao CHECKFIT'}</h2>
+   <h2>${again ? 'Atualizamos nossos termos' : 'Bem-vindo ao CheckFit'}</h2>
    <p class="sub" style="margin:0">${again ? 'Para continuar, leia e aceite a nova versão dos termos.' : 'Antes de começar, complete seu cadastro.'}</p>
    <form id="obform" class="lform">
     <label for="obnome">Nome completo<input id="obnome" autocomplete="name" value="${esc(c.nome || (S.user.displayName || ''))}" required></label>
     <label for="obzap">WhatsApp com DDD<input id="obzap" type="tel" inputmode="tel" autocomplete="tel" placeholder="(91) 90000-0000" value="${esc(c.whatsapp || '')}" required></label>
     <label class="chk" for="obtermos"><input id="obtermos" type="checkbox"> <span>Tenho 18 anos ou mais e li e aceito os <button type="button" class="linkbtn inline" data-act="legal" data-v="termos">Termos de Uso</button> e a <button type="button" class="linkbtn inline" data-act="legal" data-v="privacidade">Política de Privacidade</button>.</span></label>
-    <label class="chk" for="obsaude"><input id="obsaude" type="checkbox"> <span>Autorizo o CHECKFIT a guardar e usar meus dados de saúde (plano alimentar, refeições, água, treinos, peso, altura e idade) só para o funcionamento do app. Posso retirar essa autorização a qualquer momento excluindo minha conta.</span></label>
+    <label class="chk" for="obsaude"><input id="obsaude" type="checkbox"> <span>Autorizo o CheckFit a guardar e usar meus dados de saúde (plano alimentar, refeições, água, treinos, peso, altura e idade) só para o funcionamento do app. Posso retirar essa autorização a qualquer momento excluindo minha conta.</span></label>
     <button type="submit" class="primary">${again ? 'Aceitar e continuar' : 'Concluir cadastro'}</button>
    </form>
    <p class="lmsg" id="obmsg" role="status"></p>
@@ -646,7 +692,7 @@ async function saveOnboard(){
   const nome = document.getElementById('obnome').value.trim(), zap = onlyDigits(document.getElementById('obzap').value);
   if(nome.length < 3){ msg('Digite seu nome completo.'); return; }
   if(zap.length < 10){ msg('Digite o WhatsApp com DDD.'); return; }
-  if(!document.getElementById('obtermos').checked){ msg('Para usar o CHECKFIT, aceite os Termos de Uso e a Política de Privacidade.'); return; }
+  if(!document.getElementById('obtermos').checked){ msg('Para usar o CheckFit, aceite os Termos de Uso e a Política de Privacidade.'); return; }
   if(!document.getElementById('obsaude').checked){ msg('O app precisa da sua autorização para guardar os dados de saúde.'); return; }
   const data = {nome, whatsapp:zap, email:S.user.email || '', termos:{versao:TERMS_V, aceitoEm:NOW_FS(), saude:true}};
   if(!S.cli) data.criadoEm = NOW_FS();
@@ -656,7 +702,7 @@ async function saveOnboard(){
 /* Tela de bloqueio */
 function payBox(){
   const c = cfg();
-  if(!c.pix) return `<div class="banner">Os dados de pagamento ainda não foram configurados. Fale com o responsável pelo CHECKFIT.</div>`;
+  if(!c.pix) return `<div class="banner">Os dados de pagamento ainda não foram configurados. Fale com o responsável pelo CheckFit.</div>`;
   return `<div class="paybox">
     <div class="sub">Chave Pix${c.pixNome ? ' · ' + esc(c.pixNome) : ''}</div>
     <div class="pixkey num" id="pixkey">${esc(c.pix)}</div>
@@ -672,8 +718,8 @@ function blockView(acc){
   const c = cfg(), preco = money(c.preco || 19.9), nome = (S.cli && S.cli.nome) || '';
   const pend = acc.kind === 'pendente';
   const title = pend ? 'Cadastro feito! Falta liberar seu acesso' : acc.kind === 'bloqueado' ? 'Seu acesso está suspenso' : 'Sua assinatura venceu';
-  const intro = pend ? 'Para começar a usar o CHECKFIT:' : (acc.ate ? `O acesso ficou ativo até ${dBR(acc.ate)}. ` : '') + 'Para continuar usando:';
-  const zap = zapLink(`Olá! Sou ${nome} (${S.user.email || ''}). Segue o comprovante do CHECKFIT${pend ? ' e o meu plano alimentar' : ''}.`);
+  const intro = pend ? 'Para começar a usar o CheckFit:' : (acc.ate ? `O acesso ficou ativo até ${dBR(acc.ate)}. ` : '') + 'Para continuar usando:';
+  const zap = zapLink(`Olá! Sou ${nome} (${S.user.email || ''}). Segue o comprovante do CheckFit${pend ? ' e o meu plano alimentar' : ''}.`);
   return `<section class="card login" id="view-block" aria-label="Acesso">
    <h2>${title}</h2>
    <p class="sub" style="margin:0">${intro}</p>
@@ -740,27 +786,27 @@ function legalView(kind){
   const nome = esc(r.nome || '[nome do responsável]'), doc = esc(r.doc || '[CPF]'), cidade = esc(r.cidade || '[cidade/UF]'), email = esc(r.email || '[e-mail de contato]');
   const zap = esc(c.whatsapp || '[WhatsApp]'), preco = money(c.preco || 19.9);
   const back = `<button class="ghost" id="legal-back" data-act="legalback">← Voltar</button>`;
-  const termos = `<h2>Termos de Uso do CHECKFIT</h2><p class="sub">Versão de ${TERMS_DATA}</p>
-   <h3>1. Quem oferece o serviço</h3><p>O CHECKFIT é oferecido por ${nome}, ${doc}, com sede em ${cidade}. Contato: ${email} e WhatsApp ${zap}.</p>
-   <h3>2. O que é o CHECKFIT</h3><p>Um aplicativo para acompanhar, dia a dia, o plano alimentar, a água, os treinos e o peso, a partir de planos prescritos por profissionais habilitados escolhidos por você, como nutricionista e profissional de educação física.</p>
-   <h3>3. O que o CHECKFIT não é</h3><p>O CHECKFIT não presta serviço de nutrição, medicina ou educação física. Não elabora, altera nem avalia dietas ou treinos: o plano mostrado no app reproduz o documento que você enviou. Dúvidas sobre o plano devem ser tiradas com o profissional que o prescreveu.</p><p>Calorias, gasto em treinos e déficit são <b>estimativas</b> feitas com tabelas de referência (como a Tabela TACO, rótulos de produtos e o Compêndio de Atividades Físicas) e podem ser diferentes dos valores reais. O app não substitui acompanhamento profissional. Em caso de mal-estar, procure atendimento de saúde.</p>
+  const termos = `<h2>Termos de Uso do CheckFit</h2><p class="sub">Versão de ${TERMS_DATA}</p>
+   <h3>1. Quem oferece o serviço</h3><p>O CheckFit é oferecido por ${nome}, ${doc}, com sede em ${cidade}. Contato: ${email} e WhatsApp ${zap}.</p>
+   <h3>2. O que é o CheckFit</h3><p>Um aplicativo para acompanhar, dia a dia, o plano alimentar, a água, os treinos e o peso, a partir de planos prescritos por profissionais habilitados escolhidos por você, como nutricionista e profissional de educação física.</p>
+   <h3>3. O que o CheckFit não é</h3><p>O CheckFit não presta serviço de nutrição, medicina ou educação física. Não elabora, altera nem avalia dietas ou treinos: o plano mostrado no app reproduz o documento que você enviou. Dúvidas sobre o plano devem ser tiradas com o profissional que o prescreveu.</p><p>Calorias, gasto em treinos e déficit são <b>estimativas</b> feitas com tabelas de referência (como a Tabela TACO, rótulos de produtos e o Compêndio de Atividades Físicas) e podem ser diferentes dos valores reais. O app não substitui acompanhamento profissional. Em caso de mal-estar, procure atendimento de saúde.</p>
    <h3>4. Cadastro</h3><p>Para usar, você precisa ter 18 anos ou mais, informar dados verdadeiros e manter sua senha em segredo. A conta é pessoal e não pode ser compartilhada.</p>
-   <h3>5. Assinatura e pagamento</h3><p>O CHECKFIT custa R$ ${preco} por mês, pago antecipadamente por Pix. Cada pagamento confirmado libera 30 dias de acesso. Não há renovação automática: se você não renovar, o acesso fica suspenso até o próximo pagamento, e seus dados continuam guardados.</p>
+   <h3>5. Assinatura e pagamento</h3><p>O CheckFit custa R$ ${preco} por mês, pago antecipadamente por Pix. Cada pagamento confirmado libera 30 dias de acesso. Não há renovação automática: se você não renovar, o acesso fica suspenso até o próximo pagamento, e seus dados continuam guardados.</p>
    <h3>6. Direito de arrependimento</h3><p>Na primeira contratação, você pode desistir em até 7 dias depois do pagamento e receber o valor de volta integralmente, conforme o artigo 49 do Código de Defesa do Consumidor. Basta pedir pelos contatos do item 1.</p>
    <h3>7. Cancelamento</h3><p>Para cancelar, basta não renovar. Não há multa. Fora do prazo do item 6, não há devolução proporcional do período já liberado.</p>
    <h3>8. Envio do plano</h3><p>Ao enviar seu plano alimentar ou de treino, você declara que ele foi prescrito para você e autoriza sua transcrição para o app. O conteúdo do plano é de responsabilidade do profissional que o prescreveu. Se notar diferença entre o app e o documento original, vale o documento original: avise para corrigirmos.</p>
    <h3>9. Uso adequado</h3><p>Não é permitido usar o app para fins ilegais, tentar acessar dados de outras pessoas ou prejudicar o funcionamento do serviço. Contas que fizerem isso podem ser suspensas.</p>
-   <h3>10. Disponibilidade</h3><p>O CHECKFIT funciona pela internet e pode ter interrupções por manutenção ou falhas de terceiros. Fazemos o possível para manter o serviço estável. Você pode baixar uma cópia dos seus dados a qualquer momento.</p>
-   <h3>11. Responsabilidade</h3><p>O CHECKFIT responde pelo funcionamento do aplicativo nos termos da lei. Não responde por resultados de saúde, por decisões tomadas sem orientação profissional ou pelo conteúdo dos planos prescritos por terceiros.</p>
+   <h3>10. Disponibilidade</h3><p>O CheckFit funciona pela internet e pode ter interrupções por manutenção ou falhas de terceiros. Fazemos o possível para manter o serviço estável. Você pode baixar uma cópia dos seus dados a qualquer momento.</p>
+   <h3>11. Responsabilidade</h3><p>O CheckFit responde pelo funcionamento do aplicativo nos termos da lei. Não responde por resultados de saúde, por decisões tomadas sem orientação profissional ou pelo conteúdo dos planos prescritos por terceiros.</p>
    <h3>12. Mudanças nestes termos</h3><p>Se estes termos mudarem, você será avisado no app e precisará aceitar a nova versão para continuar usando.</p>
    <h3>13. Foro</h3><p>Fica eleito o foro do domicílio do consumidor para resolver qualquer questão sobre estes termos.</p>`;
-  const priv = `<h2>Política de Privacidade do CHECKFIT</h2><p class="sub">Versão de ${TERMS_DATA}</p>
+  const priv = `<h2>Política de Privacidade do CheckFit</h2><p class="sub">Versão de ${TERMS_DATA}</p>
    <h3>1. Responsável pelos seus dados</h3><p>${nome}, ${doc}, ${cidade}. Contato para assuntos de privacidade: ${email}.</p>
    <h3>2. Dados que coletamos</h3><p><b>Cadastro:</b> nome, e-mail e WhatsApp. <b>Dados de saúde que você informa:</b> plano alimentar, refeições marcadas, água, treinos, peso, altura, idade e taxa metabólica basal. <b>Assinatura:</b> datas de liberação e vencimento. Comprovantes de pagamento chegam pelo WhatsApp; não guardamos dados de cartão ou de conta bancária.</p>
    <h3>3. Para que usamos</h3><p>Para o app funcionar (mostrar seu plano, registrar seu dia e calcular estimativas), controlar a assinatura e falar com você sobre o serviço. Não usamos seus dados para publicidade e não os vendemos.</p>
    <h3>4. Base legal</h3><p>Os dados de cadastro e assinatura são tratados para cumprir o contrato com você. Os dados de saúde são tratados com o seu consentimento específico e destacado, dado no cadastro, como exige o artigo 11 da Lei Geral de Proteção de Dados (Lei 13.709/2018).</p>
    <h3>5. Com quem compartilhamos</h3><p>Os dados ficam no Google Firebase, que fornece o login e o banco de dados, em servidores em São Paulo. As páginas do app são hospedadas no GitHub, sem dados pessoais. Se você falar conosco pelo WhatsApp, a conversa segue as regras do WhatsApp. Não compartilhamos seus dados com mais ninguém, salvo por ordem legal.</p>
-   <h3>6. Quem vê seus dados</h3><p>O responsável pelo CHECKFIT vê seu nome, e-mail, WhatsApp, situação da assinatura e o plano transcrito. Ele não tem acesso ao seu diário de refeições, água, treinos e peso, que ficam visíveis só para você.</p>
+   <h3>6. Quem vê seus dados</h3><p>O responsável pelo CheckFit vê seu nome, e-mail, WhatsApp, situação da assinatura e o plano transcrito. Ele não tem acesso ao seu diário de refeições, água, treinos e peso, que ficam visíveis só para você.</p>
    <h3>7. Segurança</h3><p>O acesso exige login com senha ou conta Google, a conexão é criptografada e as regras do banco de dados só deixam cada pessoa ler e gravar os próprios registros.</p>
    <h3>8. Por quanto tempo guardamos</h3><p>Enquanto sua conta existir. Se a assinatura ficar vencida por mais de 12 meses, podemos excluir os dados depois de avisar você. Você pode excluir tudo antes, quando quiser.</p>
    <h3>9. Seus direitos</h3><p>Você pode pedir acesso, correção, cópia e exclusão dos seus dados, e retirar o consentimento. No app: <b>Meus dados › Baixar cópia dos meus dados</b> e <b>Excluir minha conta</b>. Retirar o consentimento para dados de saúde equivale a excluir a conta, porque o app não funciona sem eles. Para qualquer outro pedido, use o contato do item 1. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).</p>
@@ -780,8 +826,10 @@ function stopAdmin(){ A.ed = null; A.unsubs.forEach(u => { try{ u(); }catch(e){}
 function loadPlans(){
   Object.keys(A.clis).forEach(uid => {
     if(uid in A.plans) return; A.plans[uid] = null;
-    FS.collection('users').doc(uid).collection('config').doc('plano').get().then(s => { A.plans[uid] = s.exists; render(); }).catch(() => { A.plans[uid] = false; });
-    FS.collection('users').doc(uid).collection('config').doc('treino').get().then(s => { A.trns[uid] = s.exists; render(); }).catch(() => { A.trns[uid] = false; });
+    A.pj = A.pj || {}; A.tj = A.tj || {}; A.ajs = A.ajs || {};
+    FS.collection('users').doc(uid).collection('config').doc('plano').get().then(s => { A.plans[uid] = s.exists; try{ A.pj[uid] = s.exists ? JSON.parse(s.data().json || 'null') : null; }catch(e){} render(); }).catch(() => { A.plans[uid] = false; });
+    FS.collection('users').doc(uid).collection('config').doc('ajustes').get().then(s => { try{ A.ajs[uid] = s.exists ? JSON.parse(s.data().json || 'null') : null; }catch(e){} render(); }).catch(() => {});
+    FS.collection('users').doc(uid).collection('config').doc('treino').get().then(s => { A.trns[uid] = s.exists; try{ A.tj[uid] = s.exists ? JSON.parse(s.data().json || 'null') : null; }catch(e){} render(); }).catch(() => { A.trns[uid] = false; });
   });
 }
 function rowsAdmin(){
@@ -801,7 +849,7 @@ function adminView(){
   const fl = rows.filter(r => (A.f === 'todos' || r.st === A.f || (A.f === 'vencido' && r.st === 'bloqueado') || (A.f === 'ativo' && r.st === 'vitalicio')) && (!q || (r.c.nome || '').toLowerCase().includes(q) || (r.c.email || '').toLowerCase().includes(q) || (r.c.whatsapp || '').includes(q)));
   const chips = [['todos','Todos',rows.length],['pendente','Aguardando',n('pendente')],['ativo','Ativos',n('ativo') + n('vitalicio')],['vencendo','Vencem logo',n('vencendo')],['vencido','Vencidos',n('vencido') + n('bloqueado')]];
   let h = `<section class="card sum" id="view-admin" aria-label="Painel">
-   <div class="thead"><div><h2>Painel CHECKFIT</h2><div class="sub">${rows.length} cliente(s) cadastrado(s)</div></div><button class="ghost" id="adm-back" data-act="adminback">Meu diário</button></div>
+   <div class="thead"><div><h2>Painel CheckFit</h2><div class="sub">${rows.length} cliente(s) cadastrado(s)</div></div><button class="ghost" id="adm-back" data-act="adminback">Meu diário</button></div>
    <div class="tiles">
     <div class="tile"><b class="num">${pagantes}</b><span>assinaturas pagas ativas</span></div>
     <div class="tile"><b class="num">R$ ${money(pagantes * preco)}</b><span>por mês, se todos renovarem</span></div>
@@ -830,6 +878,7 @@ function clientCard(r){
     <div class="line"><span>Assinatura</span><span class="num">${until}</span></div>
     <div class="line"><span>Plano alimentar</span><span>${plan == null ? '…' : plan ? 'Carregado' : 'Falta carregar'}</span></div>
     <div class="line"><span>Ficha de treino</span><span>${A.trns[uid] == null ? '…' : A.trns[uid] ? 'Carregada' : 'Não enviada'}</span></div>
+    ${(() => { const L = A.ajs && A.ajs[uid] ? ajLinhas(A.ajs[uid], (A.pj || {})[uid], (A.tj || {})[uid]) : []; return L.length ? `<details class="pm"><summary class="line" style="display:flex;justify-content:space-between"><span>Ajustes do cliente</span><span>${L.length} · ver</span></summary><ul style="margin:6px 0 0;padding-left:18px">${L.map(l => `<li>${esc(l)}</li>`).join('')}</ul></details>` : ''; })()}
     <div class="line"><span>WhatsApp</span><span class="num">${zap ? `<a href="https://wa.me/${zap.length <= 11 ? '55' + zap : zap}" target="_blank" rel="noopener">${esc(c.whatsapp)}</a>` : '—'}</span></div>
     <div class="line"><span>Cadastro</span><span class="num">${dBR(toDate(c.criadoEm))}${c.termos && c.termos.versao === TERMS_V ? ' · termos aceitos' : ' · termos pendentes'}</span></div>
    </div>
@@ -898,7 +947,7 @@ async function adminAct(a, uid){
       try{ d = JSON.parse((ta.value || '').trim()); }catch(e){ amsg(uid, 'Esse texto não é válido. Copie do { inicial até o } final.'); return; }
       const t = d && d.treino ? d.treino : d;
       if(!validTreino(t)){ amsg(uid, 'A ficha desse texto está incompleta.'); return; }
-      await FS.collection('users').doc(uid).collection('config').doc('treino').set({json:JSON.stringify(t), atualizado:new Date().toISOString()});
+      await FS.collection('users').doc(uid).collection('config').doc('treino').set({json:JSON.stringify(t), origem:'prof', atualizado:new Date().toISOString()});
       A.trns[uid] = true; A.openT = ''; amsg(uid, 'Ficha de treino salva na conta do cliente.', true); alog('Carregou ficha de treino', uid); render();
     } else if(a === 'aplan'){
       A.open = A.open === uid ? '' : uid; render(); return;
@@ -907,7 +956,7 @@ async function adminAct(a, uid){
       try{ d = JSON.parse((ta.value || '').trim()); }catch(e){ amsg(uid, 'Esse texto não é válido. Copie do { inicial até o } final.'); return; }
       const p = d && d.plano ? d.plano : d;
       if(!validPlan(p)){ amsg(uid, 'O plano desse texto está incompleto.'); return; }
-      await FS.collection('users').doc(uid).collection('config').doc('plano').set({json:JSON.stringify(p), atualizado:new Date().toISOString()});
+      await FS.collection('users').doc(uid).collection('config').doc('plano').set({json:JSON.stringify(p), origem:'prof', atualizado:new Date().toISOString()});
       A.plans[uid] = true; A.open = ''; amsg(uid, 'Plano salvo na conta do cliente.', true); alog('Carregou plano', uid); render();
     }
   }catch(e){ amsg(uid, 'Não consegui salvar. Verifique a internet e tente de novo.'); }
@@ -951,10 +1000,10 @@ async function edOpen(uid, kind){
     A.ed = {uid, kind, d, novo, dirty:false, rot:kind === 'treino' && !(d.agenda && Object.keys(d.agenda).length), open:{}, conf:'', msg:'', ok:false};
     if(kind === 'plano' && d.meals[0]) A.ed.open['meals.0'] = true;
     if(kind === 'treino' && d.fichas[0]) A.ed.open['fichas.0'] = true;
-    A.msg[uid] = {t:'', ok:true}; render(); window.scrollTo(0, 0);
+    A.msg[uid] = {t:'', ok:true}; if(S.mode !== 'admin') S.mode = 'ed'; render(); window.scrollTo(0, 0);
   }catch(e){ amsg(uid, 'Não consegui abrir. Verifique a internet e tente de novo.'); }
 }
-function edClose(){ const E = A.ed; if(E && E.dirty && E.conf !== 'close'){ E.conf = 'close'; render(); return; } A.ed = null; render(); window.scrollTo(0, 0); }
+function edClose(){ const E = A.ed; if(E && E.dirty && E.conf !== 'close'){ E.conf = 'close'; render(); return; } A.ed = null; if(S.mode === 'ed') S.mode = 'app'; render(); window.scrollTo(0, 0); }
 
 function fi(label, path, val, o){
   o = o || {}; const id = 'e-' + path.replace(/\./g, '-'), v = esc(val == null ? '' : String(val)), t = o.t || 's';
@@ -980,6 +1029,7 @@ function edView(){
   let h = `<section class="card sum" id="view-aded">
    <div class="thead"><div><h2>${pl ? 'Editar plano alimentar' : 'Editar ficha de treino'}</h2><div class="sub">${nome}${E.novo ? ' · novo, ainda não salvo' : ''}</div></div><button class="ghost" id="ed-back" data-act="edclose">${E.conf === 'close' ? 'Sair sem salvar' : 'Voltar'}</button></div>
    ${E.conf === 'close' ? `<p class="lmsg" style="margin:8px 0 0">Você tem alterações não salvas. Toque de novo em "Sair sem salvar" para descartar, ou salve no fim da página.</p>` : ''}
+   ${S.mode === 'ed' ? `<p class="lmsg ok" style="margin:8px 0 0">${pl ? 'Plano montado por você' : 'Ficha montada por você'}. O CheckFit organiza sua rotina, mas não prescreve dieta nem treino: para um plano individual, procure um(a) nutricionista ou profissional de educação física.</p>` : ''}
    <p class="tip" style="margin:8px 0 0">${pl
      ? 'Cada <b>item</b> é uma linha do checklist do cliente. A <b>1ª linha</b> do item é o padrão (entra na meta de calorias); as linhas de baixo são <b>trocas</b> que o cliente pode escolher. Marque <b>opcional</b> para itens que não contam na meta.'
      : 'As <b>séries</b> se escrevem assim: <b>3x10–12</b> ou <b>1x15 + 2x8–10</b>. Deixe em branco para usar a periodização por semanas. A <b>carga sugerida</b> aceita um valor (20) ou um por série (10 / 12 / 14).'}</p>
@@ -1185,10 +1235,11 @@ async function edSave(){
   if(err){ edFail(err); return; }
   const el = document.getElementById('edmsg'); if(el){ el.textContent = 'Salvando…'; el.className = 'lmsg ok'; }
   try{
-    await FS.collection('users').doc(E.uid).collection('config').doc(E.kind).set({json:JSON.stringify(d), atualizado:new Date().toISOString()});
+    const cliente = S.mode === 'ed'; await FS.collection('users').doc(E.uid).collection('config').doc(E.kind).set({json:JSON.stringify(d), origem:cliente ? 'proprio' : 'prof', atualizado:new Date().toISOString()});
     if(E.kind === 'plano') A.plans[E.uid] = true; else A.trns[E.uid] = true;
     alog(E.kind === 'plano' ? 'Editou plano' : 'Editou ficha de treino', E.uid);
     const uid = E.uid; A.ed = null; const self = S.user && uid === S.user.uid, what = E.kind === 'plano' ? 'Plano salvo.' : 'Ficha salva.'; A.msg[uid] = {t:what + ' O cliente já vê a versão nova.', ok:true}; A.selfMsg = self ? what + ' Já aparece no seu diário.' : '';
+    if(cliente){ S.mode = 'app'; S.tab = 'planos'; toast(E.kind === 'plano' ? 'Plano salvo.' : 'Ficha salva.'); }
     render(); window.scrollTo(0, 0);
   }catch(e){ edFail('Não consegui salvar. Verifique a internet e tente de novo.'); }
 }
@@ -1316,10 +1367,11 @@ function relView(){
      ${S.treino ? `<p class="rnote" style="margin-top:0">Musculação: ${s.mu.feitos} treino(s) concluído(s)${s.mu.previstos ? ' de ' + s.mu.previstos + ' previsto(s)' : ''} · ${fmt(s.mu.vol)} kg levantados no total.</p>` : ''}
      ${Object.keys(grp).length ? `<table class="rt full"><thead><tr><th>Atividade</th><th>Vezes</th><th>Minutos</th><th>Gasto extra</th></tr></thead><tbody>${Object.values(grp).sort((a, b) => b.k - a.k).map(x => `<tr><td>${x.n}</td><td>${x.q}</td><td>${fmt(x.min)}</td><td>${fmt(x.k)} kcal</td></tr>`).join('')}</tbody></table>` : ''}
      ${cargas.length ? `<h3>Evolução das cargas no mês</h3><table class="rt full"><thead><tr><th>Exercício</th><th>Primeiro treino</th><th>Último treino</th><th>Treinos</th></tr></thead><tbody>${cargas.map(c => `<tr><td>${esc(c.n)}</td><td>${kgs(c.a)} kg</td><td>${kgs(c.b)} kg${c.b > c.a ? ' ▲' : ''}</td><td>${c.q}</td></tr>`).join('')}</tbody></table>` : ''}</section>` : ''}
+   ${(() => { const L = ajLinhas(S.aj, S.planBase, S.treinoBase); return L.length ? `<section class="rs"><h2>Ajustes feitos pelo paciente</h2><p class="rnote" style="margin:0 0 6px">Mudanças que o paciente fez por conta própria sobre o plano e a ficha originais.</p><table class="rt full"><tbody>${L.map(l => `<tr><td>${esc(l)}</td></tr>`).join('')}</tbody></table></section>` : ''; })()}
    <section class="rs brk"><h2>Dia a dia</h2><table class="rt full dd"><thead><tr><th>Dia</th><th>kcal</th><th>Água</th><th>Treino</th><th>Peso</th><th>Situação</th></tr></thead><tbody>
      ${s.cs.map(x => { const dd = S.days[x.d] || {}, ms = sessoes(x.d).filter(z => z.fim).length; return `<tr class="${x.c.status}"><td>${parse(x.d).toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit'})}</td><td>${x.c.status === 'vazio' ? '—' : fmt(x.c.kcal)}</td><td>${x.c.water ? fmtL(x.c.water) + ' L' : '—'}</td><td>${x.c.tr.min || ms ? (x.c.tr.min ? fmt(x.c.tr.min) + ' min' : '') + (ms ? (x.c.tr.min ? ' · ' : '') + 'musc.' : '') : '—'}</td><td>${+dd.peso > 0 ? kgs(+dd.peso) : '—'}</td><td>${stTxt(x.c.status)}</td></tr>`; }).join('')}</tbody></table></section>
    <section class="rs"${nota.trim() ? '' : ' hidden'}><h2>Observações do paciente</h2><p class="rnota" id="rel-nota-print">${esc(nota)}</p></section>
-   <footer class="rf">Dados registrados pelo próprio usuário no app CHECKFIT. Calorias aproximadas (tabela TACO e rótulos). Este relatório não substitui avaliação profissional.</footer>
+   <footer class="rf">Dados registrados pelo próprio usuário no app CheckFit. Calorias aproximadas (tabela TACO e rótulos). Este relatório não substitui avaliação profissional.</footer>
   </article>`;
   return h;
 }
@@ -1459,7 +1511,7 @@ async function relPdf(){
   await new Promise(r => setTimeout(r, 60));
   try{
     const blob = pdfBlob(pdfRender(rep)), d0 = parse(S.date);
-    const nome = ('Relatorio-CHECKFIT-' + d0.toLocaleDateString('pt-BR', {month:'long'}) + '-' + d0.getFullYear() + '.pdf').normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const nome = ('Relatorio-CheckFit-' + d0.toLocaleDateString('pt-BR', {month:'long'}) + '-' + d0.getFullYear() + '.pdf').normalize('NFD').replace(/[̀-ͯ]/g, '');
     if(S.relPdf && S.relPdf.url) try{ URL.revokeObjectURL(S.relPdf.url); }catch(e){}
     let file = null; try{ file = new File([blob], nome, {type:'application/pdf'}); }catch(e){}
     S.relPdf = {url:URL.createObjectURL(blob), nome, file, kb:Math.round(blob.size / 1024), share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))};
@@ -1468,7 +1520,7 @@ async function relPdf(){
 }
 async function relShare(){
   const R = S.relPdf; if(!R || !R.file) return;
-  try{ await navigator.share({files:[R.file], title:'Relatório CHECKFIT'}); }catch(e){}
+  try{ await navigator.share({files:[R.file], title:'Relatório CheckFit'}); }catch(e){}
 }
 function relPdfBox(){
   const R = S.relPdf;
@@ -1478,6 +1530,296 @@ function relPdfBox(){
     <div class="row" style="margin-top:8px">${R.share ? `<button class="primary" id="rel-share" data-act="relshare">Salvar ou enviar</button>` : ''}<a class="${R.share ? 'ghost' : 'primary'} relbtnl" id="rel-dl" href="${R.url}" download="${esc(R.nome)}" target="_blank" rel="noopener">${R.share ? 'Abrir PDF' : 'Baixar PDF'}</a>
     <button class="ghost" id="rel-pdf" data-act="relpdf">Gerar de novo</button></div>
     <p class="tip" style="margin:8px 0 0">${R.share ? 'Em "Salvar ou enviar", escolha <b>Salvar em Arquivos</b>, WhatsApp ou e-mail.' : 'Se abrir o PDF numa nova tela, toque no ícone de compartilhar para salvar ou enviar.'} Se mudar as observações, toque em "Gerar de novo".</p></div>`;
+}
+
+/* ---------- Fase 1: menu inferior, Início, Planos, Perfil, registro rápido e tema ---------- */
+const ICO = {
+  inicio:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/>',
+  planos:'<rect x="4" y="4" width="16" height="17" rx="3"/><path d="M8 2.5v3M16 2.5v3M8 10.5h8M8 14.5h5"/>',
+  evol:'<path d="M5 20V12M10 20V6M15 20v-9M20 20V4"/>',
+  perfil:'<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.4-3.8 4.3-5.5 7.5-5.5s6.1 1.7 7.5 5.5"/>',
+  mais:'<path d="M12 5v14M5 12h14"/>'
+};
+const svgI = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg>`;
+function bnavHTML(){
+  const it = (k, l) => `<button class="bn${S.tab === k ? ' on' : ''}" id="bn-${k}" data-act="btab" data-v="${k}" aria-current="${S.tab === k ? 'page' : 'false'}">${svgI(k)}<span>${l}</span></button>`;
+  return it('inicio', 'Início') + it('planos', 'Planos') + `<button class="bn plus" id="bn-mais" data-act="plus" aria-label="Registrar">${svgI('mais')}</button>` + it('evol', 'Evolução') + it('perfil', 'Perfil');
+}
+function setTab(t){
+  S.tab = t; S.plus = false;
+  if(t === 'inicio') S.view = 'dia';
+  else if(t === 'evol') S.view = S.evolV || 'semana';
+  render(); window.scrollTo(0, 0);
+}
+/* tema */
+function temaAtual(){ try{ return localStorage.getItem('checkfit-tema') || 'auto'; }catch(e){ return 'auto'; } }
+function aplicaTema(v){ const r = document.documentElement; if(v === 'claro') r.setAttribute('data-theme', 'light'); else if(v === 'escuro') r.setAttribute('data-theme', 'dark'); else r.removeAttribute('data-theme'); }
+function setTema(v){ try{ localStorage.setItem('checkfit-tema', v); }catch(e){} aplicaTema(v); render(); }
+aplicaTema(temaAtual());
+
+/* Início: anel da meta do dia + próximos passos */
+function ring(pct){
+  const r = 52, c = 2 * Math.PI * r, off = c * (1 - Math.max(0, Math.min(1, pct)));
+  return `<svg class="ring" viewBox="0 0 128 128" role="img" aria-label="${Math.round(pct * 100)}% da meta do dia">
+    <circle cx="64" cy="64" r="${r}" fill="none" stroke="var(--surface2)" stroke-width="12"/>
+    <circle cx="64" cy="64" r="${r}" fill="none" stroke="url(#rg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 64 64)"/>
+    <defs><linearGradient id="rg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#22C55E"/><stop offset="1" stop-color="#A3E635"/></linearGradient></defs>
+    <text x="64" y="66" text-anchor="middle" font-size="30" font-weight="800" fill="var(--fg)" font-family="Montserrat, system-ui, sans-serif">${Math.round(pct * 100)}%</text>
+    <text x="64" y="86" text-anchor="middle" font-size="11" fill="var(--muted)">meta do dia</text></svg>`;
+}
+function metaDia(date, c){
+  const partes = [], tId = S.treino ? plannedId(date) : null, feito = sessoes(date).some(z => z.fim) || c.tr.list.length > 0;
+  partes.push(PLAN.length ? c.ok / PLAN.length : 0);
+  partes.push(WATER_GOAL ? Math.min(1, c.water / WATER_GOAL) : 0);
+  if(tId || feito) partes.push(feito ? 1 : 0);
+  return {pct:partes.reduce((a, b) => a + b, 0) / partes.length, tId, feito};
+}
+function heroInicio(date, c){
+  const m = metaDia(date, c), pct = Math.min(100, c.kcal / REF * 100), over = c.kcal > REF * 1.1;
+  const nome = ((S.cli && S.cli.nome) || '').split(' ')[0];
+  const lin = (ic, v, l, cor) => `<div class="hl"><span class="hi" style="color:${cor}">${ic}</span><b class="num">${v}</b><span class="sub">${l}</span></div>`;
+  return `<section class="card hero home" aria-label="Resumo do dia">
+    ${S.date === today() && nome ? `<div class="hello">Olá, ${esc(nome)}!</div>` : ''}
+    <div class="hgrid">${ring(m.pct)}<div class="hlist">
+      ${lin('🔥', fmt(c.kcal) + ' / ' + fmt(REF), 'kcal', 'var(--fire)')}
+      ${lin('💧', fmtL(c.water) + ' / ' + fmtL(WATER_GOAL), 'L de água', 'var(--water)')}
+      ${m.tId || m.feito ? lin('🏋️', (m.feito ? 1 : 0) + ' / 1', 'treino', 'var(--accent)') : ''}
+      ${lin('🍽️', c.ok + ' / ' + PLAN.length, 'refeições no plano', 'var(--ok)')}
+    </div></div>
+    <div class="row1" style="margin-top:4px">${pill(DAY_STATUS, c.status)}<span class="sub num">${c.extraK ? `extras ${fmt(c.extraK)} kcal` : ''}${c.extraK && c.tr.kcal ? ' · ' : ''}${c.tr.kcal ? `treinos −${fmt(c.tr.kcal)} kcal` : ''}</span></div>
+    <div class="bar"><i class="${over ? 'over' : ''}" style="width:${pct}%"></i></div>
+    <button class="primary" id="allplan" data-act="allplan">Segui o plano em todas as refeições</button>
+  </section>${proximaRefeicao(date)}`;
+}
+function proximaRefeicao(date){
+  if(date !== today() || !PLAN.length) return '';
+  const agora = new Date(), hm = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
+  const pend = PLAN.filter(m => mealCalc(m, rec(date, m.id, false)).status === 'pend');
+  if(!pend.length) return '';
+  const m = pend.find(x => (x.time || '') >= hm) || pend[0], o = m.options[0];
+  const itens = o ? o.items.filter(i => !i.opt).map(i => (i.ch[0] || [])[0]).filter(Boolean).slice(0, 4).join(', ') : '';
+  return `<section class="card nextm" aria-label="Próxima refeição"><div class="sub" style="font-weight:800;text-transform:uppercase;letter-spacing:.4px;font-size:11.5px">Próxima refeição</div>
+    <div class="nmrow"><div><b>${esc(m.name)}</b><div class="sub">${esc(itens)}${itens ? '…' : ''}</div></div><span class="ntime num">${esc(m.time || '')}</span></div>
+    <button class="ghost" data-act="goMeal" data-m="${m.id}" style="width:100%;margin-top:8px">Ir para a refeição</button></section>`;
+}
+
+/* Registro rápido (＋) */
+function plusSheet(){
+  if(!S.plus) return '';
+  const b = (act, ico, t, sub, extra) => `<button class="pq" data-act="${act}" ${extra || ''}><span class="pqi">${ico}</span><span><b>${t}</b><small>${sub}</small></span></button>`;
+  return `<div class="sheetbg" data-act="plusclose"></div><div class="sheet" role="dialog" aria-label="Registrar">
+    <div class="sheeth"><b>Registrar hoje</b><button class="ghost" data-act="plusclose" aria-label="Fechar">Fechar</button></div>
+    <div class="pqw"><button class="wbtn" data-act="plusw" data-ml="200">+200 ml<small>copo</small></button><button class="wbtn" data-act="plusw" data-ml="300">+300 ml<small>copo grande</small></button><button class="wbtn" data-act="plusw" data-ml="500">+500 ml<small>garrafinha</small></button><button class="wbtn" data-act="plusw" data-ml="1000">+1 L<small>garrafa</small></button></div>
+    ${b('plusgo', '🍽️', 'Refeição', 'marcar a próxima refeição', 'data-v="meal"')}
+    ${S.treino ? b('plusgo', '🏋️', 'Treino de musculação', 'abrir o treino do dia', 'data-v="musc"') : ''}
+    ${b('plusgo', '🏃', 'Outra atividade', 'corrida, beach tennis, caminhada…', 'data-v="ativ"')}
+    ${b('plusgo', '⚖️', 'Peso', 'registrar o peso de hoje', 'data-v="peso"')}
+    ${b('plusgo', '📏', 'Medidas', 'cintura, braço, coxa…', 'data-v="med"')}
+  </div>`;
+}
+function plusGo(v){
+  S.plus = false; S.tab = 'inicio'; S.view = 'dia'; S.date = today();
+  if(v === 'med') S.medOpen = true;
+  render();
+  requestAnimationFrame(() => {
+    let el = null, focus = null, fid = v === 'ativ' ? 'tm' : v === 'peso' ? 'pw' : '';
+    if(v === 'meal'){ const pend = PLAN.filter(m => mealCalc(m, rec(S.date, m.id, false)).status === 'pend'); const hm = new Date().toTimeString().slice(0, 5); const m = pend.find(x => (x.time || '') >= hm) || pend[0] || PLAN[0]; el = m && document.getElementById('meal-' + m.id); }
+    else if(v === 'musc') el = document.querySelector('[aria-label="Treino de musculação"]') || document.getElementById('tm');
+    else if(v === 'ativ'){ focus = document.getElementById('tm'); el = focus; }
+    else if(v === 'peso'){ focus = document.getElementById('pw'); el = focus; }
+    else if(v === 'med') el = document.querySelector('details.medd');
+    if(el) el.scrollIntoView({block:'center', behavior:'smooth'});
+    if(fid) setTimeout(() => { const f = document.getElementById(fid); if(f) f.focus(); }, 400);
+  });
+}
+function goMeal(id){ const el = document.getElementById('meal-' + id); if(el) el.scrollIntoView({block:'start', behavior:'smooth'}); }
+
+/* Planos */
+function origemPill(orig, quem){
+  return orig === 'proprio' ? `<span class="pill s-ok">montado por você</span>` : `<span class="pill s-idle">do profissional</span>`;
+}
+function suporteBtn(txt, label){
+  const z = String((S.cfg && S.cfg.whatsapp) || '').replace(/\D/g, ''); if(!z) return '';
+  const num = z.length <= 11 ? '55' + z : z;
+  return `<a class="ghost relbtnl" style="min-height:44px" href="https://wa.me/${num}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">${label || 'Falar no WhatsApp'}</a>`;
+}
+function planosView(){
+  const pOrig = S.planOrig || 'prof', tOrig = S.trnOrig || 'prof', nome = (S.cli && S.cli.nome) || '';
+  let h = `<section class="card" id="view-planos"><h2>Meus planos</h2><p class="sub" style="margin:4px 0 0">Seu plano alimentar e sua ficha de treino. Os planos do profissional são carregados pelo CheckFit e não podem ser alterados aqui.</p></section>`;
+  // plano alimentar
+  h += `<section class="card"><div class="thead"><div><h2>Plano alimentar</h2><div class="sub">${PLANINFO && PLANINFO.nutri ? esc(PLANINFO.nutri) : (pOrig === 'proprio' ? 'Montado por você' : '')}${PLANINFO && PLANINFO.data ? ' · ' + esc(PLANINFO.data) : ''}</div></div>${origemPill(pOrig)}</div>
+    <div class="lines" style="margin-top:8px">${PLAN.map(m => `<details class="pm"><summary><span class="num" style="font-weight:800">${esc(m.time || '')}</span> <b>${esc(m.name)}</b><span class="sub"> · ${m.options.length > 1 ? m.options.length + ' opções · ' : ''}${fmt(mealKcal(m))} kcal</span></summary>
+      ${m.options.map(o => `<div class="pmo">${m.options.length > 1 ? `<div class="sub" style="font-weight:800">${esc(o.label)}${o.aj ? ' <span class="pill s-ok">seu ajuste</span>' : ''}</div>` : ''}<ul>${o.items.map(i => `<li>${esc((i.ch[0] || [])[0] || '')}${(i.ch[0] || [])[1] ? ' · ' + esc(i.ch[0][1]) : ''}${i.opt ? ' <span class="sub">(opcional)</span>' : ''}${i.ch.length > 1 ? `<div class="sub">ou: ${i.ch.slice(1).map(c => esc(c[0])).join(', ')}</div>` : ''}</li>`).join('')}</ul></div>`).join('')}
+      ${m.tip ? `<p class="tip" style="margin:6px 0 0">${esc(m.tip)}</p>` : ''}</details>`).join('')}</div>
+    <div class="row" style="margin-top:10px">${pOrig === 'proprio' ? `<button class="primary" id="pl-edit" data-act="ced" data-k="plano">Editar meu plano</button>` : `<button class="primary" id="aj-plano" data-act="majustes" data-k="plano">Meus ajustes</button>` + suporteBtn('Olá! Minha nutricionista atualizou meu plano alimentar. Segue o plano novo para carregar no CheckFit. Sou ' + nome + '.', 'Enviar plano atualizado')}</div>
+    ${pOrig !== 'proprio' ? `<p class="tip" style="margin:8px 0 0">Este plano foi prescrito pela sua nutricionista. Em <b>Meus ajustes</b> você pode incluir trocas de alimentos, opções próprias (como um YoPro no dia corrido) e mudar horários, sem alterar o original. Quando a nutricionista mudar o plano, toque em <b>Enviar plano atualizado</b> e mande o plano novo (PDF ou foto) pelo WhatsApp do CheckFit. Nós atualizamos aqui no app para você.</p>` : `<p class="tip" style="margin:8px 0 0">Plano montado por você. O CheckFit não prescreve dieta: para um plano individual, procure um(a) nutricionista.</p>`}
+  </section>`;
+  // treino
+  if(S.treino){
+    const t = S.treino;
+    h += `<section class="card"><div class="thead"><div><h2>Ficha de treino</h2><div class="sub">${esc(t.prof || (tOrig === 'proprio' ? 'Montada por você' : ''))}${t.objetivo ? ' · ' + esc(t.objetivo) : ''}</div></div>${origemPill(tOrig)}</div>
+      <div class="lines" style="margin-top:8px">${t.fichas.map(f => `<details class="pm"><summary><b>${esc(f.id)} · ${esc(f.nome || '')}</b><span class="sub"> · ${f.ex.length} exercício(s)</span></summary><ul>${f.ex.map(e => `<li>${esc(e.n)}${e.aj ? ' <span class="pill s-ok">seu ajuste</span>' : ''}${Array.isArray(e.s) ? ' <span class="sub">' + esc(specTxt(e.s)) + '</span>' : ''}</li>`).join('')}</ul></details>`).join('')}</div>
+      <div class="row" style="margin-top:10px">${tOrig === 'proprio' ? `<button class="primary" id="tr-edit" data-act="ced" data-k="treino">Editar minha ficha</button>` : `<button class="primary" id="aj-treino" data-act="majustes" data-k="treino">Meus ajustes</button>` + suporteBtn('Olá! Meu professor/personal atualizou minha ficha de treino. Segue a ficha nova para carregar no CheckFit. Sou ' + nome + '.', 'Enviar ficha atualizada')}</div>
+      ${tOrig !== 'proprio' ? '<p class="tip" style="margin:8px 0 0">Esta ficha foi montada pelo seu professor ou personal. Em <b>Meus ajustes</b> você pode trocar um exercício por outro ou acrescentar exercícios, sem alterar o original. Quando o professor mudar a ficha, toque em <b>Enviar ficha atualizada</b> e mande a ficha nova pelo WhatsApp do CheckFit. Nós atualizamos aqui no app para você.</p>' : ''}</section>`;
+  } else {
+    h += `<section class="card"><h2>Ficha de treino</h2><p class="sub" style="margin:4px 0 10px">Você ainda não tem ficha de treino.</p>
+      <div class="choice">
+       <button class="ghost ch" data-act="ced" data-k="treino"><b>Montar minha ficha</b><small>Para quem treina por conta própria.</small></button>
+       <div class="ch2"><b>Tenho personal ou professor</b><small>Envie a ficha dele para o CheckFit, que nós carregamos para você.</small>${suporteBtn('Olá! Quero enviar minha ficha de treino para o CheckFit. Sou ' + nome + '.', 'Enviar minha ficha')}</div>
+      </div></section>`;
+  }
+  return h;
+}
+
+/* Primeiro acesso sem plano: escolher o caminho */
+function caminhoView(){
+  const c = (S.cli && S.cli.caminho) || '', nome = (S.cli && S.cli.nome) || '';
+  if(c === 'prof') return `<section class="card login" id="caminho"><h2>Seu plano está sendo preparado</h2>
+    <p class="sub" style="margin:0">Envie o plano da sua nutricionista (PDF ou foto) pelo WhatsApp. Assim que ele for carregado, o app abre direto no seu diário.</p>
+    <div class="row" style="margin-top:12px">${suporteBtn('Olá! Acabei de criar minha conta no CheckFit e quero enviar meu plano alimentar. Sou ' + nome + '.', 'Enviar meu plano pelo WhatsApp')}</div>
+    <button class="linkbtn" data-act="caminho" data-v="" style="margin-top:6px">Prefiro montar meu próprio plano</button>
+    <details class="pm" style="margin-top:6px"><summary class="sub">Recebi um texto de plano</summary>${planView()}</details></section>`;
+  return `<section class="card login" id="caminho"><h2>Como você quer começar?</h2>
+    <p class="sub" style="margin:0">O CheckFit acompanha o seu dia a partir de um plano alimentar. Escolha uma opção:</p>
+    <div class="choice" style="margin-top:12px">
+     <button class="ghost ch" id="cam-prof" data-act="caminho" data-v="prof"><b>Tenho nutricionista</b><small>Você envia o plano dela e nós carregamos no app, do jeito que ela prescreveu.</small></button>
+     <button class="ghost ch" id="cam-prop" data-act="caminho" data-v="proprio"><b>Quero montar o meu</b><small>Você mesmo cadastra suas refeições, alimentos e calorias.</small></button>
+    </div>
+    <p class="tip" style="margin:10px 0 0">O CheckFit organiza e registra a sua rotina, mas não prescreve dieta. Para um plano individual, procure um(a) nutricionista.</p>
+    <details class="pm" style="margin-top:6px"><summary class="sub">Recebi um texto de plano</summary>${planView()}</details></section>`;
+}
+async function setCaminho(v){
+  if(v === 'proprio'){ edOpen(S.user.uid, 'plano'); return; }
+  try{ await FS.collection('clientes').doc(S.user.uid).set({caminho:v}, {merge:true}); }catch(e){}
+  if(S.cli) S.cli.caminho = v; render();
+}
+
+/* Perfil */
+function perfilView(){
+  const t = temaAtual(), ch = (v, l) => `<button class="chip" data-act="tema" data-v="${v}" aria-pressed="${t === v}">${l}</button>`;
+  return `<section class="card" id="view-perfil"><h2>Perfil</h2><div class="sub" style="margin-top:4px">${esc((S.cli && S.cli.nome) || '')} · ${esc((S.user && S.user.email) || '')}</div></section>
+   <section class="card"><h2>Aparência</h2><div class="opts" style="padding:8px 0 0" role="group" aria-label="Tema">${ch('auto', 'Automático')}${ch('claro', 'Claro')}${ch('escuro', 'Escuro')}</div><p class="tip" style="margin:8px 0 0">Automático segue o modo claro ou escuro do celular.</p></section>
+   ${profileCard()}`;
+}
+function evolView(){
+  const seg = `<div class="tabs evseg" role="group" aria-label="Período"><button data-act="tab" data-v="semana" aria-pressed="${S.view === 'semana'}">Semana</button><button data-act="tab" data-v="mes" aria-pressed="${S.view === 'mes'}">Mês</button></div>`;
+  return seg + (S.view === 'mes' ? viewMonth() : viewWeek());
+}
+
+/* ---------- Meus ajustes: pequenas mudanças do cliente por cima do plano e da ficha do profissional ---------- */
+function ajVazio(){ return {plano:{trocas:{}, opcoes:{}, horario:{}}, treino:{troca:{}, extra:{}}}; }
+function ajNorm(a){ const v = ajVazio(); a = a || {}; ['trocas', 'opcoes', 'horario'].forEach(k => { v.plano[k] = (a.plano && a.plano[k]) || {}; }); ['troca', 'extra'].forEach(k => { v.treino[k] = (a.treino && a.treino[k]) || {}; }); return v; }
+function mergePlan(base, aj){
+  if(!base) return null; const p = JSON.parse(JSON.stringify(base)), A_ = (aj && aj.plano) || {};
+  p.meals.forEach(m => {
+    const h = (A_.horario || {})[m.id]; if(h) m.time = h;
+    const tr = (A_.trocas || {})[m.id] || {};
+    m.options.forEach((o, oi) => o.items.forEach(it => { (tr[oi + '.' + it.k] || []).forEach(c => it.ch.push([c[0], c[1] || '', +c[2] || 0, 1])); }));
+    ((A_.opcoes || {})[m.id] || []).forEach(o => { if(o && Array.isArray(o.items) && o.items.length) m.options.push({label:o.label || 'Minha opção', aj:1, items:o.items.map(i => ({k:i.k, opt:i.opt, ch:i.ch.map(c => [c[0], c[1] || '', +c[2] || 0, 1])}))}); });
+  });
+  p.meals.sort((a, b) => String(a.time || '').localeCompare(String(b.time || '')));
+  return p;
+}
+function mergeTreino(base, aj){
+  if(!base) return null; const t = JSON.parse(JSON.stringify(base)), A_ = (aj && aj.treino) || {};
+  t.fichas.forEach(f => {
+    const tr = (A_.troca || {})[f.id] || {};
+    f.ex = f.ex.map(e => { const n = tr[slug(e.n)]; return n && n.n ? {...e, n:n.n, t:n.t || e.t, _orig:e.n, aj:1} : e; });
+    ((A_.extra || {})[f.id] || []).forEach(e => { if(e && e.n) f.ex.push({n:e.n, t:e.t || 'multi', s:Array.isArray(e.s) ? e.s : [[3, '10–12']], aj:1}); });
+  });
+  return t;
+}
+function aplicaAjustes(){
+  if(S.planBase !== undefined) setPlan(S.planBase && validPlan(S.planBase) ? mergePlan(S.planBase, S.aj) : null);
+  if(S.treinoBase !== undefined){ const t = S.treinoBase && validTreino(S.treinoBase) ? mergeTreino(S.treinoBase, S.aj) : null; S.treino = t && validTreino(t) ? t : (S.treinoBase && validTreino(S.treinoBase) ? S.treinoBase : null); }
+}
+async function ajSalvar(msg){
+  try{ await S.db.doc('config/ajustes').set({json:JSON.stringify(S.aj), atualizado:new Date().toISOString()}); if(msg) toast(msg); }
+  catch(e){ toast('Não consegui salvar o ajuste. Verifique a internet.'); }
+}
+function ajLinhas(aj, base, tbase){
+  aj = ajNorm(aj); const L = [], mealNome = id => { const m = base && base.meals.find(x => x.id === id); return m ? m.name : 'Refeição'; };
+  Object.entries(aj.plano.horario).forEach(([id, h]) => { const m = base && base.meals.find(x => x.id === id); L.push(`${mealNome(id)}: horário ${m && m.time ? m.time + ' → ' : ''}${h}`); });
+  Object.entries(aj.plano.trocas).forEach(([id, o]) => Object.entries(o).forEach(([key, arr]) => { const [oi, k] = key.split('.'), m = base && base.meals.find(x => x.id === id), it = m && m.options[+oi] && m.options[+oi].items.find(i => i.k === k), orig = it ? it.ch[0][0] : 'item';
+    (arr || []).forEach(c => L.push(`${mealNome(id)}: troca para "${orig}" → ${c[0]}${c[1] ? ' (' + c[1] + ')' : ''}, ${fmt(+c[2] || 0)} kcal`)); }));
+  Object.entries(aj.plano.opcoes).forEach(([id, arr]) => (arr || []).forEach(o => L.push(`${mealNome(id)}: nova opção "${o.label}" — ${o.items.map(i => i.ch[0][0] + (i.ch[0][1] ? ' ' + i.ch[0][1] : '')).join(', ')} (${fmt(o.items.reduce((a, i) => a + (+i.ch[0][2] || 0), 0))} kcal)`)));
+  Object.entries(aj.treino.troca).forEach(([fid, o]) => Object.entries(o).forEach(([sl, n]) => { const f = tbase && tbase.fichas.find(x => x.id === fid), e = f && f.ex.find(x => slug(x.n) === sl); L.push(`Treino ${fid}: "${e ? e.n : sl}" trocado por "${n.n}"`); }));
+  Object.entries(aj.treino.extra).forEach(([fid, arr]) => (arr || []).forEach(e => L.push(`Treino ${fid}: exercício adicionado "${e.n}"${Array.isArray(e.s) ? ' ' + specTxt(e.s) : ''}`)));
+  return L;
+}
+
+/* tela de ajustes */
+function ajView(){
+  const k = S.ajKind || 'plano', D = S.ajd || {};
+  let h = `<section class="card" id="view-aj"><div class="thead"><div><h2>${k === 'plano' ? 'Ajustes no meu plano' : 'Ajustes na minha ficha'}</h2><div class="sub">Pequenas mudanças suas, por cima do ${k === 'plano' ? 'plano da nutricionista' : 'treino do professor'}.</div></div><button class="ghost" id="aj-back" data-act="ajback">Voltar</button></div>
+   <p class="tip" style="margin:8px 0 0">${k === 'plano' ? 'O plano original continua igual. Seus ajustes aparecem marcados com <b>seu ajuste</b> e saem no relatório do mês, para a nutricionista ver.' : 'A ficha original continua igual. Seus ajustes aparecem marcados e saem no relatório do mês, para o professor ver.'}</p></section>`;
+  if(k === 'plano'){
+    const base = S.planBase; if(!base) return h;
+    base.meals.forEach(m => {
+      const aj = S.aj.plano, open = S.ajOpen === m.id, hora = aj.horario[m.id] || '', minhas = aj.opcoes[m.id] || [], trs = aj.trocas[m.id] || {};
+      const nAj = (hora ? 1 : 0) + minhas.length + Object.values(trs).reduce((a, x) => a + (x || []).length, 0);
+      h += `<section class="card"><details class="pm"${open ? ' open' : ''} data-aj="${m.id}"><summary><span class="num" style="font-weight:800">${esc(hora || m.time || '')}</span> <b>${esc(m.name)}</b>${nAj ? ` <span class="pill s-ok">${nAj} ajuste(s)</span>` : ''}</summary>
+       <div class="ajb">
+        <div class="ajrow"><label for="ajh-${m.id}" class="sub" style="font-weight:700">Horário</label><input id="ajh-${m.id}" type="time" value="${esc(hora || m.time || '')}" class="ajin" style="max-width:130px"><button class="ghost eb" data-act="ajhora" data-m="${m.id}">Salvar</button>${hora ? `<button class="ghost eb" data-act="ajhora" data-m="${m.id}" data-clear="1">Voltar ao original (${esc(m.time || '')})</button>` : ''}</div>
+        <div class="sub" style="font-weight:800;margin-top:6px">Minhas opções para esta refeição</div>
+        ${minhas.map((o, i) => `<div class="ajmine"><b>${esc(o.label)}</b> — ${o.items.map(x => esc(x.ch[0][0])).join(', ')} · ${fmt(o.items.reduce((a, x) => a + (+x.ch[0][2] || 0), 0))} kcal <button class="x" data-act="ajdelopc" data-m="${m.id}" data-i="${i}" aria-label="Apagar opção">✕</button></div>`).join('')}
+        ${D.opc === m.id ? ajOpcForm(m.id) : `<button class="ghost eb add" data-act="ajnovaopc" data-m="${m.id}">+ nova opção (ex.: YoPro no dia corrido)</button>`}
+        <div class="sub" style="font-weight:800;margin-top:10px">Trocas nos itens</div>
+        ${m.options.map((o, oi) => `${m.options.length > 1 ? `<div class="sub" style="margin-top:6px">${esc(o.label)}</div>` : ''}${o.items.map(it => { const key = oi + '.' + it.k, mine = trs[key] || [], fid = `${m.id}-${oi}-${it.k}`;
+          return `<div class="ajit"><div><b>${esc(it.ch[0][0])}</b> <span class="sub">${esc(it.ch[0][1] || '')}</span>${it.ch.length > 1 ? `<div class="sub">trocas do plano: ${it.ch.slice(1).map(c => esc(c[0])).join(', ')}</div>` : ''}
+            ${mine.map((c, ci) => `<div class="ajmine">seu ajuste: <b>${esc(c[0])}</b> ${esc(c[1] || '')} · ${fmt(+c[2] || 0)} kcal <button class="x" data-act="ajdeltroca" data-m="${m.id}" data-key="${key}" data-i="${ci}" aria-label="Apagar troca">✕</button></div>`).join('')}</div>
+            ${D.troca === fid ? `<div class="ajform"><input id="ajtn" list="foods" placeholder="Troca (ex.: Tapioca)" class="ajin" autocomplete="off"><input id="ajtq" placeholder="Qtd" class="ajin" style="max-width:90px" autocomplete="off"><input id="ajtk" inputmode="numeric" placeholder="kcal" class="ajin" style="max-width:76px"><button class="primary eb" data-act="ajaddtroca" data-m="${m.id}" data-key="${key}">Salvar</button><button class="ghost eb" data-act="ajcancel">Cancelar</button></div>`
+              : `<button class="ghost eb add" data-act="ajnovatroca" data-v="${fid}">+ troca</button>`}</div>`; }).join('')}`).join('')}
+       </div></details></section>`;
+    });
+  } else {
+    const base = S.treinoBase; if(!base) return h; const aj = S.aj.treino;
+    base.fichas.forEach(f => {
+      const tr = aj.troca[f.id] || {}, ex = aj.extra[f.id] || [], open = S.ajOpen === 'f' + f.id, nAj = Object.keys(tr).length + ex.length;
+      h += `<section class="card"><details class="pm"${open ? ' open' : ''} data-aj="f${f.id}"><summary><b>${esc(f.id)} · ${esc(f.nome || '')}</b>${nAj ? ` <span class="pill s-ok">${nAj} ajuste(s)</span>` : ''}</summary><div class="ajb">
+        ${f.ex.map(e => { const sl = slug(e.n), t = tr[sl], fid = f.id + '-' + sl;
+          return `<div class="ajit"><div>${t ? `<s class="sub">${esc(e.n)}</s> → <b>${esc(t.n)}</b> <span class="pill s-ok">seu ajuste</span>` : `<b>${esc(e.n)}</b>`}</div>
+            ${D.ex === fid ? `<div class="ajform"><input id="ajen" placeholder="Novo exercício" class="ajin" autocomplete="off" value="${esc(t ? t.n : '')}"><button class="primary eb" data-act="ajtrocaex" data-f="${f.id}" data-s="${sl}">Salvar</button><button class="ghost eb" data-act="ajcancel">Cancelar</button></div>`
+              : `<div class="row" style="gap:6px">${t ? `<button class="ghost eb" data-act="ajdesfazex" data-f="${f.id}" data-s="${sl}">Desfazer troca</button>` : `<button class="ghost eb" data-act="ajnovoex" data-v="${fid}">Trocar exercício</button>`}</div>`}</div>`; }).join('')}
+        ${ex.map((e, i) => `<div class="ajmine">adicionado: <b>${esc(e.n)}</b> ${Array.isArray(e.s) ? esc(specTxt(e.s)) : ''} <button class="x" data-act="ajdelex" data-f="${f.id}" data-i="${i}" aria-label="Apagar exercício">✕</button></div>`).join('')}
+        ${D.add === f.id ? `<div class="ajform"><input id="ajan" placeholder="Exercício" class="ajin" autocomplete="off"><input id="ajas" placeholder="3x10–12" class="ajin" style="max-width:110px" autocomplete="off"><select id="ajat" class="ajin" style="max-width:150px">${TIPO_EX.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select><button class="primary eb" data-act="ajaddex" data-f="${f.id}">Salvar</button><button class="ghost eb" data-act="ajcancel">Cancelar</button></div>`
+          : `<button class="ghost eb add" data-act="ajnovoadd" data-f="${f.id}">+ adicionar exercício</button>`}
+      </div></details></section>`;
+    });
+  }
+  return h;
+}
+function ajOpcForm(mid){
+  const n = (S.ajd && S.ajd.n) || 2;
+  return `<div class="ajform col"><input id="ajol" placeholder="Nome da opção (ex.: YoPro, dia corrido)" class="ajin" autocomplete="off">
+    ${[...Array(n)].map((_, i) => `<div class="ajform"><input id="ajon${i}" list="foods" placeholder="${i ? 'Outro item (opcional)' : 'Alimento (ex.: YoPro)'}" class="ajin" autocomplete="off"><input id="ajoq${i}" placeholder="Qtd" class="ajin" style="max-width:90px" autocomplete="off"><input id="ajok${i}" inputmode="numeric" placeholder="kcal" class="ajin" style="max-width:76px"></div>`).join('')}
+    <div class="row"><button class="ghost eb add" data-act="ajmaisitem">+ item</button><span class="sp"></span><button class="primary eb" data-act="ajaddopc" data-m="${mid}">Salvar opção</button><button class="ghost eb" data-act="ajcancel">Cancelar</button></div></div>`;
+}
+const ajVal = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+function ajKcalAuto(nomeId, kId){ const n = ajVal(nomeId).toLowerCase(), k = document.getElementById(kId); if(!k || k.value) return; const f = [...S.custom.map(x => [x.n, x.kcal]), ...FOODS].find(x => String(x[0]).toLowerCase() === n); if(f) k.value = f[1]; }
+function ajAct(a, b){
+  const aj = S.aj, d = b.dataset; let msg = '';
+  if(a === 'ajback'){ S.mode = 'app'; S.ajd = null; render(); window.scrollTo(0, 0); return; }
+  if(a === 'ajcancel'){ S.ajd = null; render(); return; }
+  if(a === 'ajnovatroca'){ S.ajd = {troca:d.v}; render(); setTimeout(() => { const e = document.getElementById('ajtn'); if(e) e.focus(); }, 50); return; }
+  if(a === 'ajnovaopc'){ S.ajd = {opc:d.m, n:2}; render(); setTimeout(() => { const e = document.getElementById('ajol'); if(e) e.focus(); }, 50); return; }
+  if(a === 'ajmaisitem'){ const keep = {}; document.querySelectorAll('.ajform input').forEach(i => { keep[i.id] = i.value; }); S.ajd.n = (S.ajd.n || 2) + 1; render(); Object.entries(keep).forEach(([id, v]) => { const e = document.getElementById(id); if(e) e.value = v; }); return; }
+  if(a === 'ajnovoex'){ S.ajd = {ex:d.v}; render(); setTimeout(() => { const e = document.getElementById('ajen'); if(e) e.focus(); }, 50); return; }
+  if(a === 'ajnovoadd'){ S.ajd = {add:d.f}; render(); setTimeout(() => { const e = document.getElementById('ajan'); if(e) e.focus(); }, 50); return; }
+  if(a === 'ajhora'){ if(d.clear) delete aj.plano.horario[d.m]; else { const v = ajVal('ajh-' + d.m); if(!/^\d{2}:\d{2}$/.test(v)){ toast('Informe o horário.'); return; } const m = S.planBase.meals.find(x => x.id === d.m); if(m && m.time === v) delete aj.plano.horario[d.m]; else aj.plano.horario[d.m] = v; } msg = 'Horário salvo.'; S.ajOpen = d.m; }
+  if(a === 'ajaddtroca'){ ajKcalAuto('ajtn', 'ajtk'); const n = ajVal('ajtn'), k = numv(ajVal('ajtk')); if(!n){ toast('Escreva o alimento da troca.'); return; }
+    const o = aj.plano.trocas[d.m] = aj.plano.trocas[d.m] || {}; (o[d.key] = o[d.key] || []).push([n, ajVal('ajtq'), Math.round(k)]); S.ajd = null; msg = 'Troca adicionada.'; S.ajOpen = d.m; }
+  if(a === 'ajdeltroca'){ const o = aj.plano.trocas[d.m] || {}; (o[d.key] || []).splice(+d.i, 1); if(o[d.key] && !o[d.key].length) delete o[d.key]; if(!Object.keys(o).length) delete aj.plano.trocas[d.m]; msg = 'Troca removida.'; S.ajOpen = d.m; }
+  if(a === 'ajaddopc'){ const label = ajVal('ajol'), items = [];
+    for(let i = 0; i < ((S.ajd && S.ajd.n) || 2); i++){ ajKcalAuto('ajon' + i, 'ajok' + i); const n = ajVal('ajon' + i); if(n) items.push({k:'a' + edKey(), ch:[[n, ajVal('ajoq' + i), Math.round(numv(ajVal('ajok' + i)))]]}); }
+    if(!items.length){ toast('Escreva pelo menos um alimento.'); return; }
+    (aj.plano.opcoes[d.m] = aj.plano.opcoes[d.m] || []).push({label:label || items[0].ch[0][0], items}); S.ajd = null; msg = 'Opção adicionada.'; S.ajOpen = d.m; }
+  if(a === 'ajdelopc'){ (aj.plano.opcoes[d.m] || []).splice(+d.i, 1); if(!(aj.plano.opcoes[d.m] || []).length) delete aj.plano.opcoes[d.m]; msg = 'Opção removida.'; S.ajOpen = d.m; }
+  if(a === 'ajtrocaex'){ const n = ajVal('ajen'); if(!n){ toast('Escreva o novo exercício.'); return; } (aj.treino.troca[d.f] = aj.treino.troca[d.f] || {})[d.s] = {n}; S.ajd = null; msg = 'Exercício trocado.'; S.ajOpen = 'f' + d.f; }
+  if(a === 'ajdesfazex'){ const o = aj.treino.troca[d.f] || {}; delete o[d.s]; if(!Object.keys(o).length) delete aj.treino.troca[d.f]; msg = 'Troca desfeita.'; S.ajOpen = 'f' + d.f; }
+  if(a === 'ajaddex'){ const n = ajVal('ajan'); if(!n){ toast('Escreva o exercício.'); return; } (aj.treino.extra[d.f] = aj.treino.extra[d.f] || []).push({n, t:ajVal('ajat') || 'multi', s:specParse(ajVal('ajas')) || [[3, '10–12']]}); S.ajd = null; msg = 'Exercício adicionado.'; S.ajOpen = 'f' + d.f; }
+  if(a === 'ajdelex'){ (aj.treino.extra[d.f] || []).splice(+d.i, 1); if(!(aj.treino.extra[d.f] || []).length) delete aj.treino.extra[d.f]; msg = 'Exercício removido.'; S.ajOpen = 'f' + d.f; }
+  aplicaAjustes(); render(); ajSalvar(msg);
 }
 
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
@@ -1770,10 +2112,14 @@ async function importData(text){
   if(!d||typeof d!=='object'||(!d.dias&&!d.plano&&!d.treino)){ say('Não encontrei plano, ficha de treino nem registros nesse texto.'); return; }
   if(d.treino&&!validTreino(d.treino)){ say('A ficha de treino desse texto está incompleta. Peça um novo texto da ficha.'); return; }
   if(d.plano&&!validPlan(d.plano)){ say('O plano desse texto está incompleto. Peça um novo texto do plano.'); return; }
+  const orig=S.isAdmin?'prof':'proprio', trav=[];
+  if(!S.isAdmin && d.plano && S.planOrig==='prof'){ delete d.plano; trav.push('plano'); }
+  if(!S.isAdmin && d.treino && S.trnOrig==='prof'){ delete d.treino; trav.push('ficha de treino'); }
+  if(trav.length && !d.dias){ say('Seu '+trav.join(' e ')+' é do profissional e só pode ser trocado pelo CheckFit. Fale com o suporte.'); return; }
   try{
     const b=FS.batch(); let n=0;
-    if(d.plano) b.set(S.db.doc('config/plano'),{json:JSON.stringify(d.plano),atualizado:new Date().toISOString()});
-    if(d.treino) b.set(S.db.doc('config/treino'),{json:JSON.stringify(d.treino),atualizado:new Date().toISOString()});
+    if(d.plano) b.set(S.db.doc('config/plano'),{json:JSON.stringify(d.plano),origem:orig,atualizado:new Date().toISOString()});
+    if(d.treino) b.set(S.db.doc('config/treino'),{json:JSON.stringify(d.treino),origem:orig,atualizado:new Date().toISOString()});
     Object.entries(d.dias||{}).forEach(([k,v])=>{ if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&v&&typeof v==='object'){ b.set(S.db.doc('dias/'+k),v); n++; } });
     if(d.perfil&&typeof d.perfil==='object') b.set(S.db.doc('config/perfil'),d.perfil);
     if(Array.isArray(d.alimentos)) b.set(S.db.doc('config/alimentos'),{lista:d.alimentos});
@@ -1800,7 +2146,9 @@ function weekStart(date){const d=parse(date);const w=(d.getDay()+6)%7;d.setDate(
 
 function render(){
   const signed=!!S.user;
-  document.getElementById('tabs').hidden=!signed; document.getElementById('navbar').hidden=!signed;
+  document.getElementById('tabs').hidden=true; document.getElementById('navbar').hidden=!signed;
+  const bnv=document.getElementById('bnav'); bnv.hidden=true; document.body.classList.remove('hasnav');
+  if(S.tab==='inicio') S.view='dia'; else if(S.tab==='evol' && S.view==='dia') S.view=S.evolV||'semana';
   if(!signed){
     const app=document.getElementById('app'), ban=bannerMsg?`<div class="banner">${esc(bannerMsg)}</div>`:'';
     if(S.mode==='legal'){ app.innerHTML=legalView(S.legal); S.lastView='legal'; return; }
@@ -1821,23 +2169,22 @@ function render(){
   const acc=access(); if(!acc.ok){ head(false); mount('block', ban+blockView(acc)); return; }
   WATER_GOAL = (+S.prof.agua>0) ? +S.prof.agua : ((PLANINFO&&+PLANINFO.agua)||2000);
   if(!S.ready||!S.planReady){ app.innerHTML=ban+`<div class="card"><p class="sub" style="margin:0">Abrindo seu diário…</p></div>`; return; }
+  if(S.mode==='ed' && A.ed){ head(false); mount('ed', ban+edView()); return; }
+  if(S.mode==='aj'){ head(false); mount('aj-'+(S.ajKind||'plano'), ban+ajView()); return; }
   if(S.mode==='treino'){ head(false); mount('treino', ban+treinoView()); return; }
   if(S.mode==='rel'){ head(false); mount('rel', ban+relView()); return; }
-  if(!PLAN.length){ document.getElementById('tabs').hidden=true; document.getElementById('navbar').hidden=true; if(!document.getElementById('planimport')) app.innerHTML=ban+planView(); S.lastView='plan'; return; }
+  if(!PLAN.length){ document.getElementById('tabs').hidden=true; document.getElementById('navbar').hidden=true; const ta=document.getElementById('impt'); if(!(ta && ta.value) || S.lastView!=='plan') app.innerHTML=ban+caminhoView(); S.lastView='plan'; return; }
   const active=document.activeElement && document.activeElement.id;
   S.lastView='app';
-  app.innerHTML = ban + renewBanner() + (S.view==='dia'?viewDay():S.view==='semana'?viewWeek():viewMonth());
+  document.getElementById('navbar').hidden = !(S.tab==='inicio'||S.tab==='evol');
+  bnv.innerHTML=bnavHTML(); bnv.hidden=false; document.body.classList.add('hasnav');
+  app.innerHTML = ban + renewBanner() + (S.tab==='planos'?planosView():S.tab==='perfil'?perfilView():S.tab==='evol'?evolView():viewDay()) + plusSheet();
   if(active){const el=document.getElementById(active); if(el && el.tagName==='INPUT') el.focus();}
 }
 
 function viewDay(){
   const date=S.date, c=dayCalc(date), pct=Math.min(100,c.kcal/REF*100), over=c.kcal>REF*1.1;
-  let h=`<section class="card hero" aria-label="Total do dia">
-    <div class="row1"><div><div class="big num">${fmt(c.kcal)}<span>kcal</span></div><div class="sub num">Referência do plano ≈ ${fmt(REF)} kcal</div></div>${pill(DAY_STATUS,c.status)}</div>
-    <div class="bar"><i class="${over?'over':''}" style="width:${pct}%"></i></div>
-    <div class="sub num">${c.ok} de ${PLAN.length} refeições no plano${c.extraK?` · extras: ${fmt(c.extraK)} kcal`:''}${c.tr.kcal?` · treinos: −${fmt(c.tr.kcal)} kcal`:''}</div>
-    <button class="primary" id="allplan" data-act="allplan">Segui o plano em todas as refeições</button>
-  </section>`;
+  let h=heroInicio(date,c);
   h+=waterCard(date,c);
   h+=treinoCard(date);
   PLAN.forEach(m=>{h+=mealCard(date,m)});
@@ -1845,7 +2192,6 @@ function viewDay(){
   h+=weightCard(date);
   h+=medidasCard(date);
   h+=daySummary(date,c);
-  h+=profileCard();
   h+=`<p class="note">Calorias aproximadas (tabela TACO e rótulos). Quantidades conforme o plano${PLANINFO&&PLANINFO.data?' de '+esc(PLANINFO.data):''}.</p>`;
   return h;
 }
@@ -1941,9 +2287,9 @@ function waterCard(date,c){
 }
 function mealCard(date,m){
   const r=rec(date,m.id,false), calc=mealCalc(m,r), oi=(r&&r.opt)||0, opt=m.options[oi];
-  let h=`<section class="card meal" aria-label="${m.name}">
+  let h=`<section class="card meal" id="meal-${m.id}" aria-label="${m.name}">
    <div class="mhead"><div class="mtime num">${m.time}</div><div class="mname">${m.name}<small>${pill(MEAL_STATUS,calc.status)}</small></div><div class="mk num">${fmt(calc.kcal)} kcal</div></div>`;
-  if(m.options.length>1) h+=`<div class="opts" role="group" aria-label="Opções">${m.options.map((o,i)=>`<button class="chip" id="opt-${m.id}-${i}" data-act="opt" data-m="${m.id}" data-o="${i}" aria-pressed="${i===oi}">${o.label}</button>`).join('')}</div>`;
+  if(m.options.length>1) h+=`<div class="opts" role="group" aria-label="Opções">${m.options.map((o,i)=>`<button class="chip${o.aj?' mine':''}" id="opt-${m.id}-${i}" data-act="opt" data-m="${m.id}" data-o="${i}" aria-pressed="${i===oi}">${o.label}</button>`).join('')}</div>`;
   h+=`<div class="items">`;
   opt.items.forEach(it=>{
     const ir=itemRec(r,oi,it.k), ch=it.ch[ir.c||0]||it.ch[0], mult=ir.m||1;
@@ -1951,7 +2297,7 @@ function mealCard(date,m){
     h+=`<div class="item">
       <button class="check" id="chk-${id}" data-act="check" data-m="${m.id}" data-k="${it.k}" aria-pressed="${!!ir.on}" aria-label="Comi ${esc(ch[0])}">${CHECK}</button>
       <div class="iname"><b>${esc(ch[0])}</b><span class="q">${esc(ch[1])}</span>
-      ${it.ch.length>1?`<div class="choices" role="group" aria-label="Trocar por">${it.ch.map((x,i)=>`<button class="chip" id="ch-${id}-${i}" data-act="choice" data-m="${m.id}" data-k="${it.k}" data-c="${i}" aria-pressed="${i===(ir.c||0)}">${esc(x[0])}</button>`).join('')}</div>`:''}</div>
+      ${it.ch.length>1?`<div class="choices" role="group" aria-label="Trocar por">${it.ch.map((x,i)=>`<button class="chip${x[3]?' mine':''}" id="ch-${id}-${i}" data-act="choice" data-m="${m.id}" data-k="${it.k}" data-c="${i}" aria-pressed="${i===(ir.c||0)}">${esc(x[0])}</button>`).join('')}</div>`:''}</div>
       <div class="right"><div class="step"><button id="dn-${id}" data-act="mult" data-m="${m.id}" data-k="${it.k}" data-d="-0.5" aria-label="Menos">−</button><span class="num">${String(mult).replace('.',',')}×</span><button id="up-${id}" data-act="mult" data-m="${m.id}" data-k="${it.k}" data-d="0.5" aria-label="Mais">+</button></div><span class="ik num">${ir.on?fmt(ch[2]*mult):fmt(ch[2]*mult)} kcal</span></div>
     </div>`;
   });
@@ -2108,7 +2454,18 @@ document.addEventListener('click',e=>{
   if(a==='logout'){ if(AUTH) AUTH.signOut(); return; }
   if(a==='export'){exportData();return;}
   if(a==='import'){const t=document.getElementById('impt'); importData(t?t.value:''); return;}
-  if(a==='tab'){S.view=b.dataset.v;render();}
+  if(a==='tab'){S.view=b.dataset.v; if(S.view!=='dia') S.evolV=S.view; render();}
+  if(a==='btab'){setTab(b.dataset.v); return;}
+  if(a==='majustes'){S.mode='aj'; S.ajKind=b.dataset.k; S.ajOpen=null; S.ajd=null; render(); window.scrollTo(0,0); return;}
+  if(/^aj[a-z]/.test(a)){ajAct(a,b); return;}
+  if(a==='plus'){S.plus=true; render(); return;}
+  if(a==='plusclose'){S.plus=false; render(); return;}
+  if(a==='plusw'){addWater(today(), +b.dataset.ml); toast('Água registrada: +'+b.dataset.ml+' ml'); return;}
+  if(a==='plusgo'){plusGo(b.dataset.v); return;}
+  if(a==='goMeal'){goMeal(b.dataset.m); return;}
+  if(a==='ced'){edOpen(S.user.uid, b.dataset.k); return;}
+  if(a==='caminho'){setCaminho(b.dataset.v); return;}
+  if(a==='tema'){setTema(b.dataset.v); return;}
   else if(a==='prev'||a==='next'){const s=a==='prev'?-1:1; if(S.view==='dia')S.date=addDays(S.date,s); else if(S.view==='semana')S.date=addDays(S.date,7*s); else {const d=parse(S.date);S.date=ymd(new Date(d.getFullYear(),d.getMonth()+s,1));} render();}
   else if(a==='today'){S.date=today();render();}
   else if(a==='goday'){S.date=b.dataset.d;S.view='dia';render();window.scrollTo(0,0);}
@@ -2169,7 +2526,7 @@ document.addEventListener('click',e=>{ const s=e.target.closest('details.edd > s
 document.addEventListener('submit',e=>{ if(e.target.id==='medform'){ e.preventDefault(); saveMedidas(S.date); } });
 document.addEventListener('change',e=>{ if(e.target.id==='medsel'){ S.medEx=e.target.value; render(); } });
 document.addEventListener('input',e=>{ if(e.target.id==='rel-nota') relSetNota(e.target.value); });
-document.addEventListener('click',e=>{ const s=e.target.closest('details.medd > summary'); if(s) S.medOpen=!s.parentElement.open; });
+document.addEventListener('click',e=>{ const s=e.target.closest('details.medd > summary'); if(s) S.medOpen=!s.parentElement.open; const q=e.target.closest('details[data-aj] > summary'); if(q) S.ajOpen=q.parentElement.open?null:q.parentElement.dataset.aj; });
 fillFoods();
 init();
 })();
