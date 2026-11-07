@@ -425,6 +425,52 @@ body.hasnav .toast{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
 .fm{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;color:var(--muted);margin-top:4px}.fm b{color:var(--fg)}
 .fmeals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.fmeals .ghost{min-height:44px;font-size:13.5px}
 .fbtn{width:100%;margin-bottom:6px;font-size:13.5px;min-height:38px}
+
+.streak{padding:14px 16px}
+.stk{display:flex;align-items:center;gap:12px}.stk b{font-family:var(--display);font-size:28px}.stk span{font-weight:700}
+.fire{font-size:34px;filter:drop-shadow(0 2px 6px rgba(251,146,60,.5))}.fire.off{filter:grayscale(1);opacity:.45}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
+.wd{display:flex;align-items:center;justify-content:center;height:32px;border-radius:10px;background:var(--surface2);color:var(--muted);font-weight:800;font-size:13px}
+.wd.on{background:linear-gradient(135deg,#22C55E,#A3E635);color:#0B2E3D}.wd.hj{outline:2px solid var(--accent);outline-offset:1px}.wd.fut{opacity:.45}
+.recom{display:flex;gap:10px;margin-top:12px;padding:12px;border-radius:14px;background:var(--accent-soft)}.recic{font-size:26px}
+.cele{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:41;width:min(88vw,360px);background:var(--surface);border-radius:24px;padding:24px 20px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);animation:pop .35s ease-out}
+.cele h2{margin:8px 0 6px}.cele p{margin:0;color:var(--muted)}.celeic{font-size:64px;line-height:1}
+@keyframes pop{from{transform:translate(-50%,-50%) scale(.7);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+.confete{position:fixed;inset:0;pointer-events:none;z-index:42;overflow:hidden}
+.confete i{position:absolute;top:-20px;width:10px;height:16px;border-radius:3px;animation:cair linear forwards}
+@keyframes cair{to{top:110%;transform:translateY(0) rotate(720deg)}}
+@media (prefers-reduced-motion: reduce){.confete{display:none}.cele{animation:none}}
+.bemg{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.bemr{display:grid;grid-template-columns:70px 1fr;align-items:center;gap:8px}
+.bemb{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.bemx{height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:22px}
+.bemx.on{background:var(--accent-soft);border-color:var(--accent);transform:scale(1.06)}
+.bemres{font-size:16px;margin-left:6px;letter-spacing:2px}
+.conqg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.conq{display:flex;flex-direction:column;gap:2px;padding:10px;border-radius:14px;border:1px solid var(--line);background:var(--bg);opacity:.6}
+.conq.on{opacity:1;background:var(--accent-soft);border-color:transparent}.conq span{font-size:26px}.conq b{font-size:13.5px}.conq small{font-size:11.5px;color:var(--muted)}
+.semimg{width:100%;max-width:360px;display:block;margin:12px auto 0;border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+
+.jcard{display:flex;align-items:center;gap:12px;padding:14px 16px}.jcard>div{flex:1}.jci{font-size:30px}
+.jcarta{background:linear-gradient(135deg,var(--accent-soft),var(--surface))}
+.jcomp textarea{width:100%;box-sizing:border-box;min-height:150px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--fg);padding:12px;font:inherit;font-size:16px;line-height:1.5;resize:vertical}
+.jconv{font-family:var(--display);font-weight:800;font-size:17px;margin:4px 0 8px}
+.jtags,.jfil{padding:0 0 10px;flex-wrap:wrap}
+.jcartaopt{margin-top:6px;padding:12px;border-radius:14px;background:var(--accent-soft)}
+.japoio{padding:14px;border-radius:14px;background:var(--accent-soft);margin:0 0 12px}.japoio p{margin:6px 0 8px;line-height:1.5}.japoio a{color:var(--accent);font-weight:800}
+.jmes{text-transform:capitalize;margin:16px 0 6px;font-size:15px;color:var(--muted)}
+.jent{border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:0 0 10px;background:var(--bg)}
+.jent.jnova,.jent.jver{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.jeh{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.jtag{font-weight:800;font-size:13.5px}
+.jtxt{white-space:pre-wrap;line-height:1.55;margin:8px 0;overflow-wrap:anywhere}
+.jbtns{gap:6px;flex-wrap:wrap}.eb.danger{color:#b3261e;border-color:#b3261e}
+.jpdf{margin-top:14px}
+
+.restbar.fim{animation:rfim .5s ease-in-out 4;background:#16A34A;color:#fff}
+@keyframes rfim{50%{filter:brightness(1.35)}}
+.restbar .rt,.restbar button{white-space:nowrap}
+.somtip{font-size:13.5px;line-height:1.45;padding:10px 12px;border-radius:12px;background:var(--accent-soft);margin:6px 0}
 </style>
 </head>
 <body>
@@ -464,7 +510,7 @@ const FOODS = [
  ['Banana',90],['Maçã',75],['Mamão (1 fatia)',60],['Castanhas (30 g)',180],['Pão francês extra',150]
 ];
 const MEAL_STATUS = {ok:['No plano','s-ok'], adj:['Ajustado','s-warn'], extra:['Com extra','s-warn'], skip:['Pulou','s-bad'], pend:['Pendente','s-idle']};
-const DAY_STATUS = {plano:['Fiz tudo','s-ok'], fora:['Não fiz tudo','s-bad'], andamento:['Em andamento','s-idle'], vazio:['Sem registro','s-idle']};
+const DAY_STATUS = {plano:['Fiz tudo','s-ok'], fora:['Dia parcial','s-warn'], andamento:['Em andamento','s-idle'], vazio:['Sem registro','s-idle']};
 let WATER_GOAL = 2000;
 /* MET (Compêndio de Atividades Físicas): leve, moderada, intensa. Gasto do treino = (MET − 1) × peso × horas, ou seja, o que o treino queima a mais que o repouso */
 const ACTS = {
@@ -547,6 +593,7 @@ function save(date){
   clearTimeout(S.timers[date]);
   S.timers[date]=setTimeout(async()=>{
     delete S.timers[date];
+    if(S.db && S.days[date] && S.days[date]._h){ saveParcial(date); return; }
     const body=JSON.parse(JSON.stringify(S.days[date]||{meals:{}}));
     if(S.db){ try{ await S.db.doc('dias/'+date).set(body);}catch(e){ banner('Não consegui salvar agora. Vou tentar de novo na próxima alteração.'); } }
     else { try{ localStorage.setItem('diario-dias',JSON.stringify(S.days)); }catch(e){} }
@@ -571,17 +618,13 @@ const FB_CONFIG = {
 let AUTH=null, FS=null;
 function bindUser(user){
   (S.unsubs||[]).forEach(u=>{try{u()}catch(e){}}); S.unsubs=[];
-  S.user=user||null; S.treino=null; S.sessIni=null; S.rest=null; S.days={}; S.custom=[]; S.prof={...PROF_DEF}; S.ready=false; S.planReady=false; S.db=null; bannerMsg=''; S.imsg=''; setPlan(null);
+  S.user=user||null; S.jor=null; S.treino=null; S.sessIni=null; S.rest=null; S.days={}; S.custom=[]; S.prof={...PROF_DEF}; S.ready=false; S.planReady=false; S.db=null; bannerMsg=''; S.imsg=''; setPlan(null);
   document.getElementById('who').hidden=!user; S.confirmDel=false; S.delMsg='';
   bindCheckfit(user);
   if(!user){ render(); return; }
   const base=FS.collection('users').doc(user.uid);
   S.db={ doc:p=>{const [c,d]=p.split('/'); return base.collection(c).doc(d);}, collection:p=>base.collection(p) };
-  S.unsubs.push(S.db.collection('dias').onSnapshot(snap=>{
-    snap.docs.forEach(doc=>{ if(!S.timers[doc.id]) S.days[doc.id]=JSON.parse(JSON.stringify(doc.data()||{meals:{}})); });
-    snap.docChanges().forEach(ch=>{ if(ch.type==='removed' && !S.timers[ch.doc.id]) delete S.days[ch.doc.id]; });
-    S.ready=true; render();
-  },()=>{ banner('Não consegui ler seus dados. Verifique a internet e recarregue.'); }));
+  diasBind(user);
   S.unsubs.push(S.db.doc('config/alimentos').onSnapshot(s=>{ S.custom=(s.exists && s.data().lista)||[]; fillFoods(); },()=>{}));
   S.unsubs.push(S.db.doc('config/treino').onSnapshot(s=>{ S.trnOrig = s.exists ? (s.data().origem||'prof') : null; let t=null; if(s.exists){ try{ t=JSON.parse(s.data().json||'null'); }catch(e){} } S.treinoBase=validTreino(t)?t:null; aplicaAjustes(); if(S.ready) render(); },()=>{}));
   S.unsubs.push(S.db.doc('config/plano').onSnapshot(s=>{ S.planOrig = s.exists ? (s.data().origem||'prof') : null; let p=null; if(s.exists){ try{ p=JSON.parse(s.data().json||'null'); }catch(e){} } S.planBase=validPlan(p)?p:null; aplicaAjustes(); S.planReady=true; if(PLAN.length){ const pi=document.getElementById('planimport'); if(pi) pi.remove(); } render(); },()=>{ S.planReady=true; render(); }));
@@ -798,7 +841,7 @@ async function deleteAccount(){
   say('Apagando seus dados…');
   try{
     const base = FS.collection('users').doc(u.uid);
-    for(const c of ['dias','config']){
+    for(const c of ['dias','config','diario']){
       const snap = await base.collection(c).get();
       let b = FS.batch(), n = 0;
       for(const d of snap.docs){ b.delete(d.ref); n++; if(n === 400){ await b.commit(); b = FS.batch(); n = 0; } }
@@ -1614,7 +1657,8 @@ function heroInicio(date, c){
   const m = metaDia(date, c), pct = Math.min(100, c.kcal / REF * 100), over = c.kcal > REF * 1.1;
   const nome = ((S.cli && S.cli.nome) || '').split(' ')[0];
   const lin = (ic, v, l, cor) => `<div class="hl"><span class="hi" style="color:${cor}">${ic}</span><b class="num">${v}</b><span class="sub">${l}</span></div>`;
-  return `<section class="card hero home" aria-label="Resumo do dia">
+  microCheck(date, c);
+  return engTopo(date) + `<section class="card hero home" aria-label="Resumo do dia">
     ${S.date === today() && nome ? `<div class="hello">Olá, ${esc(nome)}!</div>` : ''}
     <div class="hgrid">${ring(m.pct)}<div class="hlist">
       ${lin('🔥', fmt(c.kcal) + ' / ' + fmt(REF), 'kcal', 'var(--fire)')}
@@ -1625,14 +1669,14 @@ function heroInicio(date, c){
     <div class="row1" style="margin-top:4px">${pill(DAY_STATUS, c.status)}<span class="sub num">${c.extraK ? `extras ${fmt(c.extraK)} kcal` : ''}${c.extraK && c.tr.kcal ? ' · ' : ''}${c.tr.kcal ? `treinos −${fmt(c.tr.kcal)} kcal` : ''}</span></div>
     <div class="bar"><i class="${over ? 'over' : ''}" style="width:${pct}%"></i></div>
     <button class="primary" id="allplan" data-act="allplan">Segui o plano em todas as refeições</button>
-  </section>${proximaRefeicao(date)}`;
+  </section>${proximaRefeicao(date)}${bemCard(date)}${jorCard(date)}${desafioCard(date)}`;
 }
 function proximaRefeicao(date){
   if(date !== today() || !PLAN.length) return '';
   const agora = new Date(), hm = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
   const pend = PLAN.filter(m => mealCalc(m, rec(date, m.id, false)).status === 'pend');
   if(!pend.length) return '';
-  const m = pend.find(x => (x.time || '') >= hm) || pend[0], o = m.options[0];
+  const m = pend[0], o = m.options[0];
   const itens = o ? o.items.filter(i => !i.opt).map(i => (i.ch[0] || [])[0]).filter(Boolean).slice(0, 4).join(', ') : '';
   return `<section class="card nextm" aria-label="Próxima refeição"><div class="sub" style="font-weight:800;text-transform:uppercase;letter-spacing:.4px;font-size:11.5px">Próxima refeição</div>
     <div class="nmrow"><div><b>${esc(m.name)}</b><div class="sub">${esc(itens)}${itens ? '…' : ''}</div></div><span class="ntime num">${esc(m.time || '')}</span></div>
@@ -1653,6 +1697,7 @@ function plusSheet(){
     ${b('plusgo', '📏', 'Medidas', 'cintura, braço, coxa…', 'data-v="med"')}
     ${b('foodopen', '🔍', 'Buscar alimento', 'calorias pela tabela TACO', '')}
     ${b('bionova', '📊', 'Bioimpedância', 'dados da balança ou do exame', '')}
+    ${b('jor', '📖', 'Minha Jornada', 'escrever no seu diário', '')}
   </div>`;
 }
 function plusGo(v){
@@ -1661,16 +1706,16 @@ function plusGo(v){
   render();
   requestAnimationFrame(() => {
     let el = null, focus = null, fid = v === 'ativ' ? 'tm' : v === 'peso' ? 'pw' : '';
-    if(v === 'meal'){ const pend = PLAN.filter(m => mealCalc(m, rec(S.date, m.id, false)).status === 'pend'); const hm = new Date().toTimeString().slice(0, 5); const m = pend.find(x => (x.time || '') >= hm) || pend[0] || PLAN[0]; el = m && document.getElementById('meal-' + m.id); }
+    if(v === 'meal'){ const pend = PLAN.filter(m => mealCalc(m, rec(S.date, m.id, false)).status === 'pend'); const hm = new Date().toTimeString().slice(0, 5); const m = pend[0] || PLAN[0]; if(m){ setTimeout(() => goMeal(m.id), 60); } el = null; }
     else if(v === 'musc') el = document.querySelector('[aria-label="Treino de musculação"]') || document.getElementById('tm');
     else if(v === 'ativ'){ focus = document.getElementById('tm'); el = focus; }
     else if(v === 'peso'){ focus = document.getElementById('pw'); el = focus; }
-    else if(v === 'med') el = document.querySelector('details.medd');
+    else if(v === 'med') el = document.querySelector('details.medd:not(.bemd)');
     if(el) el.scrollIntoView({block:'center', behavior:'smooth'});
     if(fid) setTimeout(() => { const f = document.getElementById(fid); if(f) f.focus(); }, 400);
   });
 }
-function goMeal(id){ const el = document.getElementById('meal-' + id); if(el) el.scrollIntoView({block:'start', behavior:'smooth'}); }
+function goMeal(id){ const el = document.getElementById('meal-' + id); if(!el) return; const top = document.querySelector('.top'), off = (top && getComputedStyle(top).position === 'sticky' ? top.offsetHeight : 0) + 12; window.scrollTo({top:Math.max(0, el.getBoundingClientRect().top + window.scrollY - off), behavior:'smooth'}); }
 
 /* Planos */
 function origemPill(orig, quem){
@@ -1737,11 +1782,12 @@ function perfilView(){
   const t = temaAtual(), ch = (v, l) => `<button class="chip" data-act="tema" data-v="${v}" aria-pressed="${t === v}">${l}</button>`;
   return `<section class="card" id="view-perfil"><h2>Perfil</h2><div class="sub" style="margin-top:4px">${esc((S.cli && S.cli.nome) || '')} · ${esc((S.user && S.user.email) || '')}</div></section>
    <section class="card"><h2>Aparência</h2><div class="opts" style="padding:8px 0 0" role="group" aria-label="Tema">${ch('auto', 'Automático')}${ch('claro', 'Claro')}${ch('escuro', 'Escuro')}</div><p class="tip" style="margin:8px 0 0">Automático segue o modo claro ou escuro do celular.</p></section>
+   ${conqCard()}
    ${profileCard()}`;
 }
 function evolView(){
   const seg = `<div class="tabs evseg" role="group" aria-label="Período"><button data-act="tab" data-v="semana" aria-pressed="${S.view === 'semana'}">Semana</button><button data-act="tab" data-v="mes" aria-pressed="${S.view === 'mes'}">Mês</button></div>`;
-  return seg + (S.view === 'mes' ? viewMonth() : viewWeek()) + bioCard();
+  return seg + semanaCard() + (S.view === 'mes' ? viewMonth() : viewWeek()) + bemInsights() + bioCard();
 }
 
 /* ---------- Meus ajustes: pequenas mudanças do cliente por cima do plano e da ficha do profissional ---------- */
@@ -2208,7 +2254,7 @@ async function bioImgPrep(date){
   if(S.bioImg && S.bioImg.tag === tag) return; S.bioImg = {tag, loading:true}; render();
   try{
     const cv = await bioImgGerar(date); if(!cv) throw new Error('sem dados');
-    const blob = await new Promise(r => cv.toBlob(r, 'image/png')), nome = 'Bioimpedancia-CheckFit-' + date.split('-').reverse().join('-') + '.png';
+    const blob = await cvBlob(cv), nome = 'Bioimpedancia-CheckFit-' + date.split('-').reverse().join('-') + '.png';
     let file = null; try{ file = new File([blob], nome, {type:'image/png'}); }catch(e){}
     if(S.bioImg && S.bioImg.url) try{ URL.revokeObjectURL(S.bioImg.url); }catch(e){}
     S.bioImg = {tag, url:URL.createObjectURL(blob), nome, file, kb:Math.round(blob.size / 1024), share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))};
@@ -2284,6 +2330,498 @@ function foodAdd(mid){
 function foodInput(t){
   if(t.id === 'fq'){ S.food.q = t.value; const box = document.getElementById('fres'); if(box) box.innerHTML = foodRes(t.value); return true; }
   if(t.id === 'fg'){ const g = numv(t.value); S.food.g = g > 0 ? g : 100; const c = document.getElementById('fcalc'); if(c) c.innerHTML = foodCalc(S.food.sel, S.food.g); document.querySelectorAll('[data-act=foodg]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.g === S.food.g))); return true; }
+  return false;
+}
+
+/* ---------- Engajamento: sequência gentil, recomeço sem culpa, conquistas, comemorações, desafios, bem-estar, "Sua semana" ---------- */
+function temRegistro(d){
+  if(!d) return false; if(d._h) return !!(S.hist && S.hist[d._hd] && S.hist[d._hd].p);
+  const ms = d.meals || {}; if(Object.values(ms).some(r => r && (r.st || r.skip || (r.items && Object.values(r.items).some(i => i && i.on)) || (r.extras && r.extras.length)))) return true;
+  return !!((Array.isArray(d.agua) && d.agua.length) || +d.peso > 0 || (d.treinos && d.treinos.length) || (d.musc && d.musc.length) || d.med || d.bio || d.bem);
+}
+function flagsDia(date){
+  const d = S.days[date];
+  if(d && !d._h){ if(!temRegistro(d)) return null; const c = dayCalc(date); return {p:1, a:c.water >= WATER_GOAL ? 1 : 0, o:c.status === 'plano' ? 1 : 0, t:c.tr.list.length, m:sessoes(date).filter(z => z.fim).length, ok:c.ok}; }
+  return (S.hist && S.hist[date]) || null;
+}
+const isoSemanaIni = date => { const d = parse(date), wd = (d.getDay() + 6) % 7; d.setDate(d.getDate() - wd); return ymd(d); };
+/* sequência gentil: conta dias com registro; 2 folgas por semana não quebram */
+function sequencia(){
+  const hoje = today(); let d = flagsDia(hoje) ? hoje : addDays(hoje, -1), n = 0, folgas = {}, ini = null;
+  const datas = Object.keys(S.days).concat(Object.keys(S.hist || {})).sort(); const primeiro = datas.find(x => flagsDia(x)); if(!primeiro) return {n:0, folgasSemana:0, hojeFeito:!!flagsDia(hoje)};
+  for(let k = 0; k < 800 && d >= primeiro; k++){
+    if(flagsDia(d)){ n++; ini = d; }
+    else { const w = isoSemanaIni(d); folgas[w] = (folgas[w] || 0) + 1; if(folgas[w] > 2) break; }
+    d = addDays(d, -1);
+  }
+  return {n, ini, folgasSemana:Math.min(2, folgas[isoSemanaIni(hoje)] || 0), hojeFeito:!!flagsDia(hoje)};
+}
+const MARCOS = [3, 7, 14, 21, 30, 45, 60, 90, 100, 150, 200, 250, 300, 365];
+/* conquistas por comportamento */
+function engTotais(){
+  const datas = [...new Set(Object.keys(S.days).concat(Object.keys(S.hist || {})))].sort(), t = {dias:0, agua:0, plano:0, treinos:0, musc:0, bem:0};
+  datas.forEach(d => { const f = flagsDia(d); if(!f) return; t.dias++; t.agua += f.a ? 1 : 0; t.plano += f.o ? 1 : 0; t.treinos += f.t || 0; t.musc += f.m || 0; });
+  Object.keys(S.days).forEach(d => { if(S.days[d].bem) t.bem++; });
+  const WL = weightList(), ini = +S.prof.pini > 0 ? +S.prof.pini : (WL[0] || {}).w, atual = (WL[WL.length - 1] || {}).w; t.pesoPerda = ini && atual ? ini - atual : 0;
+  const ci = medList('cintura'); t.cintura = ci.length > 1 ? ci[0].v - ci[ci.length - 1].v : 0; t.medidas = medDates().length;
+  const BL = bioList(); t.bio = BL.length; t.gord = BL.length > 1 && BL[0].b.gord && BL[BL.length - 1].b.gord ? BL[0].b.gord - BL[BL.length - 1].b.gord : 0;
+  t.seq = sequencia().n; t.desafios = Object.values((S.prof.eng || {}).desafios || {}).filter(x => x && x.ok).length;
+  return t;
+}
+const CONQ = [
+  ['primeiro', '🌱', 'Primeiro passo', 'Registrou o primeiro dia.', t => t.dias >= 1],
+  ['seq7', '🔥', 'Uma semana de presença', '7 dias seguidos de presença.', t => t.seq >= 7],
+  ['seq30', '🏅', 'Um mês de presença', '30 dias seguidos de presença.', t => t.seq >= 30],
+  ['seq100', '💎', '100 dias', '100 dias seguidos de presença.', t => t.seq >= 100],
+  ['agua7', '💧', 'Hidratado', 'Bateu a meta de água em 7 dias.', t => t.agua >= 7],
+  ['agua30', '🌊', 'Fonte de água', 'Bateu a meta de água em 30 dias.', t => t.agua >= 30],
+  ['plano1', '✅', 'Dia completo', 'Seguiu o plano em todas as refeições de um dia.', t => t.plano >= 1],
+  ['plano10', '🥗', 'Dez dias no plano', '10 dias com todas as refeições no plano.', t => t.plano >= 10],
+  ['treino1', '🏃', 'Em movimento', 'Registrou o primeiro treino.', t => t.treinos >= 1],
+  ['treino10', '💪', 'Dez treinos', 'Registrou 10 treinos.', t => t.treinos >= 10],
+  ['treino50', '🏆', 'Cinquenta treinos', 'Registrou 50 treinos.', t => t.treinos >= 50],
+  ['musc1', '🏋️', 'Primeira série completa', 'Concluiu o primeiro treino de musculação no app.', t => t.musc >= 1],
+  ['medidas1', '📏', 'Fita métrica', 'Registrou as medidas pela primeira vez.', t => t.medidas >= 1],
+  ['cintura2', '📉', 'Cintura menor', 'Reduziu 2 cm de cintura.', t => t.cintura >= 2],
+  ['bio1', '📊', 'Raio-x do corpo', 'Registrou a primeira bioimpedância.', t => t.bio >= 1],
+  ['gord1', '🔻', 'Menos gordura', 'Reduziu 1 ponto de % de gordura.', t => t.gord >= 1],
+  ['peso2', '⚖️', 'Primeiros quilos', 'Perdeu 2 kg desde o início.', t => t.pesoPerda >= 2],
+  ['peso5', '🎯', 'Cinco quilos', 'Perdeu 5 kg desde o início.', t => t.pesoPerda >= 5],
+  ['bem7', '🙂', 'Autoconhecimento', 'Registrou como está em 7 dias.', t => t.bem >= 7],
+  ['desafio1', '🚀', 'Desafio cumprido', 'Concluiu o primeiro desafio da semana.', t => t.desafios >= 1]
+];
+function engVerifica(){
+  if(!S.ready || !S.user || S.mode !== 'app' || !PLAN.length || !S.prof) return;
+  const e = S.prof.eng = S.prof.eng || {}, conq = e.conq = e.conq || {}, marcos = e.marcos = e.marcos || {}, t = engTotais(), novas = [];
+  const primeiraVez = !e.iniciado; e.iniciado = e.iniciado || today();
+  CONQ.forEach(([id, ic, nome, desc, ok]) => { if(!conq[id] && ok(t)){ conq[id] = today(); if(!primeiraVez || id === 'primeiro') novas.push({ic, t:nome, m:desc, conq:1}); } });
+  MARCOS.forEach(n => { if(t.seq >= n && !marcos[n]){ marcos[n] = today(); if(!primeiraVez) novas.push({ic:'🔥', t:n + ' dias de presença!', m:'Constância é o que transforma. Continue assim.'}); } });
+  const D = desafioAtual(); if(D && D.feito && !D.reg.ok){ D.reg.ok = today(); novas.push({ic:'🚀', t:'Desafio da semana cumprido!', m:D.def[1] + '. Você mandou bem.'}); }
+  if(novas.length || primeiraVez){ S.cele = (S.cele || []).concat(novas.slice(0, 3)); saveProf(); }
+}
+/* comemoração (modal com confete) */
+function confete(n){ const cores = ['#22C55E', '#A3E635', '#FACC15', '#38BDF8', '#F472B6', '#FB923C']; let s = ''; for(let i = 0; i < (n || 36); i++) s += `<i style="left:${Math.random() * 100}%;background:${cores[i % cores.length]};animation-delay:${(Math.random() * .6).toFixed(2)}s;animation-duration:${(1.6 + Math.random() * 1.4).toFixed(2)}s;transform:rotate(${Math.round(Math.random() * 360)}deg)"></i>`; return `<div class="confete" aria-hidden="true">${s}</div>`; }
+function celeHTML(){
+  const c = (S.cele || [])[0]; if(!c) return '';
+  return `${confete()}<div class="sheetbg" data-act="celeok"></div><div class="cele" role="dialog" aria-label="${esc(c.t)}"><div class="celeic">${c.ic}</div><h2>${esc(c.t)}</h2><p>${esc(c.m)}</p>${c.conq ? '<div class="sub">Nova conquista desbloqueada</div>' : ''}<button class="primary" data-act="celeok" style="width:100%;margin-top:12px">Continuar</button></div>`;
+}
+/* micro-comemorações */
+const FRASES_REF = ['Refeição no plano! ✅', 'Mais uma no checklist. 💚', 'Isso! Constância vence.', 'Boa escolha! 🥗', 'Seu eu do futuro agradece.', 'Feito! Um passo de cada vez.'];
+const FRASES_AGUA = ['Meta de água batida! 💧', 'Hidratação em dia! 🌊', 'Água: 100%! Seu corpo agradece.'];
+const FRASES_TREINO = ['Treino feito! 💪', 'Mandou bem no treino! 🔥', 'Treino concluído. Orgulho!'];
+const FRASES_DIA = ['Dia completo no plano! 🎉', 'Todas as refeições no plano. Que dia! 🏆'];
+const sorteia = a => a[Math.floor(Math.random() * a.length)];
+function microCheck(date, c){
+  if(date !== today()) { S.mcSnap = null; return; }
+  const snap = {d:date, ok:c.ok, agua:c.water >= WATER_GOAL, tr:c.tr.list.length, plano:c.status === 'plano'}, a = S.mcSnap; S.mcSnap = snap;
+  if(!a || a.d !== date) return;
+  let msg = '', big = false;
+  if(snap.plano && !a.plano){ msg = sorteia(FRASES_DIA); big = true; }
+  else if(snap.tr > a.tr) msg = sorteia(FRASES_TREINO);
+  else if(snap.agua && !a.agua) msg = sorteia(FRASES_AGUA);
+  else if(snap.ok > a.ok) msg = sorteia(FRASES_REF);
+  if(msg) setTimeout(() => { toast(msg); burst(big ? 60 : 22); }, 30);
+}
+function burst(n){ const el = document.createElement('div'); el.innerHTML = confete(n); const c = el.firstChild; document.body.appendChild(c); setTimeout(() => c.remove(), 3200); }
+/* sequência + recomeço no Início */
+function engTopo(date){
+  if(date !== today()) return '';
+  const sq = sequencia(), e = (S.prof.eng || {}), hoje = today(), ontem = addDays(hoje, -1), fOntem = flagsDia(ontem), wd = parse(hoje).getDay(), dia1 = parse(hoje).getDate() === 1;
+  let rec = '';
+  if(e.dispensa !== hoje){
+    const prox = PLAN.find(m => mealCalc(m, rec_(hoje, m.id)).status === 'pend');
+    if(dia1) rec = ['🗓️', 'Mês novo, página em branco', 'Que tal escolher uma coisa para caprichar este mês? Comece pela próxima refeição.'];
+    else if(wd === 1) rec = ['🌅', 'Semana nova, recomeço', 'O que passou, passou. Esta semana começa agora, com uma refeição de cada vez.'];
+    else if(!sq.hojeFeito && (!fOntem || (fOntem.ok || 0) < PLAN.length / 2) && Object.keys(S.days).concat(Object.keys(S.hist || {})).some(d => d < hoje && flagsDia(d))) rec = ['🤍', fOntem ? 'Ontem não saiu como planejado, e tudo bem' : 'Que bom te ver de novo', 'Um dia não define sua jornada. Que tal começar hoje pelo ' + (prox ? prox.name.toLowerCase() : 'próximo passo') + '?'];
+    if(rec) rec = `<div class="recom"><span class="recic">${rec[0]}</span><div><b>${esc(rec[1])}</b><div class="sub">${esc(rec[2])}</div><div class="row" style="margin-top:8px;gap:6px">${prox ? `<button class="primary eb" data-act="goMeal" data-m="${prox.id}">Ir para ${esc(prox.name.toLowerCase())}</button>` : ''}${wd === 1 ? `<button class="ghost eb" data-act="semana" data-w="prev">Ver minha semana</button>` : ''}<button class="ghost eb" data-act="recok">Ok</button></div></div></div>`;
+  }
+  const prox = MARCOS.find(m => m > sq.n) || (sq.n + 30);
+  return `<section class="card streak" aria-label="Sequência"><div class="stk"><span class="fire${sq.hojeFeito ? '' : ' off'}">🔥</span><div><b class="num">${sq.n}</b> <span>${sq.n === 1 ? 'dia' : 'dias'} de presença</span><div class="sub">${sq.hojeFeito ? 'Hoje já conta! ' : 'Registre algo hoje para manter. '}Faltam ${prox - sq.n} para ${prox}. · Folgas livres na semana: ${2 - sq.folgasSemana} de 2</div></div></div>
+    <div class="wk">${[...Array(7)].map((_, i) => { const dd = addDays(isoSemanaIni(hoje), i), f = flagsDia(dd), fut = dd > hoje; return `<span class="wd${f ? ' on' : ''}${dd === hoje ? ' hj' : ''}${fut ? ' fut' : ''}" title="${dd}">${'STQQSSD'[i]}</span>`; }).join('')}</div>${rec}</section>`;
+}
+function rec_(date, mid){ return rec(date, mid, false); }
+/* desafios da semana */
+const DESAFIOS = [
+  ['agua5', 'Bater a meta de água em 5 dias', 5, ds => ds.filter(d => (flagsDia(d) || {}).a).length],
+  ['treino3', 'Treinar 3 vezes na semana', 3, ds => ds.reduce((a, d) => a + ((flagsDia(d) || {}).t || 0), 0)],
+  ['pres7', 'Registrar algo todos os dias', 7, ds => ds.filter(d => flagsDia(d)).length],
+  ['plano3', 'Ter 3 dias com todas as refeições no plano', 3, ds => ds.filter(d => (flagsDia(d) || {}).o).length],
+  ['cafe5', 'Fazer o café da manhã no plano em 5 dias', 5, ds => { const m = PLAN.find(x => /caf/i.test(x.name)) || PLAN[0]; return ds.filter(d => S.days[d] && !S.days[d]._h && m && mealCalc(m, rec(d, m.id, false)).status === 'ok').length; }],
+  ['bem5', 'Registrar como estou em 5 dias', 5, ds => ds.filter(d => S.days[d] && S.days[d].bem).length]
+];
+function desafioAtual(){
+  const e = S.prof.eng || {}, w = isoSemanaIni(today()), reg = (e.desafios || {})[w]; if(!reg) return null;
+  const def = DESAFIOS.find(x => x[0] === reg.id); if(!def) return null;
+  const ds = [...Array(7)].map((_, i) => addDays(w, i)).filter(d => d <= today()), v = def[3](ds);
+  return {def, reg, v, feito:v >= def[2]};
+}
+function desafioCard(date){
+  if(date !== today()) return '';
+  const D = desafioAtual();
+  if(!D) return `<section class="card" aria-label="Desafio da semana"><h2>Desafio da semana</h2><p class="sub" style="margin:4px 0 8px">Escolha um desafio pequeno para esta semana:</p><div class="choice">${DESAFIOS.map(d => `<button class="ghost ch" data-act="desafio" data-v="${d[0]}"><b>${esc(d[1])}</b></button>`).join('')}</div></section>`;
+  const pct = Math.min(100, D.v / D.def[2] * 100);
+  return `<section class="card" aria-label="Desafio da semana"><div class="thead"><div><h2>Desafio da semana</h2><div class="sub">${esc(D.def[1])}</div></div>${D.feito ? '<span class="pill s-ok">cumprido</span>' : ''}</div>
+    <div class="bar" style="margin-top:10px"><i style="width:${pct}%"></i></div><div class="sub num" style="margin-top:6px">${Math.min(D.v, D.def[2])} de ${D.def[2]}${D.feito ? ' · Parabéns! 🎉' : ''}</div></section>`;
+}
+function setDesafio(id){ const e = S.prof.eng = S.prof.eng || {}; e.desafios = e.desafios || {}; e.desafios[isoSemanaIni(today())] = {id, em:today()}; saveProf(); toast('Desafio escolhido. Bora!'); render(); }
+/* como estou hoje */
+const BEM = [['humor', 'Humor', ['😞', '🙁', '😐', '🙂', '😄']], ['energia', 'Energia', ['🪫', '😪', '😐', '⚡', '🚀']], ['sono', 'Sono', ['😵', '🥱', '😐', '😌', '😴']], ['fome', 'Fome', ['😌', '🙂', '😐', '😋', '🤤']]];
+function bemCard(date){
+  const b = (S.days[date] && S.days[date].bem) || {}, feito = BEM.every(([k]) => b[k]), open = S.bemOpen || !feito;
+  return `<section class="card" aria-label="Como estou hoje"><details class="medd bemd"${open ? ' open' : ''} data-bem="1"><summary>Como estou ${date === today() ? 'hoje' : 'neste dia'} ${feito ? '<span class="bemres">' + BEM.map(([k, , ic]) => ic[b[k] - 1]).join(' ') + '</span>' : ''}</summary>
+    <div class="bemg">${BEM.map(([k, l, ic]) => `<div class="bemr"><span class="sub" style="font-weight:700">${l}</span><div class="bemb">${ic.map((e, i) => `<button class="bemx${b[k] === i + 1 ? ' on' : ''}" data-act="bem" data-k="${k}" data-v="${i + 1}" aria-label="${l} ${i + 1} de 5" aria-pressed="${b[k] === i + 1}">${e}</button>`).join('')}</div></div>`).join('')}</div>
+    <p class="tip" style="margin:6px 0 0">Com o tempo, o app mostra como seu sono, energia e fome se relacionam com o plano.</p></details></section>`;
+}
+function setBem(k, v){ const d = S.days[S.date] || (S.days[S.date] = {meals:{}}); d.bem = d.bem || {}; d.bem[k] = d.bem[k] === v ? undefined : v; if(d.bem[k] === undefined) delete d.bem[k]; if(!Object.keys(d.bem).length) delete d.bem; S.bemOpen = true; save(S.date); render(); }
+function bemInsights(){
+  const ds = Object.keys(S.days).filter(d => S.days[d].bem && !S.days[d]._h && PLAN.length).sort().slice(-60); if(ds.length < 8) return '';
+  const ins = [];
+  const comp = (k, lab) => { const alto = ds.filter(d => S.days[d].bem[k] >= 4), baixo = ds.filter(d => S.days[d].bem[k] && S.days[d].bem[k] <= 2); if(alto.length < 3 || baixo.length < 3) return;
+    const ad = arr => Math.round(arr.reduce((a, d) => a + dayCalc(d).ok / PLAN.length, 0) / arr.length * 100); const a = ad(alto), b = ad(baixo);
+    if(Math.abs(a - b) >= 10) ins.push(`Nos dias com ${lab} bom(a), você seguiu ${a}% das refeições do plano; nos dias com ${lab} ruim, ${b}%.`); };
+  comp('sono', 'sono'); comp('energia', 'energia'); comp('humor', 'humor');
+  const fomeAlta = ds.filter(d => S.days[d].bem.fome >= 4); if(fomeAlta.length >= 4){ const ex = Math.round(fomeAlta.reduce((a, d) => a + dayCalc(d).extraK, 0) / fomeAlta.length); if(ex > 50) ins.push(`Nos dias de muita fome, os extras somaram em média ${fmt(ex)} kcal. Vale conversar com a nutricionista sobre isso.`); }
+  return ins.length ? `<section class="card sum" aria-label="O que seus dias mostram"><h2>O que seus dias mostram</h2><div class="lines" style="margin-top:8px">${ins.map(i => `<div class="line" style="display:block">💡 ${esc(i)}</div>`).join('')}</div><p class="tip" style="margin:6px 0 0">Baseado nos seus últimos registros de "Como estou".</p></section>` : '';
+}
+/* conquistas (Perfil) */
+function conqCard(){
+  const c = (S.prof.eng || {}).conq || {}, n = CONQ.filter(x => c[x[0]]).length;
+  return `<section class="card" aria-label="Conquistas"><div class="thead"><div><h2>Conquistas</h2><div class="sub">${n} de ${CONQ.length} desbloqueadas</div></div></div>
+    <div class="conqg">${CONQ.map(([id, ic, nome, desc]) => `<div class="conq${c[id] ? ' on' : ''}" title="${esc(desc)}"><span>${c[id] ? ic : '🔒'}</span><b>${esc(nome)}</b><small>${c[id] ? parse(c[id]).toLocaleDateString('pt-BR') : esc(desc)}</small></div>`).join('')}</div></section>`;
+}
+
+/* canvas -> PNG Blob; se o toBlob demorar (alguns navegadores), usa toDataURL */
+async function cvBlob(cv){
+  const b = await Promise.race([new Promise(r => { try{ cv.toBlob(r, 'image/png'); }catch(e){ r(null); } }), new Promise(r => setTimeout(() => r(null), 2500))]);
+  if(b) return b;
+  const u = cv.toDataURL('image/png'), bin = atob(u.split(',')[1]), a = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+  return new Blob([a], {type:'image/png'});
+}
+/* ---------- "Sua semana": cartão em imagem para compartilhar (Stories 9:16) ---------- */
+function semanaDados(w){
+  const ini = w === 'prev' ? addDays(isoSemanaIni(today()), -7) : isoSemanaIni(today()), fim = addDays(ini, 6), hoje = today();
+  const ds = [...Array(7)].map((_, i) => addDays(ini, i)).filter(d => d <= hoje);
+  const fl = ds.map(d => flagsDia(d)), reg = fl.filter(Boolean).length, agua = fl.filter(f => f && f.a).length, plano = fl.filter(f => f && f.o).length, treinos = fl.reduce((a, f) => a + ((f && f.t) || 0), 0);
+  const okR = ds.reduce((a, d) => a + (S.days[d] && !S.days[d]._h ? dayCalc(d).ok : ((S.hist && S.hist[d] && S.hist[d].ok) || 0)), 0), totR = reg * PLAN.length, pct = totR ? Math.round(okR / totR * 100) : 0;
+  const WL = weightList().filter(x => x.d >= ini && x.d <= fim), dPeso = WL.length > 1 ? WL[WL.length - 1].w - WL[0].w : null;
+  const conq = Object.entries(((S.prof.eng || {}).conq) || {}).filter(([, d]) => d >= ini && d <= fim).map(([id]) => CONQ.find(c => c[0] === id)).filter(Boolean);
+  const seq = sequencia().n, D = (() => { const e = S.prof.eng || {}, r = (e.desafios || {})[ini]; return r ? DESAFIOS.find(x => x[0] === r.id) : null; })();
+  let dest;
+  if(treinos >= 3) dest = ['💪', treinos + ' treinos', 'na semana'];
+  else if(plano >= 3) dest = ['✅', plano + ' dias', 'com todas as refeições no plano'];
+  else if(agua >= 4) dest = ['💧', agua + ' dias', 'batendo a meta de água'];
+  else if(pct >= 60) dest = ['🥗', pct + '%', 'das refeições no plano'];
+  else if(seq >= 3) dest = ['🔥', seq + ' dias', 'de presença seguidos'];
+  else dest = ['🌱', reg + ' ' + (reg === 1 ? 'dia' : 'dias'), 'cuidando de mim'];
+  const frase = reg >= 6 ? 'Constância é o meu superpoder.' : reg >= 4 ? 'Um passo de cada vez, sem parar.' : 'Cada dia conta. Bora para a próxima!';
+  return {ini, fim, reg, dias:ds.length, agua, plano, treinos, pct, dPeso, conq, seq, desafio:D, dest, frase};
+}
+async function semanaImg(w){
+  try{ if(document.fonts && document.fonts.load) await Promise.race([Promise.all([document.fonts.load('800 30px Montserrat'), document.fonts.load('400 16px Inter')]), new Promise(r => setTimeout(r, 1500))]); }catch(e){}
+  const D = semanaDados(w), W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d');
+  const bg = x.createLinearGradient(0, 0, W * 0.4, H); bg.addColorStop(0, '#0B2E3D'); bg.addColorStop(0.6, '#0F4049'); bg.addColorStop(1, '#11505A'); x.fillStyle = bg; x.fillRect(0, 0, W, H);
+  x.fillStyle = 'rgba(163,230,53,.18)'; x.beginPath(); x.arc(W + 60, 260, 380, 0, Math.PI * 2); x.fill(); x.fillStyle = 'rgba(34,197,94,.14)'; x.beginPath(); x.arc(-120, H - 300, 420, 0, Math.PI * 2); x.fill();
+  icLogo(x, 80, 110, 84); icT(x, 'Check', 178, 180, {s:54, w:800, h:1, c:'#fff'}); const cw = x.measureText('Check').width; icT(x, 'Fit', 178 + cw, 180, {s:54, w:800, h:1, c:'#A3E635'});
+  icT(x, 'MINHA SEMANA', 80, 330, {s:34, w:800, h:1, c:'#A3E635'});
+  const nome = ((S.cli && S.cli.nome) || '').split(' ')[0];
+  icT(x, parse(D.ini).toLocaleDateString('pt-BR', {day:'numeric', month:'short'}).replace('.', '') + ' a ' + parse(D.fim).toLocaleDateString('pt-BR', {day:'numeric', month:'short'}).replace('.', ''), 80, 390, {s:36, c:'#D7ECEA'});
+  // destaque
+  x.fillStyle = 'rgba(255,255,255,.10)'; icRR(x, 60, 450, W - 120, 420, 40); x.fill(); x.strokeStyle = 'rgba(163,230,53,.5)'; x.lineWidth = 3; icRR(x, 60, 450, W - 120, 420, 40); x.stroke();
+  icT(x, D.dest[0], W / 2, 600, {s:110, al:'center'}); icT(x, D.dest[1], W / 2, 740, {s:110, w:800, h:1, c:'#fff', al:'center'}); icT(x, D.dest[2], W / 2, 815, {s:38, c:'#D7ECEA', al:'center'});
+  // grade
+  const cards = [['📅', D.reg + '/' + D.dias, 'dias com registro'], ['🍽️', D.pct + '%', 'refeições no plano'], ['💧', D.agua + ' dias', 'meta de água'], ['🏃', String(D.treinos), D.treinos === 1 ? 'treino' : 'treinos'], ['🔥', D.seq + ' dias', 'de presença'], D.dPeso != null && D.dPeso < -0.05 ? ['⚖️', '−' + f1(Math.abs(D.dPeso)) + ' kg', 'na semana'] : ['🏅', String(D.conq.length), D.conq.length === 1 ? 'conquista' : 'conquistas']];
+  cards.forEach((c, i) => { const col = i % 2, row = Math.floor(i / 2), cx = 60 + col * ((W - 140) / 2 + 20), cy = 900 + row * 200, cwid = (W - 140) / 2;
+    x.fillStyle = 'rgba(255,255,255,.08)'; icRR(x, cx, cy, cwid, 180, 30); x.fill();
+    icT(x, c[0], cx + 36, cy + 76, {s:54}); icT(x, c[1], cx + 120, cy + 86, {s:62, w:800, h:1, c:'#fff', max:cwid - 140}); icT(x, c[2], cx + 36, cy + 146, {s:32, c:'#C9E3DF', max:cwid - 60}); });
+  let y = 900 + 3 * 200 + 20;
+  if(D.desafio){ x.fillStyle = 'rgba(163,230,53,.16)'; icRR(x, 60, y, W - 120, 110, 26); x.fill(); icT(x, '🚀 Desafio: ' + D.desafio[1], 96, y + 68, {s:32, w:700, c:'#fff', max:W - 200}); y += 140; }
+  icT(x, '“' + D.frase + '”', W / 2, y + 60, {s:44, w:800, h:1, c:'#fff', al:'center', max:W - 140});
+  if(nome) icT(x, '— ' + nome, W / 2, y + 118, {s:32, c:'#C9E3DF', al:'center'});
+  icT(x, 'checkfitapp.com.br', W / 2, H - 70, {s:34, w:700, c:'#A3E635', al:'center'});
+  return cv;
+}
+async function semanaPrep(w){
+  const tag = w + '|' + today() + '|' + JSON.stringify(semanaDados(w));
+  if(S.semImg && S.semImg.tag === tag) return; S.semImg = {tag, loading:true}; render();
+  try{
+    const cv = await semanaImg(w), blob = await cvBlob(cv), nome = 'Minha-semana-CheckFit.png';
+    let file = null; try{ file = new File([blob], nome, {type:'image/png'}); }catch(e){}
+    if(S.semImg && S.semImg.url) try{ URL.revokeObjectURL(S.semImg.url); }catch(e){}
+    S.semImg = {tag, url:URL.createObjectURL(blob), nome, file, share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))};
+  }catch(e){ S.semImg = {tag, erro:true}; }
+  render();
+}
+function semanaView(){
+  const w = S.semW || 'cur', R = S.semImg;
+  return `<section class="card" id="view-semana"><div class="bhead"><h2>Sua semana</h2><button class="ghost" data-act="semback">Voltar</button></div>
+    <p class="sub" style="margin:4px 0 0">Um resumo para guardar ou postar nos Stories do Instagram.</p>
+    <div class="opts" style="padding:10px 0 0" role="group"><button class="chip" data-act="semana" data-w="cur" aria-pressed="${w === 'cur'}">Esta semana</button><button class="chip" data-act="semana" data-w="prev" aria-pressed="${w === 'prev'}">Semana passada</button></div>
+    ${!R || R.loading ? '<p class="sub" style="margin:12px 0">Montando a imagem…</p>' : R.erro ? '<p class="lmsg">Não consegui montar a imagem neste aparelho.</p>' : `<div class="row" style="margin-top:12px">${R.share ? '<button class="primary" id="sem-share" data-act="semshare">Compartilhar (Instagram, WhatsApp…)</button>' : ''}<a class="${R.share ? 'ghost' : 'primary'} relbtnl" id="sem-dl" href="${R.url}" download="${esc(R.nome)}" target="_blank" rel="noopener">${R.share ? 'Abrir imagem' : 'Baixar imagem'}</a></div>
+      <p class="tip" style="margin:8px 0 0">No Instagram: toque em Compartilhar, escolha Instagram e depois Stories.</p><img class="semimg" src="${R.url}" alt="Resumo da semana">`}
+  </section>`;
+}
+async function semShare(){ const R = S.semImg; if(!R || !R.file) return; try{ await navigator.share({files:[R.file]}); }catch(e){} }
+function semanaCard(){ return `<section class="card relbtn" aria-label="Sua semana"><div><b>Sua semana</b><div class="sub">Resumo em imagem para guardar ou postar no Instagram.</div></div><button class="primary" id="sem-open" data-act="semana" data-w="cur">Ver</button></section>`; }
+
+/* ---------- Capacidade: últimos 70 dias ao vivo + histórico resumido (config/historico) ---------- */
+const JANELA = 70;
+function histResumo(date){
+  const d = S.days[date]; if(!d || d._h || !temRegistro(d)) return null;
+  const c = dayCalc(date), o = {p:1};
+  if(c.water >= WATER_GOAL) o.a = 1; if(c.status === 'plano') o.o = 1; if(c.tr.list.length) o.t = c.tr.list.length; if(c.ok) o.ok = c.ok;
+  const ms = sessoes(date).filter(z => z.fim);
+  if(ms.length){ o.m = ms.length; o.f = ms[ms.length - 1].f || null; const rc = {};
+    ms.forEach(ss => [ss.ex || {}].concat(Object.values(ss.ext || {})).forEach(g => Object.keys(g).forEach(k => okSets(g[k]).forEach(x => { const kg = numv(x.kg), r = numv(x.r); if(kg > 0 && (!rc[k] || kg > rc[k][0] || (kg === rc[k][0] && r > rc[k][1]))) rc[k] = [kg, r]; }))));
+    if(Object.keys(rc).length) o.rc = rc; }
+  if(+d.peso > 0) o.peso = +d.peso; if(d.med && Object.keys(d.med).length) o.med = d.med; if(d.bio && Object.keys(d.bio).length) o.bio = d.bio; if(d.bem && Object.keys(d.bem).length) o.bem = d.bem;
+  return o;
+}
+function histParcial(date, h){
+  const o = {_h:1, _hd:date, meals:{}};
+  if(h.peso) o.peso = h.peso; if(h.med) o.med = h.med; if(h.bio) o.bio = h.bio; if(h.bem) o.bem = h.bem;
+  if(h.rc) o.musc = [{f:h.f || null, ini:'h' + date, fim:1, ex:Object.fromEntries(Object.entries(h.rc).map(([k, [kg, r]]) => [k, [{kg:String(kg), r:String(r), ok:true}]]))}];
+  return o;
+}
+function histParciais(){ if(!S.hist || !S.fullFrom) return; Object.keys(S.hist).forEach(d => { if(d < S.fullFrom && (!S.days[d] || S.days[d]._h)) S.days[d] = histParcial(d, S.hist[d]); }); }
+function histSync(rapido){
+  clearTimeout(S.histT);
+  S.histT = setTimeout(() => {
+    if(!S.db || !S.hist || !S.ready) return; if(!S.planReady || !PLAN.length){ histSync(); return; }
+    let mud = false;
+    Object.keys(S.days).forEach(d => { if(S.days[d]._h) return; const r = histResumo(d), a = JSON.stringify(S.hist[d] || null), b = JSON.stringify(r); if(a !== b){ if(r) S.hist[d] = r; else delete S.hist[d]; mud = true; } });
+    if(mud || S.histMig){ S.histMig = false; S.db.doc('config/historico').set({v:1, d:S.hist, em:today()}).catch(() => {}); }
+  }, rapido ? 1500 : 20000);
+}
+function diasOuvir(q, user){
+  S.unsubs.push(q.onSnapshot(snap => {
+    if(S.user !== user) return;
+    snap.docs.forEach(doc => { if(!S.timers[doc.id]) S.days[doc.id] = JSON.parse(JSON.stringify(doc.data() || {meals:{}})); });
+    snap.docChanges().forEach(ch => { if(ch.type === 'removed' && !S.timers[ch.doc.id]) delete S.days[ch.doc.id]; });
+    histParciais(); S.ready = true; render(); histSync(S.histMig);
+  }, () => { banner('Não consegui ler seus dados. Verifique a internet e recarregue.'); }));
+}
+function diasBind(user){
+  S.hist = null; S.fullFrom = null; S.histMig = false;
+  const tudo = () => { S.hist = S.hist || {}; S.fullFrom = '0000-00-00'; S.histMig = true; diasOuvir(S.db.collection('dias'), user); };
+  S.db.doc('config/historico').get().then(s => {
+    if(S.user !== user) return;
+    const h = s.exists ? s.data() : null;
+    if(h && h.v === 1){ S.hist = h.d || {}; S.fullFrom = addDays(today(), -JANELA); diasOuvir(S.db.collection('dias').where(firebase.firestore.FieldPath.documentId(), '>=', S.fullFrom), user); }
+    else tudo();
+  }).catch(() => { if(S.user === user) tudo(); });
+}
+async function loadFull(from){
+  if(!S.db || !S.fullFrom || from >= S.fullFrom || S.loadingFull) return;
+  S.loadingFull = true; const ate = S.fullFrom, user = S.user, FP = firebase.firestore.FieldPath.documentId();
+  try{
+    const snap = await S.db.collection('dias').where(FP, '>=', from).where(FP, '<', ate).get();
+    if(S.user !== user){ S.loadingFull = false; return; }
+    Object.keys(S.days).forEach(d => { if(d >= from && d < ate && S.days[d]._h) delete S.days[d]; });
+    snap.docs.forEach(doc => { if(!S.timers[doc.id]) S.days[doc.id] = JSON.parse(JSON.stringify(doc.data() || {meals:{}})); });
+    S.fullFrom = from;
+  }catch(e){ S.loadingFull = false; banner('Não consegui carregar esse período. Verifique a internet.'); return; }
+  S.loadingFull = false; render();
+}
+/* qual é o dia mais antigo que a tela atual precisa completo */
+function precisaDe(){
+  if(S.mode === 'rel' || (S.mode === 'app' && S.view === 'mes')) return S.date.slice(0, 8) + '01';
+  if(S.mode === 'app' && S.view === 'semana') return weekStart(S.date);
+  return S.date;
+}
+/* gravar um dia que está só resumido: busca o dia completo e aplica as mudanças */
+async function saveParcial(date){
+  const cur = S.days[date]; if(!cur || !cur._h || !S.db) return;
+  try{
+    const s = await S.db.doc('dias/' + date).get(), full = s.exists ? JSON.parse(JSON.stringify(s.data())) : {meals:{}};
+    ['peso', 'med', 'bio', 'bem'].forEach(k => { if(cur[k] !== undefined) full[k] = cur[k]; else delete full[k]; });
+    await S.db.doc('dias/' + date).set(full); S.days[date] = full; histSync(true);
+  }catch(e){ banner('Não consegui salvar agora. Vou tentar de novo na próxima alteração.'); }
+}
+
+/* ---------- Minha Jornada: diário privado (users/{uid}/diario) ---------- */
+const JTAGS = [['livre', '📝', 'Livre'], ['vitoria', '🏆', 'Vitória'], ['dificil', '🌧️', 'Dia difícil'], ['roupa', '👕', 'Roupa'], ['disseram', '💬', 'Algo que me disseram'], ['marco', '✨', 'Marco']];
+const JTAG = id => JTAGS.find(t => t[0] === id) || JTAGS[0];
+const JCONVITES = ['Como você está se sentindo hoje, de verdade?', 'Uma pequena vitória de hoje, por menor que pareça.', 'O que pesou hoje? Pode deixar aqui.', 'Uma roupa, um olhar, uma frase que ficou em você.', 'Do que você se orgulha nesta semana?', 'O que você diria para quem está começando hoje?', 'O que te deu vontade de desistir, e o que te fez continuar?', 'Um momento em que você se sentiu bem no seu corpo.', 'O que você quer lembrar daqui a um ano?', 'Algo que você conseguiu hoje e que antes não conseguia.', 'Quem ou o que te ajudou hoje?', 'Escreva livre. Ninguém vai ler além de você.'];
+const JIMG_TAGS = ['vitoria', 'roupa', 'marco'];
+/* sinais de sofrimento intenso: mostra apoio com delicadeza (não é diagnóstico) */
+const JRISCO = /(me matar|suic[ií]d|quero morrer|vontade de morrer|n[aã]o quero mais viver|acabar com (a minha|minha) vida|acabar com tudo|tirar (a minha|minha) (pr[oó]pria )?vida|me cortar|me machucar|sumir (pra|para) sempre|provoc(ar|uei|o) v[oô]mito|vomit(ar|ei|o) de prop[oó]sito)/i;
+function jorState(){ return S.jor = S.jor || {list:null, tag:'livre', filtro:'todas', txt:'', edit:null, carta:false, abrir:'', conf:null, alerta:false, img:null}; }
+function jorConvite(date){ const n = Math.floor(parse(date).getTime() / 864e5); return JCONVITES[((n % JCONVITES.length) + JCONVITES.length) % JCONVITES.length]; }
+async function jorLoad(force){
+  const J = jorState(); if(!S.db || (J.list && !force) || J.loading) return;
+  J.loading = true;
+  try{ const snap = await S.db.collection('diario').get(); J.list = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a, b) => (b.em || '').localeCompare(a.em || '')); J.erro = false; jorIndice(); }
+  catch(e){ J.erro = true; J.list = J.list || null; }
+  J.loading = false; render();
+}
+function jorIndice(){
+  const J = jorState(); if(!J.list) return;
+  const idx = {}, cartas = {}, old = (S.prof.jor || {}).cartas || {};
+  J.list.forEach(e => { if(e.abrir) cartas[e.id] = {abrir:e.abrir, aberta:!!(old[e.id] && old[e.id].aberta) || !!e.aberta}; else idx[e.d] = (idx[e.d] || 0) + 1; });
+  const novo = {idx, cartas}; if(JSON.stringify(novo) !== JSON.stringify(S.prof.jor || null)){ S.prof.jor = novo; saveProf(); }
+}
+function jorOpen(){ jorState(); S.mode = 'diario'; S.plus = false; render(); window.scrollTo(0, 0); jorLoad(); }
+async function jorSave(){
+  const J = jorState(), t = (J.txt || '').trim(); if(!t){ const el = document.getElementById('jt'); if(el) el.focus(); return; }
+  if(J.carta && !(J.abrir > today())){ toast('Escolha a data para abrir a carta.'); return; }
+  const agora = new Date(), base = J.edit ? (J.list || []).find(e => e.id === J.edit) : null;
+  const id = base ? base.id : ymd(agora) + '-' + agora.toTimeString().slice(0, 8).replace(/:/g, '') + '-' + Math.random().toString(36).slice(2, 5);
+  const doc = base ? {...base, t, tag:J.carta ? 'carta' : J.tag, editado:agora.toISOString()} : {d:today(), em:agora.toISOString(), t, tag:J.carta ? 'carta' : J.tag};
+  if(J.carta && !base) doc.abrir = J.abrir;
+  delete doc.id;
+  try{ await S.db.doc('diario/' + id).set(doc); }catch(e){ toast('Não consegui guardar agora. Seu texto continua aqui.'); return; }
+  J.list = J.list || []; const i = J.list.findIndex(e => e.id === id); if(i >= 0) J.list[i] = {id, ...doc}; else J.list.unshift({id, ...doc});
+  J.alerta = JRISCO.test(t); J.txt = ''; J.edit = null; J.carta = false; J.abrir = ''; J.tag = 'livre';
+  jorIndice(); toast(doc.abrir ? 'Carta guardada. Ela abre em ' + parse(doc.abrir).toLocaleDateString('pt-BR') + '. 💌' : base ? 'Página atualizada.' : 'Guardado na sua jornada. 💚'); render();
+}
+async function jorDel(id){
+  const J = jorState(); if(J.conf !== id){ J.conf = id; render(); return; }
+  J.conf = null; try{ await S.db.doc('diario/' + id).delete(); }catch(e){ toast('Não consegui apagar agora.'); return; }
+  J.list = (J.list || []).filter(e => e.id !== id); jorIndice(); toast('Página apagada.'); render();
+}
+function jorEdit(id){ const J = jorState(), e = (J.list || []).find(x => x.id === id); if(!e) return; J.edit = id; J.txt = e.t; J.tag = e.tag === 'carta' ? 'livre' : e.tag; J.carta = false; render(); requestAnimationFrame(() => { const el = document.getElementById('jt'); if(el){ el.focus(); el.scrollIntoView({block:'center'}); } }); }
+function jorAbrirCarta(id){ const c = ((S.prof.jor || {}).cartas || {})[id]; if(c){ c.aberta = true; saveProf(); } const J = jorState(); J.filtro = 'carta'; J.lida = id; jorOpen(); }
+function jorInput(t){
+  const J = S.jor; if(!J) return false;
+  if(t.id === 'jt'){ J.txt = t.value; const c = document.getElementById('jcount'); if(c) c.textContent = t.value.length ? t.value.length + ' caracteres' : ''; return true; }
+  if(t.id === 'jdt'){ J.abrir = t.value; return true; }
+  return false;
+}
+/* lembranças: há 1 mês, 3 meses, 6 meses, 1 ano (±2 dias) */
+function jorLembranca(){
+  const idx = (S.prof.jor || {}).idx || {}, hoje = today();
+  for(const [dias, nome] of [[365, 'um ano'], [182, 'seis meses'], [91, 'três meses'], [30, 'um mês']]){
+    for(const k of [0, -1, 1, -2, 2]){ const d = addDays(hoje, -dias + k); if(idx[d]) return {d, nome}; }
+  }
+  return null;
+}
+function jorCartaHoje(){ const c = (S.prof.jor || {}).cartas || {}; const id = Object.keys(c).find(k => !c[k].aberta && c[k].abrir <= today()); return id || null; }
+/* cartão no Início */
+function jorCard(date){
+  if(date !== today()) return '';
+  const carta = jorCartaHoje(), lem = jorLembranca(), escreveuHoje = ((S.prof.jor || {}).idx || {})[today()];
+  if(carta) return `<section class="card jcard jcarta" aria-label="Carta para você"><span class="jci">💌</span><div><b>Chegou uma carta sua</b><div class="sub">Você escreveu para o seu eu de hoje. Quer abrir?</div></div><button class="primary" data-act="jcarta" data-id="${esc(carta)}">Abrir</button></section>`;
+  return `<section class="card jcard" aria-label="Minha Jornada"><span class="jci">📖</span><div><b>Minha Jornada</b><div class="sub">${lem ? 'Há ' + lem.nome + ' você escreveu no seu diário. Que tal reler?' : escreveuHoje ? 'Você já escreveu hoje. Quer acrescentar algo?' : esc(jorConvite(date))}</div></div><button class="${lem ? 'primary' : 'ghost'}" data-act="jor" ${lem ? `data-ver="${lem.d}"` : ''}>${lem ? 'Reler' : 'Escrever'}</button></section>`;
+}
+function jorEntrada(e){
+  const J = jorState(), T = e.tag === 'carta' ? ['carta', '💌', 'Carta para o futuro'] : JTAG(e.tag), dt = parse(e.d);
+  const fechada = e.abrir && e.abrir > today();
+  const quando = dt.toLocaleDateString('pt-BR', {weekday:'short', day:'numeric', month:'short'}) + (e.em ? ' · ' + new Date(e.em).toTimeString().slice(0, 5) : '');
+  return `<article class="jent${J.lida === e.id ? ' jnova' : ''}${J.ver === e.d ? ' jver' : ''}" id="j-${esc(e.id)}"><div class="jeh"><span class="jtag">${T[1]} ${esc(T[2])}</span><span class="sub">${esc(quando)}</span></div>
+    ${fechada ? `<p class="jtxt sub">🔒 Esta carta abre em ${parse(e.abrir).toLocaleDateString('pt-BR', {day:'numeric', month:'long', year:'numeric'})}.</p>` : `<p class="jtxt">${esc(e.t)}</p>${e.abrir ? `<div class="sub">Escrita em ${dt.toLocaleDateString('pt-BR')} para abrir em ${parse(e.abrir).toLocaleDateString('pt-BR')}.</div>` : ''}`}
+    <div class="row jbtns">${!fechada && JIMG_TAGS.includes(e.tag) ? `<button class="ghost eb" data-act="jimg" data-id="${esc(e.id)}">Virar imagem</button>` : ''}${!fechada ? `<button class="ghost eb" data-act="jedit" data-id="${esc(e.id)}">Editar</button>` : ''}<button class="ghost eb${J.conf === e.id ? ' danger' : ''}" data-act="jdel" data-id="${esc(e.id)}">${J.conf === e.id ? 'Toque de novo para apagar' : 'Apagar'}</button></div></article>`;
+}
+function jorView(){
+  const J = jorState(), hoje = today(), amanha = addDays(hoje, 1);
+  const prazos = [['1 mês', 30], ['3 meses', 91], ['6 meses', 182], ['1 ano', 365]];
+  const comp = `<div class="jcomp">
+    <p class="jconv">${esc(J.edit ? 'Editando uma página' : J.carta ? 'Escreva para quem você vai ser. Ela só abre na data escolhida.' : jorConvite(hoje))}</p>
+    ${J.carta ? '' : `<div class="opts jtags" role="group" aria-label="Tipo">${JTAGS.map(t => `<button class="chip" data-act="jtag" data-v="${t[0]}" aria-pressed="${J.tag === t[0]}">${t[1]} ${t[2]}</button>`).join('')}</div>`}
+    <textarea id="jt" data-ep="1" rows="7" placeholder="${J.carta ? 'Querido eu do futuro…' : 'Escreva do seu jeito. Só você vê isto.'}" aria-label="Texto do diário">${esc(J.txt || '')}</textarea>
+    <div class="sub" id="jcount" style="text-align:right;min-height:16px">${J.txt ? J.txt.length + ' caracteres' : ''}</div>
+    ${J.carta ? `<div class="jcartaopt"><b>Abrir em:</b><div class="opts" style="padding:6px 0" role="group">${prazos.map(([n, d]) => { const v = addDays(hoje, d); return `<button class="chip" data-act="jprazo" data-v="${v}" aria-pressed="${J.abrir === v}">${n}</button>`; }).join('')}</div>
+      <label class="bf" for="jdt"><span>Ou escolha a data</span><input type="date" id="jdt" data-ep="1" min="${amanha}" value="${esc(J.abrir || '')}"></label></div>` : ''}
+    <div class="row" style="margin-top:8px"><button class="primary" id="jsave" data-act="jsave">${J.edit ? 'Salvar alteração' : J.carta ? 'Guardar carta' : 'Guardar'}</button>
+      ${J.edit ? '<button class="ghost" data-act="jcancel">Cancelar</button>' : `<button class="ghost" data-act="jcartatog">${J.carta ? 'Voltar ao diário' : '💌 Carta para o futuro'}</button>`}</div></div>`;
+  const apoio = J.alerta ? `<div class="japoio" role="note"><b>Obrigado por confiar isso ao papel. 💚</b><p>Se estiver muito difícil, você não precisa passar por isso sozinho(a). Converse com alguém de confiança ou com o <b>CVV</b>: ligue <a href="tel:188">188</a> (gratuito, 24 horas) ou acesse <a href="https://cvv.org.br" target="_blank" rel="noopener">cvv.org.br</a>. Em emergência, ligue 192.</p><button class="ghost eb" data-act="japoiook">Ok</button></div>` : '';
+  let lista;
+  if(J.erro && !J.list) lista = `<p class="lmsg">Não consegui abrir seu diário agora. Verifique a internet.</p><button class="ghost" data-act="jreload">Tentar de novo</button>`;
+  else if(!J.list) lista = `<p class="sub">Abrindo suas páginas…</p>`;
+  else {
+    const filtros = [['todas', 'Todas']].concat(JTAGS.filter(t => t[0] !== 'livre').map(t => [t[0], t[1] + ' ' + t[2]]), [['carta', '💌 Cartas']]);
+    const L = J.list.filter(e => J.filtro === 'todas' ? true : e.tag === J.filtro);
+    const grupos = {}; L.forEach(e => { const k = e.d.slice(0, 7); (grupos[k] = grupos[k] || []).push(e); });
+    lista = `${J.list.length ? `<div class="opts jfil" role="group" aria-label="Filtrar">${filtros.map(([v, n]) => `<button class="chip" data-act="jfil" data-v="${v}" aria-pressed="${J.filtro === v}">${n}</button>`).join('')}</div>` : ''}
+      ${!J.list.length ? '<p class="sub" style="margin:10px 0">Sua primeira página está esperando. Não precisa ser bonito, só verdadeiro.</p>' : !L.length ? '<p class="sub" style="margin:10px 0">Nenhuma página com esse marcador ainda.</p>' : ''}
+      ${Object.keys(grupos).sort().reverse().map(k => `<h3 class="jmes">${parse(k + '-01').toLocaleDateString('pt-BR', {month:'long', year:'numeric'})}</h3>${grupos[k].map(jorEntrada).join('')}`).join('')}
+      ${J.list.length ? `<div class="jpdf">${jorPdfBox()}</div>` : ''}`;
+  }
+  return `<section class="card" id="view-diario"><div class="bhead"><h2>Minha Jornada</h2><button class="ghost" data-act="jback">Voltar</button></div>
+    <p class="sub" style="margin:2px 0 10px">🔒 Só você vê isto. Nem a nutricionista nem o CheckFit têm acesso.</p>
+    ${apoio}${comp}</section><section class="card" aria-label="Minhas páginas">${lista}</section>
+    <p class="tip" style="text-align:center;margin:4px 16px 16px">Precisa conversar? CVV, <a href="tel:188">188</a>, 24 horas.</p>${J.img ? jorImgSheet() : ''}`;
+}
+/* PDF do diário inteiro (cartas fechadas não entram) */
+function jorPdfBox(){
+  const R = (S.jor || {}).pdf;
+  if(!R) return `<button class="ghost" id="jpdf" data-act="jpdf" style="width:100%">Baixar meu diário em PDF</button>`;
+  if(R.erro) return `<p class="lmsg">Não consegui gerar o PDF neste aparelho.</p>`;
+  return `<div class="row">${R.share ? `<button class="primary" data-act="jpdfshare">Salvar ou enviar o PDF</button>` : ''}<a class="${R.share ? 'ghost' : 'primary'} relbtnl" href="${R.url}" download="${esc(R.nome)}" target="_blank" rel="noopener">${R.share ? 'Abrir PDF' : 'Baixar PDF'}</a></div>`;
+}
+async function jorPdf(){
+  const J = jorState(); if(!J.list) return; const btn = document.getElementById('jpdf'); if(btn){ btn.disabled = true; btn.textContent = 'Gerando…'; }
+  await new Promise(r => setTimeout(r, 50));
+  try{
+    const D = new PdfDoc(), nome = ((S.cli && S.cli.nome) || '').trim();
+    D.font(18, true); D.x.fillStyle = PDFC.accent; D.x.fillText('CHECKFIT', PG.M, D.y + 18); D.y += 30;
+    D.para('Minha Jornada', {size:38, bold:true, after:2}); if(nome) D.para(nome, {size:20, color:PDFC.muted, after:2});
+    const L = J.list.filter(e => !(e.abrir && e.abrir > today())).slice().sort((a, b) => (a.em || '').localeCompare(b.em || ''));
+    if(L.length) D.para(parse(L[0].d).toLocaleDateString('pt-BR') + ' a ' + parse(L[L.length - 1].d).toLocaleDateString('pt-BR') + ' · ' + L.length + (L.length === 1 ? ' página' : ' páginas'), {size:18, color:PDFC.muted});
+    D.y += 6; D.hline(PDFC.accent, 3); D.y += 14;
+    let mes = '';
+    L.forEach(e => { const k = e.d.slice(0, 7); if(k !== mes){ mes = k; D.h2(parse(k + '-01').toLocaleDateString('pt-BR', {month:'long', year:'numeric'})); }
+      const T = e.tag === 'carta' ? ['', '', 'Carta para o futuro'] : JTAG(e.tag);
+      D.ensure(90); D.para(parse(e.d).toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'}) + ' · ' + T[2], {size:17, bold:true, color:PDFC.muted, after:2});
+      D.para(e.t, {size:20, bar:true, after:16}); });
+    const blob = pdfBlob(D.pages), fn = 'Minha-Jornada-CheckFit-' + today() + '.pdf';
+    let file = null; try{ file = new File([blob], fn, {type:'application/pdf'}); }catch(e){}
+    J.pdf = {url:URL.createObjectURL(blob), nome:fn, file, share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))};
+  }catch(e){ J.pdf = {erro:true}; }
+  render();
+}
+/* vitória em imagem (Stories 9:16) */
+function jorLinhas(x, t, maxW){ const out = []; String(t).split('\n').forEach(par => { let line = ''; par.split(/\s+/).filter(Boolean).forEach(w => { const tr = line ? line + ' ' + w : w; if(x.measureText(tr).width <= maxW || !line) line = tr; else { out.push(line); line = w; } }); if(line) out.push(line); }); return out; }
+async function jorImg(e){
+  try{ if(document.fonts && document.fonts.load) await Promise.race([Promise.all([document.fonts.load('800 30px Montserrat'), document.fonts.load('400 16px Inter')]), new Promise(r => setTimeout(r, 1500))]); }catch(err){}
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d'), T = JTAG(e.tag);
+  const bg = x.createLinearGradient(0, 0, W * 0.4, H); bg.addColorStop(0, '#0B2E3D'); bg.addColorStop(0.6, '#0F4049'); bg.addColorStop(1, '#11505A'); x.fillStyle = bg; x.fillRect(0, 0, W, H);
+  x.fillStyle = 'rgba(163,230,53,.18)'; x.beginPath(); x.arc(W + 60, 260, 380, 0, Math.PI * 2); x.fill(); x.fillStyle = 'rgba(34,197,94,.14)'; x.beginPath(); x.arc(-120, H - 300, 420, 0, Math.PI * 2); x.fill();
+  icLogo(x, 80, 110, 84); icT(x, 'Check', 178, 180, {s:54, w:800, h:1, c:'#fff'}); const cw = x.measureText('Check').width; icT(x, 'Fit', 178 + cw, 180, {s:54, w:800, h:1, c:'#A3E635'});
+  const tit = e.tag === 'roupa' ? 'UMA CONQUISTA' : e.tag === 'marco' ? 'UM MARCO' : 'MINHA VITÓRIA';
+  let s = 60, lines; const maxW = W - 220;
+  for(; s >= 34; s -= 4){ x.font = '700 ' + s + 'px Inter, sans-serif'; lines = jorLinhas(x, e.t, maxW); if(lines.length * s * 1.35 <= 900) break; }
+  const lh = s * 1.35, maxL = Math.floor(900 / lh); if(lines.length > maxL){ lines = lines.slice(0, maxL); lines[maxL - 1] = lines[maxL - 1].replace(/\s*\S*$/, '') + '…'; }
+  const boxH = lines.length * lh + 120, sh = Math.max(0, Math.round(((300 + H - 160) - (340 + 680 + boxH + 80)) / 2)), y0 = 680 + sh;
+  icT(x, T[1], W / 2, 470 + sh, {s:150, al:'center'}); icT(x, tit, W / 2, 590 + sh, {s:46, w:800, h:1, c:'#A3E635', al:'center'});
+  x.fillStyle = 'rgba(255,255,255,.10)'; icRR(x, 60, y0, W - 120, boxH, 40); x.fill(); x.strokeStyle = 'rgba(163,230,53,.5)'; x.lineWidth = 3; icRR(x, 60, y0, W - 120, boxH, 40); x.stroke();
+  x.fillStyle = '#fff'; x.textAlign = 'left'; x.font = '700 ' + s + 'px Inter, sans-serif'; lines.forEach((l, i) => x.fillText(l, 110, y0 + 60 + s + i * lh));
+  icT(x, parse(e.d).toLocaleDateString('pt-BR', {day:'numeric', month:'long', year:'numeric'}), W / 2, y0 + boxH + 80, {s:34, c:'#D7ECEA', al:'center'});
+  icT(x, 'checkfitapp.com.br', W / 2, H - 70, {s:34, w:700, c:'#A3E635', al:'center'});
+  return cv;
+}
+async function jorImgPrep(id){
+  const J = jorState(), e = (J.list || []).find(z => z.id === id); if(!e) return;
+  J.img = {id, loading:true}; render();
+  try{ const cv = await jorImg(e), blob = await cvBlob(cv), nome = 'Minha-vitoria-CheckFit.png'; let file = null; try{ file = new File([blob], nome, {type:'image/png'}); }catch(err){}
+    J.img = {id, url:URL.createObjectURL(blob), nome, file, share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))}; }
+  catch(err){ J.img = {id, erro:true}; }
+  render();
+}
+function jorImgSheet(){
+  const R = S.jor.img;
+  return `<div class="sheetbg" data-act="jimgclose"></div><div class="sheet" role="dialog" aria-label="Imagem da vitória"><div class="sheeth"><b>Sua vitória em imagem</b><button class="ghost" data-act="jimgclose">Fechar</button></div>
+    ${R.loading ? '<p class="sub">Montando a imagem…</p>' : R.erro ? '<p class="lmsg">Não consegui montar a imagem neste aparelho.</p>' : `<p class="tip" style="margin:0 0 8px">Revise o texto antes de postar: ele vai aparecer na imagem.</p><div class="row">${R.share ? '<button class="primary" data-act="jimgshare">Compartilhar (Instagram, WhatsApp…)</button>' : ''}<a class="${R.share ? 'ghost' : 'primary'} relbtnl" href="${R.url}" download="${esc(R.nome)}" target="_blank" rel="noopener">${R.share ? 'Abrir imagem' : 'Baixar imagem'}</a></div><img class="semimg" src="${R.url}" alt="Imagem da vitória">`}</div>`;
+}
+async function jorAct(a, b){
+  const J = jorState();
+  if(a === 'jor'){ if(b.dataset.ver){ J.ver = b.dataset.ver; J.filtro = 'todas'; } jorOpen(); if(b.dataset.ver) setTimeout(() => { const el = document.querySelector('.jver'); if(el) el.scrollIntoView({block:'center'}); }, 600); return true; }
+  if(a === 'jback'){ S.mode = 'app'; J.ver = null; J.lida = null; render(); window.scrollTo(0, 0); return true; }
+  if(a === 'jtag'){ J.tag = b.dataset.v; render(); return true; }
+  if(a === 'jfil'){ J.filtro = b.dataset.v; render(); return true; }
+  if(a === 'jsave'){ jorSave(); return true; }
+  if(a === 'jcancel'){ J.edit = null; J.txt = ''; render(); return true; }
+  if(a === 'jcartatog'){ J.carta = !J.carta; if(J.carta && !J.abrir) J.abrir = addDays(today(), 91); render(); return true; }
+  if(a === 'jprazo'){ J.abrir = b.dataset.v; render(); return true; }
+  if(a === 'jedit'){ jorEdit(b.dataset.id); return true; }
+  if(a === 'jdel'){ jorDel(b.dataset.id); return true; }
+  if(a === 'japoiook'){ J.alerta = false; render(); return true; }
+  if(a === 'jreload'){ jorLoad(true); return true; }
+  if(a === 'jcarta'){ jorAbrirCarta(b.dataset.id); return true; }
+  if(a === 'jpdf'){ jorPdf(); return true; }
+  if(a === 'jpdfshare'){ const R = J.pdf; if(R && R.file) try{ await navigator.share({files:[R.file]}); }catch(e){} return true; }
+  if(a === 'jimg'){ jorImgPrep(b.dataset.id); return true; }
+  if(a === 'jimgclose'){ J.img = null; render(); return true; }
+  if(a === 'jimgshare'){ const R = J.img; if(R && R.file) try{ await navigator.share({files:[R.file]}); }catch(e){} return true; }
   return false;
 }
 
@@ -2427,15 +2965,35 @@ function abrirSessao(ini){ S.sessIni = ini; S.mode = 'treino'; audioUnlock(); co
 
 /* descanso, som e tela ligada */
 let AC = null, WL = null, TICK = null;
-function audioUnlock(){ try{ AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if(AC.state === 'suspended') AC.resume(); }catch(e){} }
+/* som do descanso: <audio> com bipe gerado (toca mesmo com o iPhone no silencioso); Web Audio como reserva */
+let BEEP_EL = null, BEEP_OK = false;
+function beepWav(){
+  const sr = 22050, tons = [[0, .22], [.3, .22], [.6, .22], [1.0, .45]], dur = 1.5, n = Math.floor(sr * dur), buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const ws = (o, s) => { for(let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  ws(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); ws(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); ws(36, 'data'); v.setUint32(40, n * 2, true);
+  for(let i = 0; i < n; i++){ const t = i / sr; let s = 0; tons.forEach(([a, d], k) => { if(t >= a && t < a + d){ const lt = t - a, env = Math.min(1, lt / .01, (d - lt) / .03); s += Math.sin(2 * Math.PI * (k === 3 ? 1175 : 880) * lt) * env; } }); v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, s * .9)) * 32767, true); }
+  return URL.createObjectURL(new Blob([buf], {type:'audio/wav'}));
+}
+function audioUnlock(){
+  try{ AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if(AC.state !== 'running') AC.resume(); }catch(e){}
+  try{ if(!BEEP_EL){ BEEP_EL = new Audio(beepWav()); BEEP_EL.preload = 'auto'; BEEP_EL.setAttribute('playsinline', ''); }
+    if(!BEEP_OK){ BEEP_EL.muted = true; const p = BEEP_EL.play(); const fim = () => { try{ BEEP_EL.pause(); BEEP_EL.currentTime = 0; }catch(e){} BEEP_EL.muted = false; }; if(p && p.then) p.then(() => { BEEP_OK = true; fim(); }).catch(fim); else { BEEP_OK = true; fim(); } } }catch(e){}
+}
 function beep(){
-  try{ if(AC){ [0, 0.28, 0.56].forEach(t => { const o = AC.createOscillator(), g = AC.createGain(), at = AC.currentTime + t; o.frequency.value = 880; o.connect(g); g.connect(AC.destination); g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.35, at + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.22); o.start(at); o.stop(at + 0.25); }); } }catch(e){}
+  let tocou = false;
+  try{ if(BEEP_EL && BEEP_OK && S.prof.somDesc !== false){ BEEP_EL.muted = false; BEEP_EL.volume = 1; BEEP_EL.currentTime = 0; const p = BEEP_EL.play(); tocou = true; if(p && p.catch) p.catch(() => beepWA()); } }catch(e){ tocou = false; }
+  if(!tocou && S.prof.somDesc !== false) beepWA();
   try{ if(navigator.vibrate) navigator.vibrate([250, 120, 250]); }catch(e){}
+  const bar = document.getElementById('restbar'); if(bar){ bar.classList.remove('fim'); void bar.offsetWidth; bar.classList.add('fim'); }
+}
+function beepWA(){
+  try{ if(AC){ if(AC.state !== 'running') AC.resume(); [0, 0.28, 0.56].forEach(t => { const o = AC.createOscillator(), g = AC.createGain(), at = AC.currentTime + t; o.frequency.value = 880; o.connect(g); g.connect(AC.destination); g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.35, at + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.22); o.start(at); o.stop(at + 0.25); }); } }catch(e){}
 }
 async function wakeOn(){ try{ if('wakeLock' in navigator && !WL) WL = await navigator.wakeLock.request('screen'); }catch(e){} }
 function wakeOff(){ try{ if(WL) WL.release(); }catch(e){} WL = null; }
+document.addEventListener('touchend', () => { if(S.mode === 'treino' || S.rest) audioUnlock(); }, {passive:true});
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible' && S.mode === 'treino'){ WL = null; const s = sessAtual(); if(s && !s.fim) wakeOn(); } });
-function startRest(sec, label){ S.rest = {end:Date.now() + sec * 1000, total:sec, label, done:false}; ensureTick(); }
+function startRest(sec, label){ audioUnlock(); S.rest = {end:Date.now() + sec * 1000, total:sec, label, done:false}; ensureTick(); }
 function stopRest(){ S.rest = null; const el = document.getElementById('restbar'); if(el) el.hidden = true; }
 function ensureTick(){ if(TICK) return; TICK = setInterval(tick, 250); }
 function tick(){
@@ -2445,11 +3003,11 @@ function tick(){
   if(S.rest && bar){
     const left = (S.rest.end - Date.now()) / 1000;
     bar.hidden = false;
-    if(left <= 0 && !S.rest.done){ S.rest.done = true; beep(); }
+    if(left <= 0 && !S.rest.done){ S.rest.done = true; beep(); if(left < -3) toast('O descanso terminou há ' + Math.round(-left) + ' s. Bora para a próxima série! 💪'); }
     const txt = bar.querySelector('.rt'), fill = bar.querySelector('.rfill');
-    if(txt) txt.textContent = left > 0 ? fmtClock(left) : 'Hora da próxima série!';
+    if(txt) txt.textContent = left > 0 ? fmtClock(left) : 'Próxima série!';
     if(fill) fill.style.width = Math.max(0, Math.min(100, (1 - left / S.rest.total) * 100)) + '%';
-    if(left < -6) stopRest();
+    if(left < -10) stopRest();
   }
   if(!S.rest && !(S.mode === 'treino' && sess && !sess.fim)){ clearInterval(TICK); TICK = null; }
 }
@@ -2514,8 +3072,9 @@ function treinoView(){
    <div class="thead"><div><div class="eyebrow">${T.rotulo === 'nome' ? 'Treino ' + (T.fichas.indexOf(f) + 1) + ' de ' + T.fichas.length : esc(lbl(f.id))}${sess.sem ? ' · semana ' + sess.sem : ''}</div><h2>${esc(f.nome)}</h2></div><div class="tclock num" id="sessclock">${fmtClock(((sess.fim || Date.now()) - sess.ini) / 1000)}</div></div>
    ${f.obs ? `<p class="sub" style="margin:0">${esc(f.obs)}</p>` : ''}
    <div class="sub num">${r.series} séries feitas · ${fmt(r.vol)} kg levantados${r.prs ? ' · ' + r.prs + ' recorde(s)' : ''}</div>
+   ${S.somTip ? `<div class="somtip"><b>Ouviu o bipe?</b> Se não ouviu: aumente o volume do iPhone. Se ainda assim não tocar, confira se o modo silencioso está ligado. O som só toca com o CheckFit aberto na tela. <button class="ghost eb" data-act="tsomoff" style="margin-top:6px">Desligar o som do descanso</button></div>` : ''}
    ${f.prep ? `<label class="prep" for="t-prep"><input type="checkbox" id="t-prep" data-act="tprep" ${sess.prep ? 'checked' : ''}${ro ? ' disabled' : ''}> <span>${esc(f.prep)}</span></label>` : ''}
-   <div class="row"><button class="ghost" id="tv-back" data-act="tback">← Diário</button>${ro ? `<button class="ghost" id="tv-reopen" data-act="treopen">Editar treino</button>` : `<button class="primary" id="tv-fin" data-act="tfinish">Finalizar treino</button>`}</div>
+   <div class="row"><button class="ghost" id="tv-back" data-act="tback">← Diário</button><button class="ghost" id="t-som" data-act="tsom" aria-pressed="${S.prof.somDesc !== false}">${S.prof.somDesc !== false ? '🔔 Testar som' : '🔕 Som desligado'}</button>${ro ? `<button class="ghost" id="tv-reopen" data-act="treopen">Editar treino</button>` : `<button class="primary" id="tv-fin" data-act="tfinish">Finalizar treino</button>`}</div>
   </section>`;
   f.ex.forEach(e => { const arr = (sess.ex || {})[slug(e.n)] || []; h += exCard('ex', e, arr, sess, ro); });
   (T.extras || []).forEach(x => {
@@ -2565,8 +3124,10 @@ function muscStats(dates){
 }
 
 /* ---------- Cópia de segurança ---------- */
-function exportData(){
-  const data={app:'diario-alimentar',exportado:new Date().toISOString(),plano:PLANINFO,treino:S.treino,dias:S.days,perfil:S.prof,alimentos:S.custom};
+async function exportData(){
+  if(S.fullFrom && S.fullFrom > '0000-00-00'){ toast('Preparando seus dados…'); await loadFull('0000-00-00'); }
+  if(S.db){ try{ await jorLoad(); }catch(e){} }
+  const data={diario:(S.jor&&S.jor.list)||undefined,app:'diario-alimentar',exportado:new Date().toISOString(),plano:PLANINFO,treino:S.treino,dias:S.days,perfil:S.prof,alimentos:S.custom};
   const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='dieta-backup-'+today()+'.json';
   document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},1000);
@@ -2588,7 +3149,7 @@ async function importData(text){
     Object.entries(d.dias||{}).forEach(([k,v])=>{ if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&v&&typeof v==='object'){ b.set(S.db.doc('dias/'+k),v); n++; } });
     if(d.perfil&&typeof d.perfil==='object') b.set(S.db.doc('config/perfil'),d.perfil);
     if(Array.isArray(d.alimentos)) b.set(S.db.doc('config/alimentos'),{lista:d.alimentos});
-    await b.commit(); say(n?`Pronto: ${n} dia(s) importados${d.plano?' e plano':''}${d.treino?' e ficha de treino':''}.`:[d.plano?'Plano carregado.':'',d.treino?'Ficha de treino carregada.':''].filter(Boolean).join(' '),true);
+    await b.commit(); if(n && Object.keys(d.dias||{}).some(k=>S.fullFrom && k<S.fullFrom)){ try{ await S.db.doc('config/historico').set({v:0}); }catch(e){} setTimeout(()=>bindUser(S.user),300); } say(n?`Pronto: ${n} dia(s) importados${d.plano?' e plano':''}${d.treino?' e ficha de treino':''}.`:[d.plano?'Plano carregado.':'',d.treino?'Ficha de treino carregada.':''].filter(Boolean).join(' '),true);
     const ta=document.getElementById('impt'); if(ta) ta.value='';
   }catch(e){ say('Não consegui importar agora. Verifique a internet e tente de novo.'); }
 }
@@ -2634,8 +3195,11 @@ function render(){
   const acc=access(); if(!acc.ok){ head(false); mount('block', ban+blockView(acc)); return; }
   WATER_GOAL = (+S.prof.agua>0) ? +S.prof.agua : ((PLANINFO&&+PLANINFO.agua)||2000);
   if(!S.ready||!S.planReady){ app.innerHTML=ban+`<div class="card"><p class="sub" style="margin:0">Abrindo seu diário…</p></div>`; return; }
+  if(S.fullFrom && (S.mode==='app'||S.mode==='rel') && precisaDe() < S.fullFrom){ loadFull(precisaDe()); head(false); mount('carregando', ban+'<div class="card" id="view-carregando"><p class="sub" style="margin:0">Carregando esse período…</p></div>'); return; }
   if(S.mode==='ed' && A.ed){ head(false); mount('ed', ban+edView()); return; }
   if(S.mode==='aj'){ head(false); mount('aj-'+(S.ajKind||'plano'), ban+ajView()); return; }
+  if(S.mode==='diario'){ head(false); mount('diario', ban+jorView()); return; }
+  if(S.mode==='semana'){ head(false); mount('semana', ban+semanaView()); setTimeout(()=>semanaPrep(S.semW||'cur'),0); return; }
   if(S.mode==='bio'){ head(false); mount('bio', ban+bioForm()); return; }
   if(S.mode==='biorel'){ head(false); mount('biorel', ban+bioRelView()); const LB=bioList(), dB=(LB.find(z=>z.d===S.bioRel)||LB[LB.length-1]||{}).d; if(dB) setTimeout(()=>bioImgPrep(dB),0); return; }
   if(S.mode==='treino'){ head(false); mount('treino', ban+treinoView()); return; }
@@ -2643,9 +3207,10 @@ function render(){
   if(!PLAN.length){ document.getElementById('tabs').hidden=true; document.getElementById('navbar').hidden=true; const ta=document.getElementById('impt'); if(!(ta && ta.value) || S.lastView!=='plan') app.innerHTML=ban+caminhoView(); S.lastView='plan'; return; }
   const active=document.activeElement && document.activeElement.id;
   S.lastView='app';
+  engVerifica();
   document.getElementById('navbar').hidden = !(S.tab==='inicio'||S.tab==='evol');
   bnv.innerHTML=bnavHTML(); bnv.hidden=false; document.body.classList.add('hasnav');
-  app.innerHTML = ban + renewBanner() + (S.tab==='planos'?planosView():S.tab==='perfil'?perfilView():S.tab==='evol'?evolView():viewDay()) + plusSheet() + foodSheet();
+  app.innerHTML = ban + renewBanner() + (S.tab==='planos'?planosView():S.tab==='perfil'?perfilView():S.tab==='evol'?evolView():viewDay()) + plusSheet() + foodSheet() + celeHTML();
   if(active){const el=document.getElementById(active); if(el && el.tagName==='INPUT') el.focus();}
 }
 
@@ -2930,7 +3495,17 @@ document.addEventListener('click',e=>{
   if(a==='export'){exportData();return;}
   if(a==='import'){const t=document.getElementById('impt'); importData(t?t.value:''); return;}
   if(a==='tab'){S.view=b.dataset.v; if(S.view!=='dia') S.evolV=S.view; render();}
+  if(/^j(or|back|tag|fil|save|cancel|cartatog|prazo|edit|del|apoiook|reload|carta|pdf|pdfshare|img|imgclose|imgshare)$/.test(a)){ jorAct(a,b); return; }
+  if(a==='tsom'){ audioUnlock(); if(S.prof.somDesc === false){ S.prof.somDesc = true; saveProf(); } S.somTip = true; render(); setTimeout(beep, 150); return; }
+  if(a==='tsomoff'){ S.prof.somDesc = false; S.somTip = false; saveProf(); render(); return; }
   if(a==='btab'){setTab(b.dataset.v); return;}
+  if(a==='celeok'){(S.cele||[]).shift(); render(); return;}
+  if(a==='recok'){S.prof.eng=S.prof.eng||{}; S.prof.eng.dispensa=today(); saveProf(); render(); return;}
+  if(a==='semana'){S.semW=b.dataset.w||'cur'; S.semImg=null; S.mode='semana'; render(); window.scrollTo(0,0); return;}
+  if(a==='semback'){S.mode='app'; render(); window.scrollTo(0,0); return;}
+  if(a==='semshare'){semShare(); return;}
+  if(a==='desafio'){setDesafio(b.dataset.v); return;}
+  if(a==='bem'){setBem(b.dataset.k, +b.dataset.v); return;}
   if(a==='foodopen'){S.plus=false; S.food={q:'', meal:b.dataset.m||null, sel:null, g:100}; render(); setTimeout(()=>{ const q=document.getElementById('fq'); if(q) q.focus(); },60); return;}
   if(a==='foodclose'){S.food=null; render(); return;}
   if(a==='foodvolta'){S.food.sel=null; render(); setTimeout(()=>{ const q=document.getElementById('fq'); if(q) q.focus(); },60); return;}
@@ -3007,8 +3582,8 @@ document.addEventListener('click',e=>{ const s=e.target.closest('details.edd > s
 document.addEventListener('submit',e=>{ if(e.target.id==='medform'){ e.preventDefault(); saveMedidas(S.date); } if(e.target.id==='bioform'){ e.preventDefault(); bioSave(); } });
 document.addEventListener('change',e=>{ if(e.target.id==='bio-sexo'){ const m=document.getElementById('bio-sexomsg'); if(m) m.hidden=!!e.target.value; } if(e.target.id==='medsel'){ S.medEx=e.target.value; render(); } if(e.target.id==='biosel'){ S.bioEx=e.target.value; render(); } if(e.target.id==='bio-relsel'){ S.bioRel=e.target.value; S.relPdf=null; S.pdfNome='Bioimpedancia-CheckFit-'+e.target.value.split('-').reverse().join('-')+'.pdf'; render(); } });
 document.addEventListener('input',e=>{ if(e.target.id==='rel-nota') relSetNota(e.target.value); });
-document.addEventListener('click',e=>{ const s=e.target.closest('details.medd > summary'); if(s) S.medOpen=!s.parentElement.open; const bp=e.target.closest('#bio-pdfd > summary'); if(bp){ S.bioPdfOpen=!bp.parentElement.open; setTimeout(render,0); } const q=e.target.closest('details[data-aj] > summary'); if(q) S.ajOpen=q.parentElement.open?null:q.parentElement.dataset.aj; });
-document.addEventListener('input',e=>{ const t=e.target; if(S.food && foodInput(t)) return;
+document.addEventListener('click',e=>{ const s=e.target.closest('details.medd:not(.bemd) > summary'); if(s) S.medOpen=!s.parentElement.open; const bm=e.target.closest('details[data-bem] > summary'); if(bm) S.bemOpen=!bm.parentElement.open; const bp=e.target.closest('#bio-pdfd > summary'); if(bp){ S.bioPdfOpen=!bp.parentElement.open; setTimeout(render,0); } const q=e.target.closest('details[data-aj] > summary'); if(q) S.ajOpen=q.parentElement.open?null:q.parentElement.dataset.aj; });
+document.addEventListener('input',e=>{ const t=e.target; if(S.food && foodInput(t)) return; if(S.mode==='diario' && jorInput(t)) return;
   if(t.id==='ajtn'||t.id==='ajtq') tacoAuto(document.getElementById('ajtn'),document.getElementById('ajtq'),document.getElementById('ajtk'));
   const mo=t.id && t.id.match(/^ajo[nq](\d+)$/); if(mo) tacoAuto(document.getElementById('ajon'+mo[1]),document.getElementById('ajoq'+mo[1]),document.getElementById('ajok'+mo[1])); });
 document.addEventListener('change',e=>{ const t=e.target, m=t.id && t.id.match(/^xn-(.+)$/); if(!m) return; const i=tacoPorNome(t.value), k=document.getElementById('xk-'+m[1]); if(i>=0 && k && !k.value){ t.value=TACO[i][0]+' (100 g)'; k.value=TACO[i][2]; } });
