@@ -489,6 +489,8 @@ body.hab .mk,body.hab .ik,body.hab .hero .bar{display:none}
 .cflform{margin-top:10px;padding:12px;border-radius:14px;background:var(--accent-soft)}
 #view-wod textarea{width:100%;box-sizing:border-box;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg);padding:10px;font:inherit;font-size:16px}
 .jver2{width:100%;margin:0 0 10px}
+.wtbox{margin-top:12px;padding:12px;border-radius:16px;border:1px dashed var(--accent)}.wtbox.on{border-style:solid;background:var(--accent-soft)}
+.wtround{display:grid;grid-template-columns:70px 1fr;gap:8px;margin-top:6px}.wtround button{min-height:76px;font-size:18px}.wtround b{font-size:30px;font-family:var(--display)}
 </style>
 </head>
 <body>
@@ -2892,7 +2894,8 @@ function treinoPostDados(ini){
   const grupos = Object.entries(sess.ex || {}).concat(...Object.values(sess.ext || {}).map(g => Object.entries(g)));
   let exFeitos = 0;
   grupos.forEach(([k, arr]) => { const ok = okSets(arr); if(ok.length) exFeitos++; const pr = ok.filter(z => z.pr).reduce((m, z) => Math.max(m, numv(z.kg)), 0); if(pr) prs.push([nomes[k] || k, pr]); });
-  return {date, sess, nome:f ? f.nome : lbl(sess.f), rot:lbl(sess.f), ...r, exFeitos, prs};
+  const kgP = weightOn(date).w || 0, trR = ((S.days[date] || {}).treinos || []).find(t => t.sess === sess.ini) || {t:'musculacao', min:r.min, i:1}, kcal = kgP ? Math.round(trainK(trR, kgP)) : 0;
+  return {date, sess, nome:f ? f.nome : lbl(sess.f), rot:lbl(sess.f), ...r, exFeitos, prs, kcal};
 }
 async function treinoImg(ini){
   await postFonts(); const D = treinoPostDados(ini); if(!D) throw new Error('sem treino');
@@ -3103,8 +3106,9 @@ async function cvMontar(selo, data, blocos, foto){
 async function cartaoTreino(ini){
   const D = treinoPostDados(ini); if(!D) throw new Error('sem treino'); const n = sequencia().n;
   const bl = [{t:'hero', ic:'sil:💪', titulo:D.nome, sub:D.rot !== D.nome ? D.rot : 'Musculação'},
-    {t:'grade', c:[['relogio', D.min + ' min', 'de treino'], ['checkq', String(D.series), D.series === 1 ? 'série feita' : 'séries feitas'], ['sil:🏋️', fmt(Math.round(D.vol)) + ' kg', 'levantados'], ['emo:🔥', n + (n === 1 ? ' dia' : ' dias'), 'de presença']]}];
+    {t:'grade', c:[['relogio', D.min + ' min', 'de treino'], ['checkq', String(D.series), D.series === 1 ? 'série feita' : 'séries feitas'], ['sil:🏋️', fmt(Math.round(D.vol)) + ' kg', 'levantados'], ['emo:🔥', D.kcal ? fmt(D.kcal) + ' kcal' : '—', D.kcal ? 'gastas (estimativa)' : 'registre seu peso']]}];
   D.prs.slice(0, 2).forEach(([nm, kg]) => bl.push({t:'faixa', ic:'emo:🏆', rot:'Recorde:', txt:nm + ' – ' + String(kg).replace('.', ',') + ' kg'}));
+  if(!D.prs.length) bl.push({t:'faixa', ic:'cal', rot:'', txt:n + (n === 1 ? ' dia' : ' dias') + ' de presença'});
   bl.push({t:'frase', frase:D.prs.length ? 'Mais forte que ontem.' : D.series >= 15 ? 'Treino pago. Orgulho!' : 'O importante é aparecer.', nome:nomeCurto()});
   return cvMontar('TREINO CONCLUÍDO', dataCap(D.date), bl, D.prs.length <= 1);
 }
@@ -3145,7 +3149,7 @@ function adDados(kind, ref, mostrar){
   const n = sequencia().n, pres = n + (n === 1 ? ' dia' : ' dias');
   if(kind === 'treino'){ const D = treinoPostDados(ref); if(!D) return null;
     return {selo:'TREINO CONCLUÍDO', titulo:D.nome, sub:dataCap(D.date) + (D.rot !== D.nome ? ' · ' + D.rot : ''),
-      st:[['relogio', D.min + ' min', 'de treino'], ['checkq', String(D.series), 'séries'], ['sil:🏋️', fmt(Math.round(D.vol)) + ' kg', 'levantados']],
+      st:[['relogio', D.min + ' min', 'de treino'], ['checkq', String(D.series), 'séries'], ['sil:🏋️', fmt(Math.round(D.vol)) + ' kg', 'levantados']].concat(D.kcal ? [['emo:🔥', fmt(D.kcal), 'kcal']] : []),
       faixa:D.prs.length ? ['emo:🏆', 'Recorde:', D.prs[0][0] + ' – ' + String(D.prs[0][1]).replace('.', ',') + ' kg'] : ['emo:🔥', '', pres + ' de presença']}; }
   const D = meuDiaDados(ref), c = D.c, L = v => (Math.round(v / 100) / 10).toLocaleString('pt-BR');
   const st = [['sil:🍽️', c.ok + '/' + D.n, 'no plano'], ['gota', L(c.water) + ' L', 'de água'], D.treinos ? ['sil:🏃', D.minTr + ' min', 'de treino'] : ['emo:🔥', pres, 'de presença']];
@@ -3221,7 +3225,7 @@ function adBarraDados(kind, ref, mostrar){
   if(kind === 'cardio' || kind === 'wod') return adBarraExtra(kind, ref);
   const n = sequencia().n, dias = n + (n === 1 ? ' dia' : ' dias');
   if(kind === 'treino'){ const D = treinoPostDados(ref); if(!D) return null;
-    return {t1:D.rot !== D.nome ? D.rot : 'Treino', t2:D.nome, selo:['TREINO', 'CONCLUÍDO'], st:[['relogio', D.min + ' min', ''], ['camadas', String(D.series), 'séries'], ['sil:🏋️', fmt(Math.round(D.vol)) + ' kg', ''], ['emo:🔥', dias, '']]}; }
+    return {t1:D.rot !== D.nome ? D.rot : 'Treino', t2:D.nome, selo:['TREINO', 'CONCLUÍDO'], st:[['relogio', D.min + ' min', ''], ['camadas', String(D.series), 'séries'], ['sil:🏋️', fmt(Math.round(D.vol)) + ' kg', ''], D.kcal ? ['emo:🔥', fmt(D.kcal), 'kcal'] : ['emo:🔥', dias, '']]}; }
   const D = meuDiaDados(ref), c = D.c, L = v => (Math.round(v / 100) / 10).toLocaleString('pt-BR');
   return {t1:'Meu dia', t2:D.dest[1], selo:D.dest[0] === '🎉' ? ['100% NO', 'PLANO'] : ['DIA', 'REGISTRADO'], st:[['sil:🍽️', c.ok + '/' + D.n, 'plano'], ['gota', L(c.water) + ' L', ''], D.treinos ? ['sil:🏃', D.minTr + ' min', ''] : ['sil:🍃', 'descanso', ''], ['emo:🔥', dias, '']].concat(mostrar ? [] : [])};
 }
@@ -3376,6 +3380,8 @@ function cardioPostDados(ini){
 
 /* ---------- CrossFit: WOD do dia, recordes de levantamento e benchmarks ---------- */
 const WOD_FMT = [['fortime', 'For Time'], ['amrap', 'AMRAP'], ['emom', 'EMOM'], ['forca', 'Força / LPO'], ['outro', 'Outro']];
+const CF_CATS = [['rx', 'RX'], ['scaled', 'Scaled'], ['foundation', 'Foundation']];
+const wodCat = w => w.cat ? (CF_CATS.find(c => c[0] === w.cat) || CF_CATS[0])[1] : (w.rx === false ? 'Scaled' : 'RX');
 const wodFmtN = f => (WOD_FMT.find(x => x[0] === f) || WOD_FMT[4])[1];
 const CF_LIFTS = ['Back squat', 'Front squat', 'Deadlift', 'Clean', 'Power clean', 'Clean & jerk', 'Snatch', 'Power snatch', 'Push press', 'Shoulder press', 'Supino', 'Thruster'];
 const CF_BENCH = [['Fran', 'fortime', '21-15-9: thrusters (43/29 kg) e pull-ups'], ['Grace', 'fortime', '30 clean & jerks (61/43 kg)'], ['Isabel', 'fortime', '30 snatches (61/43 kg)'], ['Diane', 'fortime', '21-15-9: deadlift (102/70 kg) e handstand push-ups'], ['Helen', 'fortime', '3 rounds: 400 m corrida, 21 kettlebell swings, 12 pull-ups'], ['Annie', 'fortime', '50-40-30-20-10: double unders e abdominais'], ['Karen', 'fortime', '150 wall balls'], ['Murph', 'fortime', '1,6 km corrida, 100 pull-ups, 200 push-ups, 300 air squats, 1,6 km corrida'], ['Cindy', 'amrap', 'AMRAP 20 min: 5 pull-ups, 10 push-ups, 15 air squats'], ['DT', 'fortime', '5 rounds: 12 deadlifts, 9 hang power cleans, 6 push jerks (70/47 kg)']];
@@ -3388,7 +3394,7 @@ function wodRes(w){
   return r.txt || 'Concluído';
 }
 const wodSeg = w => w.fmt === 'fortime' ? (+w.res.mm || 0) * 60 + (+w.res.ss || 0) : w.fmt === 'amrap' ? (+w.res.rounds || 0) * 1000 + (+w.res.reps || 0) : 0;
-function wodState(){ return S.wf = S.wf || {fmt:'fortime', bench:'', desc:'', mm:'', ss:'', rounds:'', reps:'', emin:'', kg:'', lift:'', txt:'', rx:true, min:'', i:2}; }
+function wodState(){ return S.wf = S.wf || {fmt:'fortime', bench:'', desc:'', mm:'', ss:'', rounds:'', reps:'', emin:'', kg:'', lift:'', txt:'', cat:(S.prof.cf && S.prof.cf.cat) || 'rx', min:'', i:1, cap:''}; }
 function wodView(){
   const F = wodState(), cf = S.prof.cf || {}, lifts = cf.lifts || {}, bench = cf.bench || {};
   const inp = (id, v, ph, w) => `<input id="${id}" data-ep="1" inputmode="${w || 'numeric'}" value="${esc(v || '')}" placeholder="${ph}" autocomplete="off">`;
@@ -3404,8 +3410,9 @@ function wodView(){
     <div class="opts" role="group" style="flex-wrap:wrap">${['', ...CF_BENCH.map(b => b[0])].map(n => `<button class="chip" data-act="wbench" data-v="${n}" aria-pressed="${F.bench === n}">${n || 'WOD do dia'}${n && best(n) ? ' · ' + best(n) : ''}</button>`).join('')}</div>
     <div class="sub" style="margin:12px 0 6px;font-weight:700">Formato</div><div class="opts" role="group">${WOD_FMT.map(([k, n]) => `<button class="chip" data-act="wfmt" data-v="${k}" aria-pressed="${F.fmt === k}">${n}</button>`).join('')}</div>
     <label class="bf" for="wf-desc" style="margin-top:12px"><span>O treino que o professor passou</span><textarea id="wf-desc" data-ep="1" rows="4" placeholder="Cole ou escreva o WOD. Ex.: 21-15-9 thrusters e pull-ups">${esc(F.desc || '')}</textarea></label>
+    ${wtHTML()}
     <div class="sub" style="margin:12px 0 6px;font-weight:700">Seu resultado</div>${res}
-    <div class="opts" role="group" style="padding:10px 0 0"><button class="chip" data-act="wrx" data-v="1" aria-pressed="${F.rx}">RX</button><button class="chip" data-act="wrx" data-v="0" aria-pressed="${!F.rx}">Adaptado (scaled)</button></div>
+    <div class="sub" style="margin:12px 0 6px;font-weight:700">Categoria</div><div class="opts" role="group" style="padding:0">${CF_CATS.map(([k, n]) => `<button class="chip" data-act="wcat" data-v="${k}" aria-pressed="${F.cat === k}">${n}</button>`).join('')}</div>
     <div class="bgrid" style="margin-top:10px"><label class="bf" for="wf-min"><span>Duração da aula <small>min</small></span>${inp('wf-min', F.min, '60')}</label><div class="bf"><span>Intensidade</span><div class="opts" style="padding:0">${INT.map((n, i) => `<button class="chip" data-act="wint" data-v="${i}" aria-pressed="${F.i === i}">${n}</button>`).join('')}</div></div></div>
     ${weightOn(today()).w ? '' : '<div class="banner" style="margin-top:10px">Registre seu peso para calcular as calorias.</div>'}
     <button class="primary cgo" id="wf-save" data-act="wsave">Registrar WOD</button></section>
@@ -3413,9 +3420,18 @@ function wodView(){
     <div class="cflifts">${CF_LIFTS.map(l => { const L = lifts[l] || [], b = L.reduce((m, x) => x.kg > (m ? m.kg : 0) ? x : m, null); return `<button class="cflift" data-act="wlift" data-v="${esc(l)}"><b>${esc(l)}</b><span class="num">${b ? String(b.kg).replace('.', ',') + ' kg' : '—'}</span>${b ? `<small>${parse(b.d).toLocaleDateString('pt-BR', {day:'numeric', month:'short', year:'2-digit'})}</small>` : ''}</button>`; }).join('')}</div>
     ${S.wLift ? `<div class="cflform"><b>${esc(S.wLift)}</b><div class="row" style="margin-top:6px"><input id="wl-kg" data-ep="1" inputmode="decimal" placeholder="kg" class="ajin" style="max-width:120px"><button class="primary" data-act="wliftsave">Salvar</button><button class="ghost" data-act="wliftx">Cancelar</button></div></div>` : ''}</section>`;
 }
+function wodDetect(){
+  const F = S.wf, txt = semAc(F.desc || ''); if(F.fmtManual) return false; let fmt = null, cap = null;
+  let m = txt.match(/amrap\s*(?:de\s*)?(\d+)/); if(m){ fmt = 'amrap'; cap = +m[1]; }
+  else if((m = txt.match(/emom\s*(?:de\s*)?(\d+)/)) || (m = txt.match(/e(\d)mom\s*(\d+)/))){ fmt = 'emom'; cap = +(m[2] || m[1]); }
+  else if(/for\s*time|fortime|por tempo|\brft\b|rounds? for time/.test(txt)){ fmt = 'fortime'; const c = txt.match(/(?:time\s*cap|cap|tc)\s*:?\s*(\d+)/); if(c) cap = +c[1]; }
+  else if(/\b\d\s*rm\b|1rm|forca|strength|lpo|5x5|3x3|5x3/.test(txt)) fmt = 'forca';
+  if(!fmt || (fmt === F.fmt && (cap || '') == (F.cap || ''))) return false;
+  F.fmt = fmt; if(cap) F.cap = cap; return true;
+}
 function wodInput(t){
-  if(!S.wf) return false; const map = {'wf-mm':'mm', 'wf-ss':'ss', 'wf-rounds':'rounds', 'wf-reps':'reps', 'wf-emin':'emin', 'wf-kg':'kg', 'wf-txt':'txt', 'wf-min':'min', 'wf-desc':'desc', 'wf-lift':'lift'};
-  if(map[t.id]){ S.wf[map[t.id]] = t.value; return true; } return false;
+  if(!S.wf) return false; const map = {'wf-cap':'cap', 'wf-mm':'mm', 'wf-ss':'ss', 'wf-rounds':'rounds', 'wf-reps':'reps', 'wf-emin':'emin', 'wf-kg':'kg', 'wf-txt':'txt', 'wf-min':'min', 'wf-desc':'desc', 'wf-lift':'lift'};
+  if(map[t.id]){ S.wf[map[t.id]] = t.value; if(t.id === 'wf-desc' && wodDetect()) render(); return true; } return false;
 }
 function liftPR(nome, kg, d){
   const cf = S.prof.cf = S.prof.cf || {}; cf.lifts = cf.lifts || {}; const L = cf.lifts[nome] = cf.lifts[nome] || [];
@@ -3427,10 +3443,10 @@ function wodSalvar(){
   if(F.fmt === 'fortime' && !res.mm && !res.ss){ toast('Coloque o seu tempo.'); return; }
   if(F.fmt === 'amrap' && !res.rounds){ toast('Coloque quantos rounds você fez.'); return; }
   if(F.fmt === 'forca' && (!res.kg || !res.lift)){ toast('Escolha o movimento e a carga.'); return; }
-  const w = {fmt:F.fmt, desc:(F.desc || '').trim(), res, rx:!!F.rx}; if(F.bench) w.bench = F.bench;
+  const w = {fmt:F.fmt, desc:(F.desc || '').trim(), res, cat:F.cat, rx:F.cat === 'rx'}; S.prof.cf = S.prof.cf || {}; S.prof.cf.cat = F.cat; if(F.bench) w.bench = F.bench;
   let pr = null;
   if(F.bench){ const cf = S.prof.cf = S.prof.cf || {}; cf.bench = cf.bench || {}; const L = cf.bench[F.bench] = cf.bench[F.bench] || [], v = wodSeg(w), am = F.fmt === 'amrap';
-    const ant = L.filter(x => x.rx === w.rx).map(x => x.v); if(ant.length && (am ? v > Math.max(...ant) : v < Math.min(...ant))) pr = 'Novo recorde no ' + F.bench + '!'; L.push({d:date, v, r:wodRes(w), rx:w.rx}); }
+    const ant = L.filter(x => (x.cat || (x.rx === false ? 'scaled' : 'rx')) === w.cat).map(x => x.v); if(ant.length && (am ? v > Math.max(...ant) : v < Math.min(...ant))) pr = 'Novo recorde no ' + F.bench + '!'; L.push({d:date, v, r:wodRes(w), rx:w.rx, cat:w.cat}); }
   if(F.fmt === 'forca'){ const a = liftPR(res.lift, res.kg, date); if(a) pr = 'Novo recorde no ' + res.lift + ': ' + String(res.kg).replace('.', ',') + ' kg (antes ' + String(a).replace('.', ',') + ' kg)'; }
   if(pr) w.pr = pr;
   const ini = Date.now(), tr = {t:'crossfit', min:Math.round(numv(F.min)) || 60, i:F.i, wod:w, ini};
@@ -3442,11 +3458,16 @@ function wodSalvar(){
 function wodAct(a, b){
   const F = wodState();
   if(a === 'wopen'){ S.mode = 'wod'; S.plus = false; render(); window.scrollTo(0, 0); return true; }
-  if(a === 'wback'){ S.mode = 'app'; render(); return true; }
-  if(a === 'wbench'){ F.bench = b.dataset.v; const B = CF_BENCH.find(x => x[0] === F.bench); if(B){ F.fmt = B[1]; F.desc = B[2]; } render(); return true; }
-  if(a === 'wfmt'){ F.fmt = b.dataset.v; render(); return true; }
-  if(a === 'wrx'){ F.rx = b.dataset.v === '1'; render(); return true; }
+  if(a === 'wback'){ if(S.wt) wtFim(false); S.mode = 'app'; render(); return true; }
+  if(a === 'wbench'){ F.bench = b.dataset.v; const B = CF_BENCH.find(x => x[0] === F.bench); if(B){ F.fmt = B[1]; F.desc = B[2]; F.cap = B[1] === 'amrap' ? 20 : ''; F.fmtManual = true; } render(); return true; }
+  if(a === 'wfmt'){ F.fmt = b.dataset.v; F.fmtManual = true; render(); return true; }
+  if(a === 'wcat'){ F.cat = b.dataset.v; render(); return true; }
   if(a === 'wint'){ F.i = +b.dataset.v; render(); return true; }
+  if(a === 'wtgo'){ wtIniciar(); return true; }
+  if(a === 'wtok'){ wtFim(true); return true; }
+  if(a === 'wtx'){ wtFim(false); return true; }
+  if(a === 'wtr'){ if(S.wt){ S.wt.rounds = Math.max(0, S.wt.rounds + (+b.dataset.v)); render(); } return true; }
+  if(a === 'wtperd'){ if(S.wt){ S.wt.perd++; render(); } return true; }
   if(a === 'wsave'){ wodSalvar(); return true; }
   if(a === 'wlift'){ S.wLift = b.dataset.v; render(); requestAnimationFrame(() => { const el = document.getElementById('wl-kg'); if(el) el.focus(); }); return true; }
   if(a === 'wliftx'){ S.wLift = null; render(); return true; }
@@ -3458,6 +3479,53 @@ function wodAct(a, b){
 function wodPostDados(ini){
   let date = null, tr = null; Object.keys(S.days).some(d => { const z = ((S.days[d] || {}).treinos || []).find(q => String(q.ini) === String(ini) && q.wod); if(z){ date = d; tr = z; return true; } return false; });
   return tr ? {date, tr, w:tr.wod} : null;
+}
+
+/* cronômetro do WOD: preenche o resultado sozinho */
+let WTICK = null;
+function wtIniciar(){
+  const F = wodState(), cap = Math.round(numv(F.cap)) || 0;
+  if((F.fmt === 'amrap' || F.fmt === 'emom') && !cap){ toast('Coloque a duração em minutos.'); const el = document.getElementById('wf-cap'); if(el) el.focus(); return; }
+  S.wt = {fmt:F.fmt, ini:Date.now() + 5000, cap, rounds:0, perd:0, ultMin:0, pre:5}; audioUnlock(); wakeOn(); render(); wtTick();
+}
+function wtFim(preencher){
+  const T = S.wt, F = wodState(); if(!T) return; clearInterval(WTICK); WTICK = null;
+  if(preencher){ const ms = Math.max(0, Date.now() - T.ini);
+    if(T.fmt === 'fortime'){ const sec = Math.round((T.cap && ms > T.cap * 60000 ? T.cap * 60000 : ms) / 1000); F.mm = String(Math.floor(sec / 60)); F.ss = String(sec % 60); }
+    else if(T.fmt === 'amrap'){ F.rounds = String(T.rounds); }
+    else if(T.fmt === 'emom'){ F.emin = String(Math.max(0, T.cap - T.perd)); }
+    if(!numv(F.min)) F.min = String(Math.max(T.cap || Math.ceil(ms / 60000), 1) + 40);
+    toast('Resultado preenchido. Confira e toque em Registrar WOD.'); }
+  S.wt = null; render();
+}
+function wtTick(){
+  if(WTICK) return;
+  WTICK = setInterval(() => {
+    const T = S.wt; if(!T){ clearInterval(WTICK); WTICK = null; return; }
+    const agora = Date.now(), el = id => document.getElementById(id), clk = el('wt-clock'), sub = el('wt-sub');
+    if(agora < T.ini){ const p = Math.ceil((T.ini - agora) / 1000); if(p !== T.pre){ T.pre = p; if(p <= 3) beepWA(); } if(clk) clk.textContent = String(p); if(sub) sub.textContent = 'Prepare-se…'; return; }
+    if(T.pre !== 0){ T.pre = 0; beep(); }
+    const ms = agora - T.ini;
+    if(T.fmt === 'fortime'){ if(clk) clk.textContent = fmtHMS(ms); if(sub) sub.textContent = T.cap ? 'Time cap: ' + T.cap + ' min' : 'Toque em Terminei ao acabar';
+      if(T.cap && ms >= T.cap * 60000){ beep(); wtFim(true); } }
+    else if(T.fmt === 'amrap'){ const rest = T.cap * 60000 - ms; if(clk) clk.textContent = fmtHMS(Math.max(0, rest + 999)); if(sub) sub.textContent = 'AMRAP ' + T.cap + ' min';
+      if(rest <= 0){ beep(); wtFim(true); } }
+    else if(T.fmt === 'emom'){ const min = Math.floor(ms / 60000) + 1, dentro = 60000 - ms % 60000;
+      if(min > T.cap){ beep(); wtFim(true); return; }
+      if(min !== T.ultMin){ if(T.ultMin) beep(); T.ultMin = min; const m = el('wt-min'); if(m) m.textContent = 'Minuto ' + min + ' de ' + T.cap; }
+      if(clk) clk.textContent = '0:' + String(Math.ceil(dentro / 1000) % 60 || (dentro > 59000 ? 60 : 0)).padStart(2, '0'); }
+  }, 250);
+}
+function wtHTML(){
+  const F = wodState(), T = S.wt;
+  if(F.fmt === 'forca' || F.fmt === 'outro') return '';
+  if(!T) return `<div class="wtbox"><div class="row" style="align-items:flex-end;gap:8px">${F.fmt !== 'fortime' || true ? `<label class="bf" for="wf-cap" style="flex:1"><span>${F.fmt === 'fortime' ? 'Time cap <small>min (opcional)</small>' : 'Duração <small>min</small>'}</span><input id="wf-cap" data-ep="1" inputmode="numeric" value="${esc(F.cap || '')}" placeholder="${F.fmt === 'emom' ? '12' : F.fmt === 'amrap' ? '20' : '15'}"></label>` : ''}
+    <button class="primary" id="wt-go" data-act="wtgo" style="flex:1.3;min-height:48px">▶ Cronometrar o WOD</button></div><p class="tip" style="margin:6px 0 0">O app conta o tempo${F.fmt === 'amrap' ? ', você toca a cada round' : F.fmt === 'emom' ? ' e apita a cada minuto' : ''} e preenche o resultado sozinho.</p></div>`;
+  return `<div class="wtbox on"><div class="sub" id="wt-sub" style="text-align:center;font-weight:700">Prepare-se…</div>${T.fmt === 'emom' ? `<div class="eyebrow" id="wt-min" style="justify-content:center">Minuto ${Math.max(1, T.ultMin)} de ${T.cap}</div>` : ''}
+    <div class="cclock num" id="wt-clock" style="text-align:center">5</div>
+    ${T.fmt === 'amrap' ? `<div class="wtround"><button class="ghost" data-act="wtr" data-v="-1">−</button><button class="primary" data-act="wtr" data-v="1"><b class="num">${T.rounds}</b> rounds<br><small>toque a cada round</small></button></div>` : ''}
+    ${T.fmt === 'emom' ? `<button class="ghost" data-act="wtperd" style="width:100%;margin-top:8px">Não completei este minuto${T.perd ? ' (' + T.perd + ')' : ''}</button>` : ''}
+    <div class="row" style="margin-top:10px">${T.fmt === 'fortime' ? '<button class="primary" data-act="wtok" style="flex:1;min-height:52px">✓ Terminei</button>' : '<button class="primary" data-act="wtok" style="flex:1;min-height:52px">Encerrar e preencher</button>'}<button class="ghost" data-act="wtx">Cancelar</button></div></div>`;
 }
 
 /* ---------- Modo hábitos (para quem ainda não tem plano de nutricionista) ---------- */
@@ -3502,7 +3570,7 @@ async function cartaoCardio(ini){
 async function cartaoWod(ini){
   const D = wodPostDados(ini); if(!D) throw new Error('sem wod'); const w = D.w, t = D.tr;
   const bl = [{t:'hero', ic:'sil:🏋️', titulo:w.bench || 'WOD do dia', sub:wodFmtN(w.fmt) + (w.fmt === 'forca' && w.res.lift ? ' · ' + w.res.lift : '')},
-    {t:'grade', c:[['checkq', wodRes(w), 'resultado'], ['sil:💪', w.rx ? 'RX' : 'Adaptado', 'categoria'], ['relogio', t.min + ' min', 'de aula'], ['emo:🔥', presTxt(), 'de presença']]}];
+    {t:'grade', c:[['checkq', wodRes(w), 'resultado'], ['sil:💪', wodCat(w), 'categoria'], ['relogio', t.min + ' min', 'de aula'], ['emo:🔥', presTxt(), 'de presença']]}];
   if(w.pr) bl.push({t:'faixa', ic:'emo:🏆', rot:'Recorde!', txt:w.pr.replace(/^Novo recorde no /, '')});
   bl.push({t:'frase', frase:w.pr ? 'Mais forte que ontem.' : 'Sem desculpas. Só suor.', nome:nomeCurto()});
   return cvMontar('WOD CONCLUÍDO', dataCap(D.date), bl, false);
@@ -3513,7 +3581,7 @@ function adDadosExtra(kind, ref){
   if(kind === 'cardio'){ const D = cardioPostDados(ref); if(!D) return null; const t = D.tr;
     return {selo:'CARDIO CONCLUÍDO', titulo:D.nome, sub:dataCap(D.date) + ' · ' + D.extra, st:[['relogio', t.min + ' min', 'de treino'], ['emo:🔥', fmt(t.kcal || 0), 'kcal'], t.dist ? ['sil:📍', String(t.dist).replace('.', ',') + ' km', 'distância'] : ['cal', pres, 'de presença']], faixa:t.dist ? ['cal', '', pres + ' de presença'] : null}; }
   if(kind === 'wod'){ const D = wodPostDados(ref); if(!D) return null; const w = D.w, t = D.tr;
-    return {selo:'WOD CONCLUÍDO', titulo:w.bench || 'WOD do dia', sub:dataCap(D.date) + ' · ' + wodFmtN(w.fmt), st:[['checkq', wodRes(w), 'resultado'], ['sil:💪', w.rx ? 'RX' : 'Adaptado', 'categoria'], ['relogio', t.min + ' min', 'de aula']], faixa:w.pr ? ['emo:🏆', 'Recorde!', w.pr.replace(/^Novo recorde no /, '')] : ['emo:🔥', '', pres + ' de presença']}; }
+    return {selo:'WOD CONCLUÍDO', titulo:w.bench || 'WOD do dia', sub:dataCap(D.date) + ' · ' + wodFmtN(w.fmt), st:[['checkq', wodRes(w), 'resultado'], ['sil:💪', wodCat(w), 'categoria'], ['relogio', t.min + ' min', 'de aula']], faixa:w.pr ? ['emo:🏆', 'Recorde!', w.pr.replace(/^Novo recorde no /, '')] : ['emo:🔥', '', pres + ' de presença']}; }
   return null;
 }
 function adBarraExtra(kind, ref){
@@ -3521,7 +3589,7 @@ function adBarraExtra(kind, ref){
   if(kind === 'cardio'){ const D = cardioPostDados(ref); if(!D) return null; const t = D.tr;
     return {t1:D.nome, t2:D.extra, selo:['CARDIO', 'CONCLUÍDO'], st:[['relogio', t.min + ' min', ''], ['emo:🔥', fmt(t.kcal || 0), 'kcal'], t.dist ? ['sil:📍', String(t.dist).replace('.', ',') + ' km', ''] : ['checkq', INT[t.i == null ? 1 : t.i], ''], ['cal', pres, '']]}; }
   if(kind === 'wod'){ const D = wodPostDados(ref); if(!D) return null; const w = D.w, t = D.tr;
-    return {t1:'CrossFit', t2:(w.bench || 'WOD do dia') + ' · ' + wodFmtN(w.fmt), selo:['WOD', 'CONCLUÍDO'], st:[['checkq', wodRes(w), ''], ['sil:💪', w.rx ? 'RX' : 'Scaled', ''], ['relogio', t.min + ' min', ''], ['emo:🔥', pres, '']]}; }
+    return {t1:'CrossFit', t2:(w.bench || 'WOD do dia') + ' · ' + wodFmtN(w.fmt), selo:['WOD', 'CONCLUÍDO'], st:[['checkq', wodRes(w), ''], ['sil:💪', wodCat(w), ''], ['relogio', t.min + ' min', ''], ['emo:🔥', pres, '']]}; }
   return null;
 }
 
@@ -3935,7 +4003,7 @@ function trainCard(date,c){
   const opts=Object.entries(ACTS).map(([k,a])=>`<option value="${k}"${k===tf.t?' selected':''}>${a.n}</option>`).join('');
   return `<section class="card train" aria-label="Treinos">
    <div class="thead"><div><h2>Treinos e cardio</h2><div class="sub">${tr.list.length?`${tr.list.length} atividade(s) · ${fmt(tr.min)} min`:'Nenhum treino registrado neste dia.'}</div></div><div class="fbig num">−${fmt(tr.kcal)}<span> kcal</span></div></div>
-   ${tr.list.length?`<div class="tlist">${tr.list.map((t,i)=>`<div class="trow"><b>${t.sess?'Musculação · '+esc(S.treino?lbl(t.f||''):'treino '+(t.f||'')):(ACTS[t.t]||ACTS.outro).n}<small>${fmt(t.min)} min · ${t.wod?esc(wodFmtN(t.wod.fmt)+(t.wod.bench?' '+t.wod.bench:'')+' · '+wodRes(t.wod)+(t.wod.rx?' · RX':'')):t.cardio&&t.vel?String(t.vel).replace('.',',')+' km/h'+(t.incl?' · '+t.incl+'%':'')+(t.dist?' · '+String(t.dist).replace('.',',')+' km':''):INT[t.i==null?1:t.i]}</small></b><span class="k num">−${fmt(t.kcal)} kcal</span>${t.cardio||t.wod?`<button class="x" data-act="${t.wod?'posttreinox':'posttreinox'}" data-k="${t.wod?'wod':'cardio'}" data-ini="${t.ini}" aria-label="Postar">📸</button>`:''}<button class="x" id="rt-${i}" data-act="rmtrain" data-i="${i}" aria-label="Remover treino">✕</button></div>`).join('')}</div>`:''}
+   ${tr.list.length?`<div class="tlist">${tr.list.map((t,i)=>`<div class="trow"><b>${t.sess?'Musculação · '+esc(S.treino?lbl(t.f||''):'treino '+(t.f||'')):(ACTS[t.t]||ACTS.outro).n}<small>${fmt(t.min)} min · ${t.wod?esc(wodFmtN(t.wod.fmt)+(t.wod.bench?' '+t.wod.bench:'')+' · '+wodRes(t.wod)+' · '+wodCat(t.wod)):t.cardio&&t.vel?String(t.vel).replace('.',',')+' km/h'+(t.incl?' · '+t.incl+'%':'')+(t.dist?' · '+String(t.dist).replace('.',',')+' km':''):INT[t.i==null?1:t.i]}</small></b><span class="k num">−${fmt(t.kcal)} kcal</span>${t.cardio||t.wod?`<button class="x" data-act="${t.wod?'posttreinox':'posttreinox'}" data-k="${t.wod?'wod':'cardio'}" data-ini="${t.ini}" aria-label="Postar">📸</button>`:''}<button class="x" id="rt-${i}" data-act="rmtrain" data-i="${i}" aria-label="Remover treino">✕</button></div>`).join('')}</div>`:''}
    ${tr.kg?'':'<div class="banner">Registre seu peso no cartão Peso para calcular o gasto dos treinos.</div>'}
    <div class="tquick"><button class="chip" id="tq-cardio" data-act="copen">▶ Cronômetro de cardio</button><button class="chip" id="tq-wod" data-act="wopen">🔥 WOD de CrossFit</button>${S.treino?'':'<button class="chip" id="tq-musc" data-act="tquick" data-t="musculacao">+ Musculação 1h</button>'}<button class="chip" id="tq-beach" data-act="tquick" data-t="beach">+ Beach tennis 1h</button><button class="chip" id="tq-walk" data-act="tquick" data-t="caminhada">+ Caminhada 1h (6 km/h)</button></div>
    <form class="tform"><select id="tt" aria-label="Atividade">${opts}</select><input id="tm" inputmode="numeric" value="${tf.min||''}" placeholder="min" aria-label="Duração em minutos"><select id="ti" aria-label="Intensidade">${INT.map((n,i)=>`<option value="${i}"${i===tf.i?' selected':''}>${n}</option>`).join('')}</select>
@@ -4201,7 +4269,7 @@ document.addEventListener('click',e=>{
   if(a==='tsom'){ audioUnlock(); if(S.prof.somDesc === false){ S.prof.somDesc = true; saveProf(); } S.somTip = true; render(); setTimeout(beep, 150); return; }
   if(a==='tsomoff'){ S.prof.somDesc = false; S.somTip = false; saveProf(); render(); return; }
   if(/^c(open|back|set|start|pause|adj|fin|desc)$/.test(a)){ cardioAct(a,b); return; }
-  if(/^w(open|back|bench|fmt|rx|int|save|lift|liftx|liftsave)$/.test(a)){ wodAct(a,b); return; }
+  if(/^w(open|back|bench|fmt|cat|int|save|lift|liftx|liftsave|tgo|tok|tx|tr|tperd)$/.test(a)){ wodAct(a,b); return; }
   if(a==='posttreinox'){ postAbrir(b.dataset.k, String(b.dataset.ini)); return; }
   if(/^post(dia|treino|close|m|share|modo|copy|pos)$/.test(a)){ postAct(a,b); return; }
   if(a==='btab'){setTab(b.dataset.v); return;}
