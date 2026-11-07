@@ -392,6 +392,14 @@ body.hasnav .toast{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
 .ajit>.eb.add{align-self:flex-start;border:0;background:none;padding:0 2px;min-height:30px}
 .ajform{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.ajform.col{flex-direction:column;align-items:stretch;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}
 .ajin{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;min-height:42px;color:var(--fg);font-family:inherit;font-size:16px;flex:1;min-width:0}
+
+.segg{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.segrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;border-top:1px dashed var(--line);padding-top:8px}
+.segrow b{grid-column:1/-1}
+.segrow label{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:700;color:var(--muted)}
+.segrow input{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;min-height:40px;color:var(--fg);font-family:inherit;font-size:16px;width:100%;min-width:0}
+#bioform select{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;min-height:44px;color:var(--fg);font-family:inherit;font-size:16px;width:100%}
+.bioimg{width:100%;height:auto;border-radius:12px;margin-top:12px;border:1px solid var(--line);display:block}
 </style>
 </head>
 <body>
@@ -1359,6 +1367,7 @@ function relView(){
      <table class="rt"><tr><th>Início do mês</th><td>${kgs(pesoPts[0].v)} kg</td></tr><tr><th>Atual</th><td>${kgs(pesoPts[pesoPts.length - 1].v)} kg</td></tr><tr><th>No mês</th><td>${(pesoPts[pesoPts.length - 1].v - pesoPts[0].v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pesoPts[0].v))} kg</td></tr>${pIni ? `<tr><th>Peso inicial</th><td>${kgs(pIni.v)} kg${pIni.d ? ' <small>' + parse(pIni.d).toLocaleDateString('pt-BR') + '</small>' : ''}</td></tr><tr><th>Desde o início</th><td><b>${(pesoPts[pesoPts.length - 1].v - pIni.v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pIni.v))} kg</b></td></tr>` : ''}${P.meta ? `<tr><th>Meta</th><td>${kgs(P.meta)} kg</td></tr>` : ''}<tr><th>Pesagens no mês</th><td>${pesoMes.length}</td></tr></table></div></section>` : ''}
    ${medRows.length ? `<section class="rs"><h2>Medidas corporais</h2><table class="rt full"><thead><tr><th>Medida</th><th>Início do mês</th><th>Última</th><th>No mês</th><th>Desde o início</th></tr></thead><tbody>
      ${medRows.map(r => `<tr><td>${r.l}</td><td>${fmtM(r.a.v)} ${medUn(r.k)} <small>${dCurta(r.a.d)}</small></td><td>${fmtM(r.b.v)} ${medUn(r.k)} <small>${dCurta(r.b.d)}</small></td><td>${r.a.d !== r.b.d ? medDelta(r.b.v - r.a.v, r.k) : '—'}</td><td>${r.ini.d !== r.b.d ? medDelta(r.b.v - r.ini.v, r.k) + ' <small>desde ' + dCurta(r.ini.d) + '</small>' : '—'}</td></tr>`).join('')}</tbody></table></section>` : ''}
+   ${bioMesSecao(ini, fim)}
    ${reg ? `<section class="rs"><h2>Alimentação por refeição</h2><table class="rt full"><thead><tr><th>Refeição</th><th>No plano</th><th>Ajustada</th><th>Com extra</th><th>Pulada</th><th>Sem registro</th></tr></thead><tbody>
      ${porRef.map(({m, c}) => `<tr><td>${esc(m.time ? m.time + ' · ' : '')}${esc(m.name)}</td><td>${c.ok}</td><td>${c.adj}</td><td>${c.extra}</td><td>${c.skip}</td><td>${c.pend}</td></tr>`).join('')}</tbody></table>
      ${s.top.length ? `<h3>Fora do plano mais registrados</h3><table class="rt full"><tbody>${s.top.map(t => `<tr><td>${esc(t.n)}</td><td>${t.q}×</td><td>${fmt(t.k)} kcal no total</td></tr>`).join('')}</tbody></table>` : ''}
@@ -1455,6 +1464,7 @@ PdfDoc.prototype.svg = function(svg, x0, w, startY){
       x.moveTo(x0 + +A(el, 'x1', 0) * s, oy + +A(el, 'y1', 0) * s); x.lineTo(x0 + +A(el, 'x2', 0) * s, oy + +A(el, 'y2', 0) * s); x.stroke(); x.setLineDash([]); }
     else if(t === 'polyline'){ const pts = A(el, 'points', '').trim().split(/\s+/).map(p => p.split(',').map(Number)); x.beginPath(); x.strokeStyle = pcol(A(el, 'stroke', PDFC.accent)); x.lineWidth = +A(el, 'stroke-width', 2) * s; x.lineJoin = 'round'; x.lineCap = 'round';
       pts.forEach(([a, b], i) => { const px = x0 + a * s, py = oy + b * s; if(i) x.lineTo(px, py); else x.moveTo(px, py); }); x.stroke(); }
+    else if(t === 'rect'){ const rx = +A(el, 'x', 0) * s, ry = +A(el, 'y', 0) * s, rw = +A(el, 'width', 0) * s, rh2 = +A(el, 'height', 0) * s, rr = Math.min(+A(el, 'rx', 0) * s, rw / 2, rh2 / 2); x.fillStyle = pcol(A(el, 'fill', '#ccc')); if(rr > 0){ pRound(x, x0 + rx, oy + ry, rw, rh2, rr); x.fill(); } else x.fillRect(x0 + rx, oy + ry, rw, rh2); }
     else if(t === 'circle'){ x.beginPath(); x.fillStyle = pcol(A(el, 'fill', PDFC.accent)); x.arc(x0 + +A(el, 'cx', 0) * s, oy + +A(el, 'cy', 0) * s, +A(el, 'r', 3) * s, 0, Math.PI * 2); x.fill(); }
     else if(t === 'text'){ const fw = A(el, 'font-weight', '400'); x.font = (fw === '700' || fw === '900' ? '700 ' : '400 ') + (+A(el, 'font-size', 10) * s) + 'px ' + PFONT; x.fillStyle = pcol(A(el, 'fill', PDFC.fg));
       const an = A(el, 'text-anchor', 'start'); x.textAlign = an === 'end' ? 'right' : an === 'middle' ? 'center' : 'left'; x.fillText(el.textContent, x0 + +A(el, 'x', 0) * s, oy + +A(el, 'y', 0) * s); x.textAlign = 'left'; }
@@ -1472,14 +1482,14 @@ function pdfRender(rep){
     if(sec.hidden) return;
     [...sec.children].forEach(el => {
       const t = el.tagName;
-      if(t === 'H2') D.h2(el.textContent.trim());
-      else if(t === 'H3') D.h3(el.textContent.trim());
-      else if(el.classList.contains('rgrid')) D.tiles([...el.children].map(c => [((c.querySelector('b') || {}).textContent || '').trim(), ((c.querySelector('span') || {}).textContent || '').replace(/\s+/g, ' ').trim()]));
+      if(t === 'H2'){ const nx = el.nextElementSibling; if(nx && nx.tagName.toLowerCase() === 'svg' && nx.viewBox){ const vb = nx.viewBox.baseVal; D.ensure(70 + vb.height * full / vb.width); } D.h2(el.textContent.trim()); }
+      else if(t === 'H3'){ const nx = el.nextElementSibling; if(nx && nx.tagName.toLowerCase() === 'svg' && nx.viewBox){ const vb = nx.viewBox.baseVal; D.ensure(60 + vb.height * full / vb.width); } D.h3(el.textContent.trim()); }
+      else if(el.classList.contains('rgrid')) D.tiles([...el.children].map(c => [((c.querySelector(':scope > b') || {}).textContent || '').trim(), ((c.querySelector(':scope > span') || {}).textContent || '').replace(/\s+/g, ' ').trim()]));
       else if(el.classList.contains('rtwo')){ const sv = el.querySelector('svg'), tb = el.querySelector('table'), lw = Math.round(full * 0.6);
         const vb = sv && sv.viewBox.baseVal, hh = sv ? vb.height * lw / vb.width : 0; D.ensure(Math.max(hh, 200) + 10); const y0 = D.y;
         const yA = sv ? D.svg(sv, PG.M, lw, y0) : y0; let yB = y0; if(tb){ D.table(tb, PG.M + lw + 24, full - lw - 24, y0 + 10); yB = D.y; } D.y = Math.max(yA, yB) + 10; }
       else if(t === 'TABLE') D.table(el, PG.M, full);
-      else if(t === 'svg' || t === 'SVG') { D.svg(el, PG.M, full); D.y += 10; }
+      else if(t === 'svg' || t === 'SVG') { D.y = D.svg(el, PG.M, full) + 10; }
       else if(t === 'P') D.para(el.textContent.replace(/[ \t]+/g, ' ').trim(), {size:18, color:el.classList.contains('rnota') ? PDFC.fg : PDFC.muted, bar:el.classList.contains('rnota')});
     });
     D.y += 12;
@@ -1511,7 +1521,7 @@ async function relPdf(){
   await new Promise(r => setTimeout(r, 60));
   try{
     const blob = pdfBlob(pdfRender(rep)), d0 = parse(S.date);
-    const nome = ('Relatorio-CheckFit-' + d0.toLocaleDateString('pt-BR', {month:'long'}) + '-' + d0.getFullYear() + '.pdf').normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const nome = S.pdfNome || ('Relatorio-CheckFit-' + d0.toLocaleDateString('pt-BR', {month:'long'}) + '-' + d0.getFullYear() + '.pdf').normalize('NFD').replace(/[̀-ͯ]/g, '');
     if(S.relPdf && S.relPdf.url) try{ URL.revokeObjectURL(S.relPdf.url); }catch(e){}
     let file = null; try{ file = new File([blob], nome, {type:'application/pdf'}); }catch(e){}
     S.relPdf = {url:URL.createObjectURL(blob), nome, file, kb:Math.round(blob.size / 1024), share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))};
@@ -1615,6 +1625,7 @@ function plusSheet(){
     ${b('plusgo', '🏃', 'Outra atividade', 'corrida, beach tennis, caminhada…', 'data-v="ativ"')}
     ${b('plusgo', '⚖️', 'Peso', 'registrar o peso de hoje', 'data-v="peso"')}
     ${b('plusgo', '📏', 'Medidas', 'cintura, braço, coxa…', 'data-v="med"')}
+    ${b('bionova', '📊', 'Bioimpedância', 'dados da balança ou do exame', '')}
   </div>`;
 }
 function plusGo(v){
@@ -1703,7 +1714,7 @@ function perfilView(){
 }
 function evolView(){
   const seg = `<div class="tabs evseg" role="group" aria-label="Período"><button data-act="tab" data-v="semana" aria-pressed="${S.view === 'semana'}">Semana</button><button data-act="tab" data-v="mes" aria-pressed="${S.view === 'mes'}">Mês</button></div>`;
-  return seg + (S.view === 'mes' ? viewMonth() : viewWeek());
+  return seg + (S.view === 'mes' ? viewMonth() : viewWeek()) + bioCard();
 }
 
 /* ---------- Meus ajustes: pequenas mudanças do cliente por cima do plano e da ficha do profissional ---------- */
@@ -1821,6 +1832,361 @@ function ajAct(a, b){
   if(a === 'ajdelex'){ (aj.treino.extra[d.f] || []).splice(+d.i, 1); if(!(aj.treino.extra[d.f] || []).length) delete aj.treino.extra[d.f]; msg = 'Exercício removido.'; S.ajOpen = 'f' + d.f; }
   aplicaAjustes(); render(); ajSalvar(msg);
 }
+
+/* ---------- Bioimpedância: registro, evolução e relatório ---------- */
+const BIO = [['peso','Peso','kg'],['gord','Gordura corporal','%'],['mgord','Massa de gordura','kg'],['mmagra','Massa magra','kg'],['mmusc','Massa muscular','kg'],['agua','Água corporal','L'],['prot','Proteína','kg'],['mine','Minerais / massa óssea','kg'],['tmb','Metabolismo basal','kcal'],['visc','Gordura visceral','índice'],['imet','Idade metabólica','anos']];
+const SEG = [['bE','Braço esquerdo'],['bD','Braço direito'],['tr','Tronco'],['pE','Perna esquerda'],['pD','Perna direita']];
+const BIO_MENOS = ['peso','gord','mgord','visc','imet'], BIO_MAIS = ['mmagra','mmusc','prot','mine','agua','tmb'];
+const f1 = v => v == null || v === '' || isNaN(v) ? '—' : (Math.round(v * 10) / 10).toLocaleString('pt-BR');
+function bioList(){ return Object.keys(S.days).sort().filter(d => S.days[d].bio && Object.keys(S.days[d].bio).length).map(d => ({d, b:bioCalc(S.days[d].bio)})); }
+function bioCalc(b){
+  b = JSON.parse(JSON.stringify(b || {}));
+  if(b.peso && b.gord && !b.mgord) b.mgord = Math.round(b.peso * b.gord) / 100;
+  if(b.peso && b.mgord && !b.gord) b.gord = Math.round(b.mgord / b.peso * 1000) / 10;
+  if(b.peso && b.mgord && !b.mmagra) b.mmagra = Math.round((b.peso - b.mgord) * 10) / 10;
+  const alt = +S.prof.altura; if(b.peso && alt > 100) b.imc = Math.round(b.peso / Math.pow(alt / 100, 2) * 10) / 10;
+  return b;
+}
+function bioUn(k){ const x = BIO.find(z => z[0] === k); return x ? x[2] : ''; }
+function bioLab(k){ return k === 'imc' ? 'IMC' : (BIO.find(z => z[0] === k) || [k, k])[1]; }
+function bioDelta(v, k, comCor){
+  if(v == null || isNaN(v)) return '—'; const s = Math.abs(v) < 0.05 ? '0' : (v < 0 ? '−' : '+') + f1(Math.abs(v));
+  const u = k === 'imc' ? '' : ' ' + bioUn(k); if(!comCor || Math.abs(v) < 0.05) return s + u;
+  const bom = BIO_MENOS.includes(k) || k === 'imc' ? v < 0 : BIO_MAIS.includes(k) ? v > 0 : null;
+  return bom == null ? s + u : `<span style="color:${bom ? 'var(--ok)' : 'var(--bad)'}">${s}${u}</span>`;
+}
+/* referências reconhecidas */
+const REF_IMC = [[14, 18.5, 'Abaixo', '#60a5fa'], [18.5, 25, 'Normal', '#22c55e'], [25, 30, 'Sobrepeso', '#facc15'], [30, 35, 'Obes. I', '#fb923c'], [35, 40, 'Obes. II', '#ef4444'], [40, 46, 'Obes. III', '#b91c1c']];
+function refGord(sexo){ return sexo === 'F' ? [[5, 14, 'Baixa', '#60a5fa'], [14, 25, 'Adequada', '#22c55e'], [25, 32, 'Aceitável', '#facc15'], [32, 50, 'Elevada', '#ef4444']] : sexo === 'M' ? [[2, 6, 'Baixa', '#60a5fa'], [6, 18, 'Adequada', '#22c55e'], [18, 25, 'Aceitável', '#facc15'], [25, 45, 'Elevada', '#ef4444']] : null; }
+const REF_VISC = [[1, 10, 'Normal', '#22c55e'], [10, 15, 'Alta', '#facc15'], [15, 30, 'Muito alta', '#ef4444']];
+function refRCQ(sexo){ const c = sexo === 'F' ? 0.85 : sexo === 'M' ? 0.90 : null; return c ? [[0.6, c + 0.0001, 'Adequada', '#22c55e'], [c + 0.0001, 1.2, 'Acima da referência', '#ef4444']] : null; }
+function faixa(ref, v){ const r = ref && ref.find(x => v >= x[0] && v < x[1]); const t = r ? r[2] : (ref && v >= ref[ref.length - 1][1] ? ref[ref.length - 1][2] : ref && v < ref[0][0] ? ref[0][2] : '—'); return t.replace('Obes.', 'Obesidade'); }
+function barSVG(rows){
+  const W = 340, rh = 46, H = rows.length * rh + 6;
+  let s = `<svg class="wchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Avaliação por faixas">`;
+  rows.forEach((r, i) => {
+    const y = i * rh + 4, x0 = 8, w = W - 16, lo = r.ref[0][0], hi = r.ref[r.ref.length - 1][1], X = v => x0 + Math.max(0, Math.min(1, (v - lo) / (hi - lo))) * w;
+    s += `<text x="${x0}" y="${y + 11}" font-size="10.5" font-weight="700" fill="var(--fg)">${esc(r.l)}</text><text x="${W - 8}" y="${y + 11}" text-anchor="end" font-size="11" font-weight="900" fill="var(--fg)">${esc(r.txt)}</text>`;
+    r.ref.forEach(c => { s += `<rect x="${X(c[0]).toFixed(1)}" y="${y + 17}" width="${Math.max(1, X(c[1]) - X(c[0])).toFixed(1)}" height="8" rx="2" fill="${c[3]}"/>`; s += `<text x="${((X(c[0]) + X(c[1])) / 2).toFixed(1)}" y="${y + 37}" text-anchor="middle" font-size="7.5" fill="var(--muted)">${esc(c[2])}</text>`; });
+    s += `<circle cx="${X(r.v).toFixed(1)}" cy="${y + 21}" r="6" fill="#0B2E3D"/><circle cx="${X(r.v).toFixed(1)}" cy="${y + 21}" r="3" fill="#ffffff"/>`;
+  });
+  return s + '</svg>';
+}
+function corpoSVG(seg, tipo){
+  const g = (seg && seg[tipo]) || {}, cor = tipo === 'g' ? '#f59e0b' : '#22c55e', lab = k => { const v = g[k] || {}; return (v.kg ? f1(v.kg) + ' kg' : '—') + (v.p ? ' (' + f1(v.p) + '%)' : ''); };
+  return `<svg class="wchart" viewBox="0 0 200 190" role="img" aria-label="${tipo === 'g' ? 'Gordura' : 'Músculo'} por segmento">
+    <circle cx="100" cy="22" r="13" fill="${cor}"/><rect x="82" y="38" width="36" height="62" rx="10" fill="${cor}"/>
+    <rect x="66" y="40" width="13" height="56" rx="6" fill="${cor}"/><rect x="121" y="40" width="13" height="56" rx="6" fill="${cor}"/>
+    <rect x="84" y="102" width="14" height="74" rx="6" fill="${cor}"/><rect x="102" y="102" width="14" height="74" rx="6" fill="${cor}"/>
+    <text x="4" y="52" font-size="9" font-weight="700" fill="var(--fg)">Braço E</text><text x="4" y="63" font-size="9" fill="var(--muted)">${esc(lab('bE'))}</text>
+    <text x="196" y="52" text-anchor="end" font-size="9" font-weight="700" fill="var(--fg)">Braço D</text><text x="196" y="63" text-anchor="end" font-size="9" fill="var(--muted)">${esc(lab('bD'))}</text>
+    <text x="4" y="92" font-size="9" font-weight="700" fill="var(--fg)">Tronco</text><text x="4" y="103" font-size="9" fill="var(--muted)">${esc(lab('tr'))}</text>
+    <text x="4" y="150" font-size="9" font-weight="700" fill="var(--fg)">Perna E</text><text x="4" y="161" font-size="9" fill="var(--muted)">${esc(lab('pE'))}</text>
+    <text x="196" y="150" text-anchor="end" font-size="9" font-weight="700" fill="var(--fg)">Perna D</text><text x="196" y="161" text-anchor="end" font-size="9" fill="var(--muted)">${esc(lab('pD'))}</text></svg>`;
+}
+function medAte(k, date){ const L = medList(k).filter(x => x.d <= date); return L.length ? L[L.length - 1] : null; }
+
+/* cartão na Evolução */
+function bioCard(){
+  const L = bioList();
+  if(!L.length) return `<section class="card" aria-label="Bioimpedância"><div class="thead"><div><h2>Bioimpedância</h2><div class="sub">Registre os dados da sua balança ou do exame (InBody e similares).</div></div></div><button class="primary" id="bio-nova" data-act="bionova" style="width:100%;margin-top:10px">Registrar avaliação</button></section>`;
+  const u = L[L.length - 1], p = L.length > 1 ? L[L.length - 2] : null, ks = ['peso', 'gord', 'mgord', 'mmusc', 'mmagra', 'visc', 'imc'].filter(k => u.b[k] != null);
+  const ex = S.bioEx && L.filter(x => x.b[S.bioEx] != null).length ? S.bioEx : (ks.find(k => k !== 'peso') || ks[0]);
+  const pts = L.filter(x => x.b[ex] != null).map(x => ({d:x.d, v:+x.b[ex]}));
+  return `<section class="card sum" aria-label="Bioimpedância"><div class="thead"><div><h2>Bioimpedância</h2><div class="sub">Última avaliação: ${parse(u.d).toLocaleDateString('pt-BR')}${p ? ' · comparada com ' + parse(p.d).toLocaleDateString('pt-BR') : ''}</div></div></div>
+    <div class="lines" style="margin-top:8px">${ks.map(k => `<div class="line"><span>${bioLab(k)}</span><span><b class="num">${f1(u.b[k])}</b> ${k === 'imc' ? '' : bioUn(k)}${p && p.b[k] != null ? ' · ' + bioDelta(u.b[k] - p.b[k], k, true) : ''}</span></div>`).join('')}</div>
+    ${pts.length ? `<label class="sub" for="biosel" style="font-weight:700;display:block;margin-top:10px">Gráfico</label><select id="biosel" class="admq">${ks.map(k => `<option value="${k}"${k === ex ? ' selected' : ''}>${bioLab(k)}</option>`).join('')}</select>${lineChart(pts, {color:'var(--accent)', un:ex === 'imc' ? '' : bioUn(ex), label:bioLab(ex)})}` : ''}
+    <div class="row" style="margin-top:10px"><button class="primary" id="bio-rel" data-act="biorel" data-d="${u.d}">Relatório (PDF)</button><button class="ghost" id="bio-nova" data-act="bionova">Nova avaliação</button></div>
+    <details class="pm" style="margin-top:8px"><summary class="sub">Todas as avaliações (${L.length})</summary>${L.slice().reverse().map(x => `<div class="line" style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:6px 0"><span>${parse(x.d).toLocaleDateString('pt-BR')} · ${f1(x.b.peso)} kg${x.b.gord ? ' · ' + f1(x.b.gord) + '%' : ''}</span><span class="row" style="gap:6px"><button class="ghost eb" data-act="biorel" data-d="${x.d}">Relatório</button><button class="ghost eb" data-act="bioedit" data-d="${x.d}">Editar</button></span></div>`).join('')}</details>
+  </section>`;
+}
+
+/* formulário */
+function bioForm(){
+  const d = S.bioDate || today(), b = (S.days[d] && S.days[d].bio) || {}, seg = b.seg || {}, imp = b.imp || {}, sexo = S.prof.sexo;
+  const inp = (id, v, ph) => `<input id="${id}" inputmode="decimal" value="${v != null && v !== '' ? String(v).replace('.', ',') : ''}" placeholder="${ph || ''}" autocomplete="off">`;
+  return `<section class="card" id="view-bio"><div class="thead"><div><h2>${b.peso ? 'Editar avaliação' : 'Nova avaliação de bioimpedância'}</h2><div class="sub">Copie os números da sua balança ou do exame. Preencha só o que aparecer.</div></div><button class="ghost" id="bio-back" data-act="bioback">Voltar</button></div>
+   ${!sexo ? `<p class="lmsg" style="margin:8px 0 0">Informe o <b>sexo</b> abaixo para o relatório mostrar as faixas de referência de gordura e cintura-quadril.</p>` : ''}
+   <form class="pgrid" id="bioform" style="margin-top:10px">
+    <label for="bio-date">Data da avaliação<input id="bio-date" type="date" value="${d}"></label>
+    <label for="bio-sexo">Sexo<select id="bio-sexo"><option value="">—</option><option value="M"${sexo === 'M' ? ' selected' : ''}>Masculino</option><option value="F"${sexo === 'F' ? ' selected' : ''}>Feminino</option></select></label>
+    ${BIO.map(([k, l, u]) => `<label for="bio-${k}">${l} (${u})${inp('bio-' + k, b[k], k === 'mgord' || k === 'mmagra' ? 'calculado se vazio' : '')}</label>`).join('')}
+    <label class="ck" for="bio-tmbp" style="grid-column:1/-1"><input type="checkbox" id="bio-tmbp" checked> Usar o metabolismo basal desta avaliação nos cálculos de gasto do app</label>
+    <details class="pm" style="grid-column:1/-1"${seg.g || seg.m ? ' open' : ''}><summary><b>Análise por segmento</b> <span class="sub">(balança de 8 eletrodos ou InBody)</span></summary>
+     <div class="segg">${SEG.map(([k, l]) => `<div class="segrow"><b>${l}</b>
+       <label>Gordura kg${inp('sg-g-' + k + '-kg', ((seg.g || {})[k] || {}).kg)}</label><label>Gordura %${inp('sg-g-' + k + '-p', ((seg.g || {})[k] || {}).p)}</label>
+       <label>Músculo kg${inp('sg-m-' + k + '-kg', ((seg.m || {})[k] || {}).kg)}</label><label>Músculo %${inp('sg-m-' + k + '-p', ((seg.m || {})[k] || {}).p)}</label></div>`).join('')}</div></details>
+    <details class="pm" style="grid-column:1/-1"${imp[5] || imp[50] ? ' open' : ''}><summary><b>Impedância (Ω)</b> <span class="sub">(só em exames completos)</span></summary>
+     <div class="segg">${['5', '50'].map(fq => `<div class="segrow"><b>${fq} kHz</b>${SEG.map(([k, l]) => `<label>${l.replace('esquerdo', 'E').replace('direito', 'D').replace('esquerda', 'E').replace('direita', 'D')}${inp('im-' + fq + '-' + k, (imp[fq] || {})[k])}</label>`).join('')}</div>`).join('')}</div></details>
+    <button type="submit" class="primary" style="grid-column:1/-1">Salvar avaliação</button>
+    ${b.peso ? `<button type="button" class="ghost" data-act="biodel" data-d="${d}" style="grid-column:1/-1">${S.bioConf === d ? 'Toque de novo para apagar' : 'Apagar esta avaliação'}</button>` : ''}
+   </form><p class="lmsg" id="biomsg" role="status"></p></section>`;
+}
+function bioSave(){
+  const v = id => { const e = document.getElementById(id); const t = e ? e.value.trim() : ''; return t ? numv(t) : null; };
+  const d = (document.getElementById('bio-date') || {}).value || today(), b = {};
+  BIO.forEach(([k]) => { const x = v('bio-' + k); if(x != null && x > 0) b[k] = Math.round(x * 100) / 100; });
+  const msg = t => { const e = document.getElementById('biomsg'); if(e) e.textContent = t; };
+  if(!b.peso){ msg('Informe pelo menos o peso.'); return; }
+  if(b.gord && (b.gord < 2 || b.gord > 70)){ msg('Confira o % de gordura.'); return; }
+  const seg = {g:{}, m:{}}; SEG.forEach(([k]) => ['g', 'm'].forEach(t => { const kg = v(`sg-${t}-${k}-kg`), p = v(`sg-${t}-${k}-p`); if(kg || p){ seg[t][k] = {}; if(kg) seg[t][k].kg = kg; if(p) seg[t][k].p = p; } }));
+  if(Object.keys(seg.g).length || Object.keys(seg.m).length){ b.seg = {}; if(Object.keys(seg.g).length) b.seg.g = seg.g; if(Object.keys(seg.m).length) b.seg.m = seg.m; }
+  const imp = {}; ['5', '50'].forEach(fq => SEG.forEach(([k]) => { const x = v(`im-${fq}-${k}`); if(x){ imp[fq] = imp[fq] || {}; imp[fq][k] = x; } })); if(Object.keys(imp).length) b.imp = imp;
+  const sexo = (document.getElementById('bio-sexo') || {}).value || '', usaTmb = (document.getElementById('bio-tmbp') || {}).checked;
+  if(S.bioDate && S.bioDate !== d && S.days[S.bioDate] && S.days[S.bioDate].bio){ delete S.days[S.bioDate].bio; save(S.bioDate); }
+  const day_ = S.days[d] || (S.days[d] = {meals:{}}); day_.bio = b;
+  if(!+day_.peso) day_.peso = b.peso;
+  save(d);
+  let mudouPerfil = false; if(sexo && sexo !== S.prof.sexo){ S.prof.sexo = sexo; mudouPerfil = true; } if(usaTmb && b.tmb && b.tmb !== S.prof.tmb){ S.prof.tmb = b.tmb; mudouPerfil = true; }
+  if(mudouPerfil) saveProf();
+  S.mode = 'app'; S.tab = 'evol'; S.bioDate = null; toast('Avaliação salva.'); render(); window.scrollTo(0, 0);
+}
+function bioDel(d){ if(S.bioConf !== d){ S.bioConf = d; render(); return; } S.bioConf = null; if(S.days[d]){ delete S.days[d].bio; save(d); } S.mode = 'app'; S.tab = 'evol'; toast('Avaliação apagada.'); render(); }
+
+/* relatório */
+function bioRelView(){
+  const L = bioList(), i = Math.max(0, L.findIndex(x => x.d === S.bioRel)), cur = L[i] || L[L.length - 1]; if(!cur) return '';
+  const prev = i > 0 ? L[i - 1] : null, first = L[0] !== cur ? L[0] : null, b = cur.b, P = S.prof || {}, sexo = P.sexo, nome = (S.cli && S.cli.nome) || '';
+  const alt = +P.altura, kg = v => f1(v) + ' kg';
+  const comp = ['peso', 'imc', 'gord', 'mgord', 'mmagra', 'mmusc', 'agua', 'prot', 'mine', 'tmb', 'visc', 'imet'].filter(k => b[k] != null);
+  const refTxt = k => k === 'imc' ? '18,5 – 24,9' : k === 'gord' && refGord(sexo) ? (sexo === 'F' ? '14 – 24' : '6 – 17') : k === 'visc' ? '1 – 9' : '—';
+  const aval = k => k === 'imc' ? faixa(REF_IMC, b.imc) : k === 'gord' && refGord(sexo) ? faixa(refGord(sexo), b.gord) : k === 'visc' ? faixa(REF_VISC, b.visc) : '';
+  const cint = medAte('cintura', cur.d), quad = medAte('quadril', cur.d), rcq = cint && quad ? Math.round(cint.v / quad.v * 100) / 100 : null;
+  const bars = [];
+  if(b.imc) bars.push({l:'IMC (OMS)', v:b.imc, txt:f1(b.imc) + ' · ' + faixa(REF_IMC, b.imc), ref:REF_IMC});
+  if(b.gord && refGord(sexo)) bars.push({l:'Gordura corporal (ACE)', v:b.gord, txt:f1(b.gord) + '% · ' + faixa(refGord(sexo), b.gord), ref:refGord(sexo)});
+  if(b.visc) bars.push({l:'Gordura visceral (índice da balança)', v:b.visc, txt:f1(b.visc) + ' · ' + faixa(REF_VISC, b.visc), ref:REF_VISC});
+  if(rcq && refRCQ(sexo)) bars.push({l:'Relação cintura-quadril (OMS)', v:rcq, txt:String(rcq).replace('.', ',') + ' · ' + faixa(refRCQ(sexo), rcq), ref:refRCQ(sexo)});
+  const pMin = alt > 100 ? 18.5 * Math.pow(alt / 100, 2) : null, pMax = alt > 100 ? 24.9 * Math.pow(alt / 100, 2) : null;
+  const alvo = sexo === 'F' ? 24 : sexo === 'M' ? 17 : null, pesoAlvo = alvo && b.mmagra ? b.mmagra / (1 - alvo / 100) : null;
+  const evo = (a, z) => ['peso', 'mgord', 'mmagra', 'mmusc', 'gord', 'visc'].filter(k => a.b[k] != null && z.b[k] != null).map(k => [bioDelta(z.b[k] - a.b[k], k, true), bioLab(k)]);
+  const seg = b.seg || {}, imp = b.imp || {}, kgAtual = b.peso;
+  const acts = [['caminhada', 60, 1], ['corrida', 30, 1], ['musculacao', 60, 1], ['beach', 60, 1], ['bike', 60, 1]].map(([k, min, it]) => [ACTS[k].n + ' (' + min + ' min)', Math.round(trainK({t:k, min, i:it}, kgAtual))]);
+  const sel = L.length > 1 ? `<label class="sub" for="bio-relsel" style="font-weight:700">Avaliação</label><select id="bio-relsel" class="admq">${L.slice().reverse().map(x => `<option value="${x.d}"${x.d === cur.d ? ' selected' : ''}>${parse(x.d).toLocaleDateString('pt-BR')}</option>`).join('')}</select>` : '';
+  return `<section class="card noprint" id="view-biorel"><div class="thead"><div><h2>Relatório de bioimpedância</h2><div class="sub">Para levar à nutricionista, ao médico ou ao personal.</div></div><button class="ghost" id="biorel-back" data-act="biorelback">Voltar</button></div>
+    ${sel}${bioImgBox()}
+    <details class="pm" id="bio-pdfd"${S.bioPdfOpen ? ' open' : ''} style="margin-top:10px"><summary class="sub" style="font-weight:700">Versão detalhada em PDF (2 a 3 páginas)</summary>${relPdfBox()}<p class="tip" style="margin:8px 0 0">Prévia do PDF abaixo.</p></details></section>
+  <article class="rep" aria-label="Relatório de bioimpedância"${S.bioPdfOpen ? '' : ' style="display:none"'}>
+   <header class="rh"><div><div class="rbrand">CheckFit</div><h1>Relatório de Bioimpedância</h1>
+    <div class="rmeta">${esc(nome)} · avaliação de ${parse(cur.d).toLocaleDateString('pt-BR')}${P.idade ? ' · ' + esc(P.idade) + ' anos' : ''}${alt ? ' · ' + (alt / 100).toFixed(2).replace('.', ',') + ' m' : ''}${sexo ? ' · ' + (sexo === 'F' ? 'feminino' : 'masculino') : ''}</div></div></header>
+   <section class="rs"><h2>Resumo</h2><div class="rgrid">
+     <div><b>${kg(b.peso)}</b><span>peso</span></div><div><b>${b.imc ? f1(b.imc) : '—'}</b><span>IMC${b.imc ? ' · ' + faixa(REF_IMC, b.imc) : ''}</span></div>
+     <div><b>${b.gord ? f1(b.gord) + '%' : '—'}</b><span>gordura corporal</span></div><div><b>${b.mmusc ? kg(b.mmusc) : b.mmagra ? kg(b.mmagra) : '—'}</b><span>${b.mmusc ? 'massa muscular' : 'massa magra'}</span></div>
+   </div></section>
+   ${prev ? `<section class="rs"><h2>Evolução desde ${parse(prev.d).toLocaleDateString('pt-BR')}</h2><div class="rgrid">${evo(prev, cur).map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join('')}</div>${first && first !== prev ? `<p class="rnote">Desde a primeira avaliação (${parse(first.d).toLocaleDateString('pt-BR')}): ${evo(first, cur).map(([v, l]) => l.toLowerCase() + ' ' + v.replace(/<[^>]+>/g, '')).join(' · ')}.</p>` : ''}</section>` : ''}
+   <section class="rs"><h2>Composição corporal</h2><table class="rt full"><thead><tr><th>Componente</th><th>Resultado</th>${prev ? `<th>Anterior</th><th>Variação</th>` : ''}<th>Referência</th><th>Avaliação</th></tr></thead><tbody>
+     ${comp.map(k => `<tr><td>${bioLab(k)}</td><td><b>${f1(b[k])}</b> ${k === 'imc' ? '' : bioUn(k)}</td>${prev ? `<td>${prev.b[k] != null ? f1(prev.b[k]) : '—'}</td><td>${prev.b[k] != null ? bioDelta(b[k] - prev.b[k], k, true) : '—'}</td>` : ''}<td>${refTxt(k)}</td><td>${aval(k)}</td></tr>`).join('')}</tbody></table></section>
+   ${bars.length ? `<section class="rs"><h2>Avaliação por faixas</h2>${barSVG(bars)}<p class="rnote">Referências: IMC e relação cintura-quadril — Organização Mundial da Saúde; gordura corporal — American Council on Exercise (ACE), por sexo; gordura visceral — índice usado pelas balanças domésticas (a escala pode variar por marca).${!sexo ? ' Informe o sexo no app para ver as faixas de gordura e cintura-quadril.' : ''}</p></section>` : ''}
+   <section class="rs"><h2>Controle de peso</h2><table class="rt full"><tbody>
+     ${pMin ? `<tr><th>Faixa de peso saudável (IMC 18,5 a 24,9)</th><td>${f1(pMin)} a ${f1(pMax)} kg</td></tr><tr><th>Diferença para o limite da faixa</th><td>${b.peso > pMax ? '+' + f1(b.peso - pMax) + ' kg acima' : b.peso < pMin ? f1(pMin - b.peso) + ' kg abaixo' : 'dentro da faixa'}</td></tr>` : `<tr><td colspan="2">Informe a altura no app para calcular a faixa de peso saudável.</td></tr>`}
+     ${pesoAlvo && b.peso > pesoAlvo ? `<tr><th>Gordura a perder para chegar a ${alvo}% (mantendo a massa magra)</th><td>${f1(b.peso - pesoAlvo)} kg</td></tr>` : ''}
+     ${P.meta ? `<tr><th>Meta pessoal</th><td>${f1(P.meta)} kg (${b.peso > P.meta ? 'faltam ' + f1(b.peso - P.meta) + ' kg' : 'alcançada'})</td></tr>` : ''}
+   </tbody></table></section>
+   <section class="rs"><h2>Outros indicadores</h2><table class="rt full"><tbody>
+     ${cint ? `<tr><th>Circunferência da cintura</th><td>${f1(cint.v)} cm <small>${parse(cint.d).toLocaleDateString('pt-BR')}</small></td></tr>` : ''}${quad ? `<tr><th>Circunferência do quadril</th><td>${f1(quad.v)} cm</td></tr>` : ''}
+     ${rcq ? `<tr><th>Relação cintura-quadril</th><td>${String(rcq).replace('.', ',')}${refRCQ(sexo) ? ' · ' + faixa(refRCQ(sexo), rcq) + ' (OMS: até ' + (sexo === 'F' ? '0,85' : '0,90') + ')' : ''}</td></tr>` : ''}
+     ${b.imet ? `<tr><th>Idade metabólica</th><td>${f1(b.imet)} anos${P.idade ? ' (idade real ' + esc(P.idade) + ')' : ''}</td></tr>` : ''}${b.tmb ? `<tr><th>Metabolismo basal</th><td>${fmt(b.tmb)} kcal/dia</td></tr>` : ''}
+     ${!cint && !b.imet && !b.tmb ? '<tr><td>Registre cintura e quadril em Medidas para calcular a relação cintura-quadril.</td></tr>' : ''}
+   </tbody></table></section>
+   ${seg.g || seg.m ? `<section class="rs"><h2>Análise por segmento</h2>${seg.g ? `<h3>Gordura</h3><div class="rtwo"><div>${corpoSVG(seg, 'g')}</div>${seg.m ? `<div>${corpoSVG(seg, 'm')}</div>` : '<div></div>'}</div>` : `<h3>Músculo</h3>${corpoSVG(seg, 'm')}`}
+     <table class="rt full"><thead><tr><th>Segmento</th><th>Gordura</th><th>Músculo</th></tr></thead><tbody>${SEG.map(([k, l]) => { const g = (seg.g || {})[k] || {}, m = (seg.m || {})[k] || {}; return `<tr><td>${l}</td><td>${g.kg ? f1(g.kg) + ' kg' : '—'}${g.p ? ' (' + f1(g.p) + '%)' : ''}</td><td>${m.kg ? f1(m.kg) + ' kg' : '—'}${m.p ? ' (' + f1(m.p) + '%)' : ''}</td></tr>`; }).join('')}</tbody></table>${seg.g && seg.m ? '<p class="rnote">Bonecos: à esquerda, gordura (laranja); à direita, músculo (verde).</p>' : ''}</section>` : ''}
+   ${imp[5] || imp[50] ? `<section class="rs"><h2>Impedância bioelétrica (Ω)</h2><table class="rt full"><thead><tr><th>Frequência</th>${SEG.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>${['5', '50'].filter(f => imp[f]).map(f => `<tr><td>${f} kHz</td>${SEG.map(([k]) => `<td>${imp[f][k] != null ? f1(imp[f][k]) : '—'}</td>`).join('')}</tr>`).join('')}</tbody></table></section>` : ''}
+   ${L.length > 1 ? `<section class="rs"><h2>Histórico</h2><table class="rt full"><thead><tr><th>Data</th><th>Peso</th><th>Gordura</th><th>Massa magra</th><th>Músculo</th><th>Visceral</th></tr></thead><tbody>${L.filter(x => x.d <= cur.d).slice(-8).map(x => `<tr><td>${parse(x.d).toLocaleDateString('pt-BR')}</td><td>${f1(x.b.peso)}</td><td>${x.b.gord ? f1(x.b.gord) + '%' : '—'}</td><td>${f1(x.b.mmagra)}</td><td>${f1(x.b.mmusc)}</td><td>${f1(x.b.visc)}</td></tr>`).join('')}</tbody></table>
+     ${(() => { const pts = L.filter(x => x.d <= cur.d && x.b.gord).map(x => ({d:x.d, v:+x.b.gord})); return pts.length > 1 ? '<h3>Gordura corporal (%)</h3>' + lineChart(pts, {color:'#16A34A', un:'%', label:'Gordura corporal'}) : ''; })()}</section>` : ''}
+   ${kgAtual ? `<section class="rs"><h2>Gasto estimado com exercícios</h2><table class="rt full"><tbody>${acts.map(([n, k]) => `<tr><td>${n}</td><td>≈ ${fmt(k)} kcal</td></tr>`).join('')}</tbody></table><p class="rnote">Estimativa por intensidade moderada para o peso atual (MET − repouso). Valores aproximados.</p></section>` : ''}
+   <section class="rs"><h2>Observação</h2><p class="rnota">Os resultados de bioimpedância são estimativas e variam com hidratação, horário e alimentação. Para comparar avaliações, faça sempre nas mesmas condições (de preferência em jejum, pela manhã). Interprete os resultados com um profissional de saúde ou de educação física.</p></section>
+   <footer class="rf">Dados informados pelo próprio usuário no app CheckFit a partir da balança ou do exame de bioimpedância. Este relatório não substitui avaliação profissional.</footer>
+  </article>`;
+}
+function bioMesSecao(ini, fim){
+  const L = bioList().filter(x => x.d >= ini && x.d <= fim); if(!L.length) return '';
+  const a = L[0], z = L[L.length - 1], ks = ['peso', 'gord', 'mgord', 'mmagra', 'mmusc', 'visc'].filter(k => z.b[k] != null);
+  return `<section class="rs"><h2>Bioimpedância</h2><table class="rt full"><thead><tr><th>Indicador</th>${a !== z ? `<th>${parse(a.d).toLocaleDateString('pt-BR')}</th>` : ''}<th>${parse(z.d).toLocaleDateString('pt-BR')}</th>${a !== z ? '<th>Variação</th>' : ''}</tr></thead><tbody>
+    ${ks.map(k => `<tr><td>${bioLab(k)}</td>${a !== z ? `<td>${f1(a.b[k])}</td>` : ''}<td>${f1(z.b[k])} ${bioUn(k)}</td>${a !== z ? `<td>${a.b[k] != null ? bioDelta(z.b[k] - a.b[k], k, true) : '—'}</td>` : ''}</tr>`).join('')}</tbody></table></section>`;
+}
+
+/* ---------- Relatório de bioimpedância em imagem (1 página, estilo infográfico) ---------- */
+const IC = {navy:'#0B2E3D', navy2:'#11505A', green:'#22C55E', lime:'#A3E635', dg:'#15803D', fg:'#0B2E3D', mut:'#5B7280', line:'#DCE5EA', soft:'#F2F6F8', okBg:'#E3F7EA', okFg:'#15803D', badBg:'#FDE4E2', badFg:'#C0392B', warnBg:'#FDF1D6', warnFg:'#A15C00', orange:'#F59E0B'};
+const IFH = 'Montserrat, "Avenir Next", system-ui, sans-serif', IFB = 'Inter, "Helvetica Neue", Arial, sans-serif';
+function icRR(x, a, b, w, h, r){ x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); }
+function icT(x, s, a, b, o){ o = o || {}; x.font = (o.w || 400) + ' ' + (o.s || 16) + 'px ' + (o.h ? IFH : IFB); x.fillStyle = o.c || IC.fg; x.textAlign = o.al || 'left'; x.textBaseline = 'alphabetic'; if(o.max){ let t = String(s); while(x.measureText(t).width > o.max && t.length > 3) t = t.slice(0, -2) + '…'; s = t; } x.fillText(String(s), a, b); x.textAlign = 'left'; }
+function icPanel(x, a, b, w, h, title){
+  x.save(); x.shadowColor = 'rgba(11,46,61,.10)'; x.shadowBlur = 14; x.shadowOffsetY = 4; x.fillStyle = '#fff'; icRR(x, a, b, w, h, 18); x.fill(); x.restore();
+  x.strokeStyle = IC.line; x.lineWidth = 1.5; icRR(x, a, b, w, h, 18); x.stroke();
+  const g = x.createLinearGradient(a, 0, a + w, 0); g.addColorStop(0, '#EAF4F1'); g.addColorStop(1, '#F6FAFB'); x.fillStyle = g; icRR(x, a + 6, b + 6, w - 12, 46, 12); x.fill();
+  x.fillStyle = IC.navy; icRR(x, a + 14, b + 13, 32, 32, 9); x.fill();
+  x.strokeStyle = IC.lime; x.lineWidth = 3; x.lineCap = 'round'; x.lineJoin = 'round'; x.beginPath(); x.moveTo(a + 22, b + 29); x.lineTo(a + 28, b + 35); x.lineTo(a + 39, b + 22); x.stroke();
+  icT(x, title, a + 56, b + 37, {s:21, w:800, h:1, max:w - 70});
+  return b + 62;
+}
+function icPill(x, txt, a, b, w, kind){
+  const bg = kind === 'ok' ? IC.okBg : kind === 'bad' ? IC.badBg : kind === 'warn' ? IC.warnBg : IC.soft, fg = kind === 'ok' ? IC.okFg : kind === 'bad' ? IC.badFg : kind === 'warn' ? IC.warnFg : IC.mut;
+  x.fillStyle = bg; icRR(x, a, b, w, 26, 8); x.fill(); icT(x, txt, a + w / 2, b + 18, {s:14, w:700, c:fg, al:'center', max:w - 8});
+}
+function icKind(label){ const l = String(label || '').toLowerCase(); if(/normal|adequad/.test(l)) return 'ok'; if(/aceit|sobrepeso|alta$|^alta/.test(l) && !/muito/.test(l)) return 'warn'; if(/obes|elevad|muito|acima/.test(l)) return 'bad'; return ''; }
+function icLogo(x, a, b, sz){
+  x.strokeStyle = '#E8F7EF'; x.lineWidth = sz * 0.09; icRR(x, a, b + sz * 0.22, sz * 0.6, sz * 0.6, sz * 0.15); x.stroke();
+  x.strokeStyle = IC.navy; x.lineWidth = sz * 0.2; x.lineCap = 'round'; x.lineJoin = 'round'; x.beginPath(); x.moveTo(a + sz * 0.15, b + sz * 0.5); x.lineTo(a + sz * 0.31, b + sz * 0.65); x.lineTo(a + sz * 0.72, b + sz * 0.18); x.stroke();
+  const g = x.createLinearGradient(a, b + sz, a + sz, b); g.addColorStop(0, IC.green); g.addColorStop(1, IC.lime); x.strokeStyle = g; x.lineWidth = sz * 0.12; x.beginPath(); x.moveTo(a + sz * 0.15, b + sz * 0.5); x.lineTo(a + sz * 0.31, b + sz * 0.65); x.lineTo(a + sz * 0.72, b + sz * 0.18); x.stroke();
+}
+function icBody(x, cx, top, h, col1, col2){
+  const s = h / 300, g = x.createLinearGradient(0, top, 0, top + h); g.addColorStop(0, col1); g.addColorStop(1, col2); x.fillStyle = g;
+  const P = (dx, dy) => [cx + dx * s, top + dy * s];
+  x.beginPath(); x.arc(...P(0, 22), 20 * s, 0, Math.PI * 2); x.fill();
+  x.beginPath(); x.moveTo(...P(-10, 40)); x.lineTo(...P(10, 40)); x.lineTo(...P(12, 50)); x.lineTo(...P(-12, 50)); x.fill();
+  x.beginPath(); x.moveTo(...P(-42, 56)); x.quadraticCurveTo(...P(0, 46), ...P(42, 56)); x.lineTo(...P(36, 120)); x.quadraticCurveTo(...P(30, 150), ...P(34, 160)); x.lineTo(...P(-34, 160)); x.quadraticCurveTo(...P(-30, 150), ...P(-36, 120)); x.closePath(); x.fill();
+  const limb = (pts, w) => { x.lineWidth = w * s; x.lineCap = 'round'; x.lineJoin = 'round'; x.strokeStyle = g; x.beginPath(); x.moveTo(...P(...pts[0])); pts.slice(1).forEach(p => x.lineTo(...P(...p))); x.stroke(); };
+  limb([[-46, 64], [-58, 112], [-64, 160]], 17); limb([[46, 64], [58, 112], [64, 160]], 17);
+  limb([[-17, 168], [-20, 228], [-22, 286]], 24); limb([[17, 168], [20, 228], [22, 286]], 24);
+}
+async function bioImgGerar(date){
+  try{ if(document.fonts && document.fonts.load){ await Promise.race([Promise.all([document.fonts.load('800 30px Montserrat'), document.fonts.load('400 16px Inter'), document.fonts.load('700 16px Inter')]), new Promise(r => setTimeout(r, 1500))]); } }catch(e){}
+  const L = bioList(), i = Math.max(0, L.findIndex(z => z.d === date)), cur = L[i]; if(!cur) return null;
+  const prev = i > 0 ? L[i - 1] : null, b = cur.b, P = S.prof || {}, sexo = P.sexo, alt = +P.altura, nome = (S.cli && S.cli.nome) || '';
+  const W = 1080, SC = 2, Hmax = 2200, cv = document.createElement('canvas'); cv.width = W * SC; cv.height = Hmax * SC;
+  const x = cv.getContext('2d'); x.scale(SC, SC);
+  x.fillStyle = '#F4F7F9'; x.fillRect(0, 0, W, Hmax);
+  // cabeçalho
+  const hg = x.createLinearGradient(0, 0, W, 0); hg.addColorStop(0, IC.navy); hg.addColorStop(1, IC.navy2); x.fillStyle = hg; x.fillRect(0, 0, W, 150);
+  x.fillStyle = 'rgba(163,230,53,.9)'; x.beginPath(); x.moveTo(W - 230, 150); x.quadraticCurveTo(W - 90, 40, W, 30); x.lineTo(W, 150); x.closePath(); x.fill();
+  x.fillStyle = 'rgba(34,197,94,.85)'; x.beginPath(); x.moveTo(W - 150, 150); x.quadraticCurveTo(W - 50, 80, W, 75); x.lineTo(W, 150); x.closePath(); x.fill();
+  icLogo(x, 40, 36, 64); icT(x, 'Check', 112, 92, {s:40, w:800, h:1, c:'#fff'}); const cw = (x.measureText('Check').width); icT(x, 'Fit', 112 + cw, 92, {s:40, w:800, h:1, c:IC.lime});
+  x.fillStyle = 'rgba(255,255,255,.35)'; x.fillRect(318, 40, 2, 76);
+  icT(x, 'Relatório de Bioimpedância', 344, 80, {s:36, w:800, h:1, c:'#fff'}); icT(x, 'Análise de composição corporal', 344, 112, {s:21, c:'#D7ECEA'});
+  // faixa de dados
+  let y = 172; x.fillStyle = '#fff'; icRR(x, 24, y, W - 48, 92, 18); x.fill(); x.strokeStyle = IC.line; icRR(x, 24, y, W - 48, 92, 18); x.stroke();
+  x.fillStyle = '#E6EEF2'; x.beginPath(); x.arc(76, y + 46, 26, 0, Math.PI * 2); x.fill(); x.fillStyle = '#6B8796'; x.beginPath(); x.arc(76, y + 40, 9, 0, Math.PI * 2); x.fill(); x.beginPath(); x.ellipse(76, y + 62, 15, 9, 0, Math.PI, 0); x.fill();
+  icT(x, nome || 'Paciente', 116, y + 56, {s:27, w:800, h:1, max:290});
+  const cells = [[parse(cur.d).toLocaleDateString('pt-BR'), 'Data da avaliação'], [f1(b.peso) + ' kg', 'Peso'], [alt ? (alt / 100).toFixed(2).replace('.', ',') + ' m' : '—', 'Altura'], [(P.idade ? P.idade + ' anos' : '—'), sexo === 'F' ? 'Idade · feminino' : sexo === 'M' ? 'Idade · masculino' : 'Idade']];
+  cells.forEach((c, k) => { const cx = 430 + k * 155; x.fillStyle = IC.line; x.fillRect(cx - 14, y + 18, 1.5, 56); icT(x, c[0], cx, y + 46, {s:22, w:800, h:1}); icT(x, c[1], cx, y + 70, {s:14, c:IC.mut}); });
+  // colunas
+  const Lx = 24, Lw = 640, Rx = 680, Rw = W - 24 - 680; let ly = y + 112, ry = y + 112;
+  // ---- composição
+  const comp = ['peso', 'imc', 'mgord', 'mmagra', 'mmusc', 'agua', 'prot', 'mine', 'tmb'].filter(k => b[k] != null);
+  const ph = 62 + 40 + comp.length * 38 + 14; let yy = icPanel(x, Lx, ly, Lw, ph, 'Análise da composição corporal');
+  const colX = [Lx + 22, Lx + 230, Lx + 360, Lx + 500];
+  x.fillStyle = '#E4EEF1'; icRR(x, Lx + 12, yy, Lw - 24, 34, 8); x.fill();
+  ['Componente', 'Resultado', prev ? 'Variação' : 'Referência', 'Avaliação'].forEach((h, k) => icT(x, h, colX[k], yy + 23, {s:15, w:800}));
+  yy += 40;
+  comp.forEach((k, r) => {
+    if(r % 2) { x.fillStyle = '#F8FAFB'; x.fillRect(Lx + 12, yy, Lw - 24, 38); }
+    icT(x, bioLab(k), colX[0], yy + 25, {s:16, w:600, max:200});
+    icT(x, f1(b[k]) + (k === 'imc' ? ' kg/m²' : ' ' + bioUn(k)), colX[1], yy + 25, {s:16, w:800});
+    if(prev && prev.b[k] != null){ const dv = b[k] - prev.b[k], bom = BIO_MENOS.includes(k) || k === 'imc' ? dv < 0 : BIO_MAIS.includes(k) ? dv > 0 : null; icT(x, (Math.abs(dv) < 0.05 ? '0' : (dv < 0 ? '−' : '+') + f1(Math.abs(dv))), colX[2], yy + 25, {s:16, w:700, c:Math.abs(dv) < 0.05 || bom == null ? IC.mut : bom ? IC.okFg : IC.badFg}); }
+    else icT(x, k === 'imc' ? '18,5 – 24,9' : '—', colX[2], yy + 25, {s:15, c:IC.mut});
+    const av = k === 'imc' ? faixa(REF_IMC, b.imc) : ''; if(av) icPill(x, av, colX[3] - 6, yy + 6, 116, icKind(av));
+    yy += 38;
+  });
+  ly += ph + 18;
+  // ---- obesidade
+  const cint = medAte('cintura', cur.d), quad = medAte('quadril', cur.d), rcq = cint && quad ? Math.round(cint.v / quad.v * 100) / 100 : null;
+  const ob = []; if(b.gord != null) ob.push(['% de gordura', f1(b.gord) + ' %', refGord(sexo) ? (sexo === 'F' ? '14 – 24' : '6 – 17') : '—', refGord(sexo) ? faixa(refGord(sexo), b.gord) : '']);
+  if(b.visc != null) ob.push(['Gordura visceral', f1(b.visc), '1 – 9', faixa(REF_VISC, b.visc)]);
+  if(rcq) ob.push(['Cintura-quadril', String(rcq).replace('.', ','), refRCQ(sexo) ? 'até ' + (sexo === 'F' ? '0,85' : '0,90') : '—', refRCQ(sexo) ? faixa(refRCQ(sexo), rcq) : '']);
+  if(b.imet != null) ob.push(['Idade metabólica', f1(b.imet) + ' anos', P.idade ? 'real: ' + P.idade : '—', P.idade ? (b.imet > +P.idade ? 'Acima' : 'Adequada') : '']);
+  if(ob.length){
+    const oh = 62 + 40 + ob.length * 38 + 14; yy = icPanel(x, Lx, ly, Lw, oh, 'Análise da obesidade');
+    x.fillStyle = '#E4EEF1'; icRR(x, Lx + 12, yy, Lw - 24, 34, 8); x.fill(); ['Indicador', 'Resultado', 'Referência', 'Avaliação'].forEach((h, k) => icT(x, h, colX[k], yy + 23, {s:15, w:800})); yy += 40;
+    ob.forEach((r, k) => { if(k % 2){ x.fillStyle = '#F8FAFB'; x.fillRect(Lx + 12, yy, Lw - 24, 38); } icT(x, r[0], colX[0], yy + 25, {s:16, w:600}); icT(x, r[1], colX[1], yy + 25, {s:16, w:800}); icT(x, r[2], colX[2], yy + 25, {s:15, c:IC.mut}); if(r[3]) icPill(x, r[3].replace('Acima da referência', 'Acima'), colX[3] - 6, yy + 6, 116, icKind(r[3])); yy += 38; });
+    ly += oh + 18;
+  }
+  // ---- segmentos ou evolução
+  const seg = b.seg || {};
+  if(seg.g || seg.m){
+    const sh = 400; icPanel(x, Lx, ly, Lw, sh, 'Análise por segmento');
+    const half = Lw / 2, lab = (t, k) => { const v = ((seg[t] || {})[k]) || {}; return [v.kg ? f1(v.kg) + ' kg' : '—', v.p ? '(' + f1(v.p) + ' %)' : '']; };
+    [['g', 'Gordura', '#FBBF24', '#F59E0B'], ['m', 'Músculo', '#86EFAC', '#22C55E']].forEach(([t, nm, c1, c2], k) => {
+      const cx = Lx + half * k + half / 2, top = ly + 92; icT(x, nm, cx, ly + 84, {s:17, w:800, al:'center', c:k ? IC.dg : IC.warnFg});
+      icBody(x, cx, top, 280, c1, c2);
+      const put = (key, side, yo) => { const [a1, a2] = lab(t, key), tx = side < 0 ? cx - half / 2 + 12 : cx + half / 2 - 12, al = side < 0 ? 'left' : 'right'; icT(x, {bE:'Braço E', bD:'Braço D', tr:'Tronco', pE:'Perna E', pD:'Perna D'}[key], tx, top + yo, {s:14, w:800, al}); icT(x, a1, tx, top + yo + 18, {s:14, w:700, al}); if(a2) icT(x, a2, tx, top + yo + 34, {s:12.5, c:IC.mut, al}); };
+      put('bE', -1, 40); put('bD', 1, 40); put('tr', -1, 130); put('pE', -1, 215); put('pD', 1, 215);
+    });
+    ly += sh + 18;
+  } else if(L.length > 1){
+    const pts = L.filter(z => z.d <= cur.d && z.b.gord != null).map(z => ({d:z.d, v:+z.b.gord}));
+    const key = pts.length > 1 ? 'gord' : 'peso', pp = pts.length > 1 ? pts : L.filter(z => z.d <= cur.d).map(z => ({d:z.d, v:+z.b.peso}));
+    const gh = 300; icPanel(x, Lx, ly, Lw, gh, key === 'gord' ? 'Evolução da gordura corporal (%)' : 'Evolução do peso (kg)');
+    const gx = Lx + 60, gy = ly + 82, gw = Lw - 100, ghh = gh - 130, vals = pp.map(p => p.v); let mn = Math.min(...vals), mx = Math.max(...vals); const pad = Math.max(0.5, (mx - mn) * 0.2); mn -= pad; mx += pad;
+    const t0 = parse(pp[0].d).getTime(), t1 = Math.max(parse(pp[pp.length - 1].d).getTime(), t0 + DAY_MS), X = d => gx + (parse(d).getTime() - t0) / (t1 - t0) * gw, Y = v => gy + (mx - v) / (mx - mn) * ghh;
+    x.strokeStyle = IC.line; x.lineWidth = 1; [mn, (mn + mx) / 2, mx].forEach(v => { x.beginPath(); x.moveTo(gx, Y(v)); x.lineTo(gx + gw, Y(v)); x.stroke(); icT(x, f1(v), gx - 10, Y(v) + 5, {s:13, c:IC.mut, al:'right'}); });
+    const lg = x.createLinearGradient(gx, 0, gx + gw, 0); lg.addColorStop(0, IC.green); lg.addColorStop(1, IC.lime); x.strokeStyle = lg; x.lineWidth = 5; x.lineJoin = 'round'; x.beginPath(); pp.forEach((p, k) => k ? x.lineTo(X(p.d), Y(p.v)) : x.moveTo(X(p.d), Y(p.v))); x.stroke();
+    pp.forEach(p => { x.fillStyle = IC.dg; x.beginPath(); x.arc(X(p.d), Y(p.v), 7, 0, Math.PI * 2); x.fill(); icT(x, f1(p.v), X(p.d), Y(p.v) - 14, {s:14, w:800, al:'center'}); icT(x, dCurta(p.d), X(p.d), gy + ghh + 30, {s:13, c:IC.mut, al:'center'}); });
+    ly += gh + 18;
+  }
+  // ---- impedância
+  const imp = b.imp || {};
+  if(imp[5] || imp[50]){
+    const rows = ['5', '50'].filter(f => imp[f]), ih = 62 + 40 + rows.length * 36 + 14; yy = icPanel(x, Lx, ly, Lw, ih, 'Impedância bioelétrica (Ω)');
+    const cs = [Lx + 22, Lx + 150, Lx + 250, Lx + 350, Lx + 450, Lx + 550]; x.fillStyle = '#E4EEF1'; icRR(x, Lx + 12, yy, Lw - 24, 34, 8); x.fill();
+    ['Freq.', 'Braço E', 'Braço D', 'Tronco', 'Perna E', 'Perna D'].forEach((h, k) => icT(x, h, cs[k], yy + 23, {s:14, w:800})); yy += 40;
+    rows.forEach(f => { icT(x, f + ' kHz', cs[0], yy + 24, {s:15, w:700}); SEG.forEach(([k], j) => icT(x, imp[f][k] != null ? f1(imp[f][k]) : '—', cs[j + 1], yy + 24, {s:15})); yy += 36; });
+    ly += ih + 18;
+  }
+  // ---- coluna direita: evolução (no lugar da "pontuação")
+  const eh = 300; yy = icPanel(x, Rx, ry, Rw, eh, prev ? 'Sua evolução' : 'Gordura corporal');
+  if(prev){
+    icT(x, 'desde ' + parse(prev.d).toLocaleDateString('pt-BR'), Rx + Rw / 2, yy + 6, {s:14, c:IC.mut, al:'center'});
+    const items = [['mgord', 'gordura'], ['mmusc', 'músculo'], ['peso', 'peso'], ['gord', '% gordura']].filter(([k]) => b[k] != null && prev.b[k] != null).slice(0, 4);
+    items.forEach(([k, l], j) => { const col = j % 2, row = Math.floor(j / 2), cx = Rx + 20 + col * ((Rw - 40) / 2), cy = yy + 22 + row * 104, w = (Rw - 52) / 2, dv = b[k] - prev.b[k], bom = BIO_MENOS.includes(k) ? dv < 0 : dv > 0;
+      x.fillStyle = Math.abs(dv) < 0.05 ? IC.soft : bom ? IC.okBg : IC.badBg; icRR(x, cx, cy, w, 92, 14); x.fill();
+      icT(x, (Math.abs(dv) < 0.05 ? '0' : (dv < 0 ? '−' : '+') + f1(Math.abs(dv))) + (k === 'gord' ? ' %' : ' kg'), cx + w / 2, cy + 46, {s:28, w:800, h:1, al:'center', c:Math.abs(dv) < 0.05 ? IC.mut : bom ? IC.okFg : IC.badFg});
+      icT(x, l, cx + w / 2, cy + 72, {s:15, w:600, c:IC.mut, al:'center'}); });
+  } else if(b.gord != null){
+    const cx = Rx + Rw / 2, cy = yy + 110, r = 78, ref = refGord(sexo), pct = Math.min(1, b.gord / 45);
+    x.lineWidth = 18; x.lineCap = 'round'; x.strokeStyle = '#E6EEF2'; x.beginPath(); x.arc(cx, cy, r, Math.PI * 0.75, Math.PI * 2.25); x.stroke();
+    const gg = x.createLinearGradient(cx - r, 0, cx + r, 0); gg.addColorStop(0, IC.green); gg.addColorStop(1, IC.lime); x.strokeStyle = gg; x.beginPath(); x.arc(cx, cy, r, Math.PI * 0.75, Math.PI * (0.75 + 1.5 * pct)); x.stroke();
+    icT(x, f1(b.gord) + '%', cx, cy + 12, {s:40, w:800, h:1, al:'center'}); if(ref) icT(x, faixa(ref, b.gord), cx, cy + 46, {s:16, w:700, al:'center', c:IC.mut});
+  }
+  ry += eh + 18;
+  // ---- controle de peso
+  const pMin = alt > 100 ? 18.5 * Math.pow(alt / 100, 2) : null, pMax = alt > 100 ? 24.9 * Math.pow(alt / 100, 2) : null, alvo = sexo === 'F' ? 24 : sexo === 'M' ? 17 : null, pesoAlvo = alvo && b.mmagra ? b.mmagra / (1 - alvo / 100) : null;
+  const cp = []; if(pMin) cp.push(['Peso saudável', f1(pMin) + '–' + f1(pMax) + ' kg', IC.fg]); if(pMax && b.peso > pMax) cp.push(['Acima da faixa', '+' + f1(b.peso - pMax) + ' kg', IC.badFg]); if(pesoAlvo && b.peso > pesoAlvo) cp.push(['Gordura a perder', '−' + f1(b.peso - pesoAlvo) + ' kg', IC.okFg]); if(P.meta) cp.push(['Meta pessoal', f1(P.meta) + ' kg', IC.fg]);
+  if(cp.length){ const ch = 62 + cp.length * 40 + 14; yy = icPanel(x, Rx, ry, Rw, ch, 'Controle de peso'); cp.forEach(([l, v, c]) => { icT(x, l, Rx + 22, yy + 26, {s:16}); icT(x, v, Rx + Rw - 22, yy + 26, {s:17, w:800, al:'right', c}); yy += 40; }); ry += ch + 18; }
+  // ---- barras
+  const bars = []; if(b.imc) bars.push(['IMC', f1(b.imc) + ' kg/m²', b.imc, REF_IMC]); if(b.gord != null && refGord(sexo)) bars.push(['Gordura corporal', f1(b.gord) + ' %', b.gord, refGord(sexo)]); if(b.visc != null) bars.push(['Gordura visceral', f1(b.visc), b.visc, REF_VISC]);
+  if(bars.length){ const bh = 62 + bars.length * 100 + 6; yy = icPanel(x, Rx, ry, Rw, bh, 'Avaliação da obesidade');
+    bars.forEach(([l, txt, v, ref]) => { const bx = Rx + 22, bw = Rw - 44, lo = ref[0][0], hi = ref[ref.length - 1][1], X = q => bx + Math.max(0, Math.min(1, (q - lo) / (hi - lo))) * bw;
+      icT(x, l, bx, yy + 20, {s:16, w:700}); icT(x, txt, bx + bw, yy + 20, {s:18, w:800, al:'right'});
+      ref.forEach((c, k) => { x.fillStyle = c[3]; x.globalAlpha = .85; icRR(x, X(c[0]) + (k ? 1 : 0), yy + 46, Math.max(2, X(c[1]) - X(c[0]) - 2), 14, 7); x.fill(); x.globalAlpha = 1; icT(x, c[2], (X(c[0]) + X(c[1])) / 2, yy + 80, {s:11.5, c:IC.mut, al:'center', max:X(c[1]) - X(c[0]) + 6}); });
+      const mxp = X(v); x.fillStyle = IC.badFg; x.beginPath(); x.arc(mxp, yy + 35, 8, Math.PI, 0); x.lineTo(mxp, yy + 50); x.closePath(); x.fill(); x.fillStyle = '#fff'; x.beginPath(); x.arc(mxp, yy + 35, 3, 0, Math.PI * 2); x.fill();
+      yy += 100; });
+    ry += bh + 18; }
+  // ---- outros
+  const ou = []; if(rcq) ou.push(['Relação cintura-quadril', String(rcq).replace('.', ',')]); if(cint) ou.push(['Cintura', f1(cint.v) + ' cm']); if(quad) ou.push(['Quadril', f1(quad.v) + ' cm']); if(b.agua) ou.push(['Água corporal', f1(b.agua) + ' L']); if(b.tmb) ou.push(['Metabolismo basal', fmt(b.tmb) + ' kcal']);
+  if(ou.length){ const oh = 62 + ou.length * 38 + 14; yy = icPanel(x, Rx, ry, Rw, oh, 'Outros indicadores'); ou.forEach(([l, v]) => { icT(x, l, Rx + 22, yy + 25, {s:16, max:Rw - 160}); icT(x, v, Rx + Rw - 22, yy + 25, {s:16, w:800, al:'right'}); yy += 38; }); ry += oh + 18; }
+  // ---- gasto
+  if(b.peso){ const acts = [['caminhada', 60], ['corrida', 30], ['musculacao', 60], ['beach', 60]]; const gh = 62 + acts.length * 38 + 14, esq = ly + 40 < ry, gx0 = esq ? Lx : Rx, gw0 = esq ? Lw : Rw, gy0 = esq ? ly : ry; yy = icPanel(x, gx0, gy0, gw0, gh, 'Gasto estimado com exercícios');
+    acts.forEach(([k, min]) => { icT(x, ACTS[k].n + ' (' + min + ' min)', gx0 + 22, yy + 25, {s:16}); icT(x, '≈ ' + fmt(Math.round(trainK({t:k, min, i:1}, b.peso))) + ' kcal', gx0 + gw0 - 22, yy + 25, {s:16, w:800, al:'right'}); yy += 38; }); if(esq) ly += gh + 18; else ry += gh + 18; }
+  // ---- observação (largura total)
+  let fy = Math.max(ly, ry);
+  x.fillStyle = '#E8F7EF'; icRR(x, 24, fy, W - 48, 96, 18); x.fill();
+  icT(x, 'Observação', 48, fy + 34, {s:20, w:800, h:1, c:IC.dg});
+  icT(x, 'Resultados de bioimpedância são estimativas e variam com hidratação, horário e alimentação. Compare avaliações feitas', 48, fy + 60, {s:14.5, c:IC.fg});
+  icT(x, 'nas mesmas condições e interprete com um profissional de saúde. Referências: IMC e cintura-quadril (OMS), gordura (ACE).', 48, fy + 80, {s:14.5, c:IC.fg});
+  fy += 112; icT(x, 'Gerado pelo app CheckFit · checkfitapp.com.br · dados informados pelo usuário', W / 2, fy + 8, {s:13, c:IC.mut, al:'center'});
+  const H = Math.ceil(fy + 26), out = document.createElement('canvas'); out.width = W * SC; out.height = H * SC; out.getContext('2d').drawImage(cv, 0, 0);
+  return out;
+}
+async function bioImgPrep(date){
+  const tag = date + '|' + JSON.stringify((S.days[date] || {}).bio || {}) + '|' + JSON.stringify(S.prof);
+  if(S.bioImg && S.bioImg.tag === tag) return; S.bioImg = {tag, loading:true}; render();
+  try{
+    const cv = await bioImgGerar(date); if(!cv) throw new Error('sem dados');
+    const blob = await new Promise(r => cv.toBlob(r, 'image/png')), nome = 'Bioimpedancia-CheckFit-' + date.split('-').reverse().join('-') + '.png';
+    let file = null; try{ file = new File([blob], nome, {type:'image/png'}); }catch(e){}
+    if(S.bioImg && S.bioImg.url) try{ URL.revokeObjectURL(S.bioImg.url); }catch(e){}
+    S.bioImg = {tag, url:URL.createObjectURL(blob), nome, file, kb:Math.round(blob.size / 1024), share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))};
+  }catch(e){ S.bioImg = {tag, erro:true}; }
+  render();
+}
+function bioImgBox(){
+  const R = S.bioImg;
+  if(!R || R.loading) return `<p class="sub" style="margin:10px 0">Montando a imagem do relatório…</p>`;
+  if(R.erro) return `<p class="lmsg">Não consegui montar a imagem neste aparelho. Use a versão em PDF abaixo.</p>`;
+  return `<div class="row" style="margin-top:10px">${R.share ? `<button class="primary" id="bimg-share" data-act="bimgshare">Salvar ou enviar imagem</button>` : ''}<a class="${R.share ? 'ghost' : 'primary'} relbtnl" id="bimg-dl" href="${R.url}" download="${esc(R.nome)}" target="_blank" rel="noopener">${R.share ? 'Abrir imagem' : 'Baixar imagem'}</a></div>
+    <img class="bioimg" src="${R.url}" alt="Relatório de bioimpedância em imagem">`;
+}
+async function bimgShare(){ const R = S.bioImg; if(!R || !R.file) return; try{ await navigator.share({files:[R.file], title:'Relatório de bioimpedância'}); }catch(e){} }
 
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
 const WD_LONG = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
@@ -2171,6 +2537,8 @@ function render(){
   if(!S.ready||!S.planReady){ app.innerHTML=ban+`<div class="card"><p class="sub" style="margin:0">Abrindo seu diário…</p></div>`; return; }
   if(S.mode==='ed' && A.ed){ head(false); mount('ed', ban+edView()); return; }
   if(S.mode==='aj'){ head(false); mount('aj-'+(S.ajKind||'plano'), ban+ajView()); return; }
+  if(S.mode==='bio'){ head(false); mount('bio', ban+bioForm()); return; }
+  if(S.mode==='biorel'){ head(false); mount('biorel', ban+bioRelView()); const LB=bioList(), dB=(LB.find(z=>z.d===S.bioRel)||LB[LB.length-1]||{}).d; if(dB) setTimeout(()=>bioImgPrep(dB),0); return; }
   if(S.mode==='treino'){ head(false); mount('treino', ban+treinoView()); return; }
   if(S.mode==='rel'){ head(false); mount('rel', ban+relView()); return; }
   if(!PLAN.length){ document.getElementById('tabs').hidden=true; document.getElementById('navbar').hidden=true; const ta=document.getElementById('impt'); if(!(ta && ta.value) || S.lastView!=='plan') app.innerHTML=ban+caminhoView(); S.lastView='plan'; return; }
@@ -2227,6 +2595,7 @@ function profileCard(){
     <label for="pf-meta">Meta de peso (kg)<input id="pf-meta" inputmode="decimal" value="${p.meta??''}"></label>
     <label for="pf-alt">Altura (cm)<input id="pf-alt" inputmode="numeric" value="${p.altura??''}"></label>
     <label for="pf-idade">Idade<input id="pf-idade" inputmode="numeric" value="${p.idade??''}"></label>
+    <label for="pf-sexo">Sexo<select id="pf-sexo" style="border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;min-height:44px;color:var(--fg);font-size:16px"><option value="">—</option><option value="M"${p.sexo==='M'?' selected':''}>Masculino</option><option value="F"${p.sexo==='F'?' selected':''}>Feminino</option></select></label>
     <label for="pf-agua">Meta de água (ml por dia)<input id="pf-agua" inputmode="numeric" value="${p.agua??''}" placeholder="${(PLANINFO&&PLANINFO.agua)||2000}"></label>
     <button type="submit" class="primary" style="grid-column:1/-1">Salvar meus dados</button>
    </form>
@@ -2438,7 +2807,14 @@ document.addEventListener('click',e=>{
   if(a==='delno'){S.confirmDel=false; render(); return;}
   if(a==='delyes'){deleteAccount(); return;}
   if(a==='afilter'){A.f=b.dataset.v; render(); return;}
-  if(a==='rel'){S.mode='rel'; S.relPdf=null; render(); window.scrollTo(0,0); return;}
+  if(a==='rel'){S.mode='rel'; S.relPdf=null; S.pdfNome=null; render(); window.scrollTo(0,0); return;}
+  if(a==='bionova'){S.plus=false; S.bioDate=null; S.bioConf=null; S.mode='bio'; render(); window.scrollTo(0,0); return;}
+  if(a==='bioedit'){S.bioDate=b.dataset.d; S.bioConf=null; S.mode='bio'; render(); window.scrollTo(0,0); return;}
+  if(a==='bioback'){S.mode='app'; S.tab='evol'; render(); window.scrollTo(0,0); return;}
+  if(a==='biodel'){bioDel(b.dataset.d); return;}
+  if(a==='biorel'){S.bioRel=b.dataset.d; S.relPdf=null; S.pdfNome='Bioimpedancia-CheckFit-'+b.dataset.d.split('-').reverse().join('-')+'.pdf'; S.mode='biorel'; render(); window.scrollTo(0,0); return;}
+  if(a==='bimgshare'){bimgShare(); return;}
+  if(a==='biorelback'){S.mode='app'; S.tab='evol'; S.pdfNome=null; render(); window.scrollTo(0,0); return;}
   if(a==='relback'){S.mode='app'; render(); window.scrollTo(0,0); return;}
   if(a==='relpdf'){ relPdf(); return;}
   if(a==='relshare'){ relShare(); return;}
@@ -2495,7 +2871,7 @@ document.addEventListener('submit',e=>{
   const date=S.date, num=id=>{const v=parseFloat((document.getElementById(id).value||'').replace(',','.')); return v>0?v:null;};
   if(f.matches('.tform')){ if(!(S.tf.min>0)){document.getElementById('tm').focus();return;} const d=S.days[date]||(S.days[date]={meals:{}}); d.treinos=Array.isArray(d.treinos)?d.treinos:[]; d.treinos.push({t:S.tf.t,min:Math.round(S.tf.min),i:S.tf.i}); save(date); render(); }
   else if(f.matches('.pform')){ const v=num('pw'); if(!v||v<30||v>300){document.getElementById('pw').focus();return;} const d=S.days[date]||(S.days[date]={meals:{}}); d.peso=Math.round(v*10)/10; save(date); render(); }
-  else { S.prof={...S.prof, tmb:num('pf-tmb'), meta:num('pf-meta'), altura:num('pf-alt'), idade:num('pf-idade'), agua:num('pf-agua'), pini:num('pf-pini'), dini:(document.getElementById('pf-dini')||{}).value||''}; saveProf(); S.profOpen=false; render(); }
+  else { S.prof={...S.prof, tmb:num('pf-tmb'), meta:num('pf-meta'), altura:num('pf-alt'), idade:num('pf-idade'), sexo:(document.getElementById('pf-sexo')||{}).value||'', agua:num('pf-agua'), pini:num('pf-pini'), dini:(document.getElementById('pf-dini')||{}).value||''}; saveProf(); S.profOpen=false; render(); }
 });
 function addWater(date,ml){if(!(ml>0))return; const d=S.days[date]||(S.days[date]={meals:{}}); d.agua=Array.isArray(d.agua)?d.agua:[]; d.agua.push(Math.round(ml)); save(date); render();}
 document.addEventListener('submit',e=>{
@@ -2523,10 +2899,10 @@ document.addEventListener('change',e=>{ if(e.target.id==='impf' && e.target.file
 document.addEventListener('input',e=>{ const t=e.target; if(t.dataset && t.dataset.ep && t.type!=='checkbox' && t.tagName!=='SELECT') edApply(t); });
 document.addEventListener('change',e=>{ const t=e.target; if(t.dataset && t.dataset.ep && (t.type==='checkbox' || t.tagName==='SELECT')){ edApply(t); if(t.dataset.ep.endsWith('.id') || t.tagName==='SELECT') render(); } });
 document.addEventListener('click',e=>{ const s=e.target.closest('details.edd > summary'); if(s && A.ed){ const k=s.parentElement.dataset.ok; A.ed.open[k]=!s.parentElement.open; } });
-document.addEventListener('submit',e=>{ if(e.target.id==='medform'){ e.preventDefault(); saveMedidas(S.date); } });
-document.addEventListener('change',e=>{ if(e.target.id==='medsel'){ S.medEx=e.target.value; render(); } });
+document.addEventListener('submit',e=>{ if(e.target.id==='medform'){ e.preventDefault(); saveMedidas(S.date); } if(e.target.id==='bioform'){ e.preventDefault(); bioSave(); } });
+document.addEventListener('change',e=>{ if(e.target.id==='medsel'){ S.medEx=e.target.value; render(); } if(e.target.id==='biosel'){ S.bioEx=e.target.value; render(); } if(e.target.id==='bio-relsel'){ S.bioRel=e.target.value; S.relPdf=null; S.pdfNome='Bioimpedancia-CheckFit-'+e.target.value.split('-').reverse().join('-')+'.pdf'; render(); } });
 document.addEventListener('input',e=>{ if(e.target.id==='rel-nota') relSetNota(e.target.value); });
-document.addEventListener('click',e=>{ const s=e.target.closest('details.medd > summary'); if(s) S.medOpen=!s.parentElement.open; const q=e.target.closest('details[data-aj] > summary'); if(q) S.ajOpen=q.parentElement.open?null:q.parentElement.dataset.aj; });
+document.addEventListener('click',e=>{ const s=e.target.closest('details.medd > summary'); if(s) S.medOpen=!s.parentElement.open; const bp=e.target.closest('#bio-pdfd > summary'); if(bp){ S.bioPdfOpen=!bp.parentElement.open; setTimeout(render,0); } const q=e.target.closest('details[data-aj] > summary'); if(q) S.ajOpen=q.parentElement.open?null:q.parentElement.dataset.aj; });
 fillFoods();
 init();
 })();
