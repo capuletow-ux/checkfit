@@ -393,12 +393,26 @@ body.hasnav .toast{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
 .ajform{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.ajform.col{flex-direction:column;align-items:stretch;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}
 .ajin{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;min-height:42px;color:var(--fg);font-family:inherit;font-size:16px;flex:1;min-width:0}
 
-.segg{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-.segrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;border-top:1px dashed var(--line);padding-top:8px}
-.segrow b{grid-column:1/-1}
-.segrow label{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:700;color:var(--muted)}
-.segrow input{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;min-height:40px;color:var(--fg);font-family:inherit;font-size:16px;width:100%;min-width:0}
-#bioform select{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;min-height:44px;color:var(--fg);font-family:inherit;font-size:16px;width:100%}
+.segg{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.bhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.bform{display:flex;flex-direction:column;gap:14px;margin-top:12px}
+.bsec{display:flex;flex-direction:column;gap:8px}
+.bst{font-family:var(--display);font-weight:800;font-size:15px;color:var(--fg);border-bottom:1px solid var(--line);padding-bottom:6px}
+.bst small{font-family:var(--body);font-weight:400;font-size:12px;color:var(--muted)}
+.bgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.bf{display:flex;flex-direction:column;gap:5px;min-width:0}
+.bf>span{font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bf small{font-weight:400;opacity:.8}
+.bf input,.bf select{box-sizing:border-box;width:100%;min-width:0;max-width:100%;height:46px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:0 12px;color:var(--fg);font-family:inherit;font-size:17px;-webkit-appearance:none;appearance:none}
+.bf input[type=date]{display:block;line-height:46px;text-align:left}
+.bf input::-webkit-date-and-time-value{text-align:left}
+.bf input::placeholder{color:var(--muted);opacity:.6;font-size:14px}
+.bf select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 20px,calc(100% - 13px) 20px;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px}
+.bchk{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--fg);line-height:1.35;cursor:pointer}
+.bchk input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:var(--accent)}
+.segrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border-top:1px dashed var(--line);padding-top:10px}
+.segrow b{grid-column:1/-1;font-size:14px}
+.segrow.imp{grid-template-columns:repeat(3,minmax(0,1fr))}
 .bioimg{width:100%;height:auto;border-radius:12px;margin-top:12px;border:1px solid var(--line);display:block}
 </style>
 </head>
@@ -1834,7 +1848,7 @@ function ajAct(a, b){
 }
 
 /* ---------- Bioimpedância: registro, evolução e relatório ---------- */
-const BIO = [['peso','Peso','kg'],['gord','Gordura corporal','%'],['mgord','Massa de gordura','kg'],['mmagra','Massa magra','kg'],['mmusc','Massa muscular','kg'],['agua','Água corporal','L'],['prot','Proteína','kg'],['mine','Minerais / massa óssea','kg'],['tmb','Metabolismo basal','kcal'],['visc','Gordura visceral','índice'],['imet','Idade metabólica','anos']];
+const BIO = [['peso','Peso','kg'],['gord','Gordura corporal','%'],['mgord','Massa de gordura','kg'],['mmagra','Massa magra','kg'],['mmusc','Massa muscular','kg'],['agua','Água corporal','L'],['prot','Proteína','kg'],['mine','Minerais','kg'],['tmb','Metabolismo basal','kcal'],['visc','Gordura visceral','índice'],['imet','Idade metabólica','anos']];
 const SEG = [['bE','Braço esquerdo'],['bD','Braço direito'],['tr','Tronco'],['pE','Perna esquerda'],['pD','Perna direita']];
 const BIO_MENOS = ['peso','gord','mgord','visc','imet'], BIO_MAIS = ['mmagra','mmusc','prot','mine','agua','tmb'];
 const f1 = v => v == null || v === '' || isNaN(v) ? '—' : (Math.round(v * 10) / 10).toLocaleString('pt-BR');
@@ -1905,21 +1919,30 @@ function bioCard(){
 function bioForm(){
   const d = S.bioDate || today(), b = (S.days[d] && S.days[d].bio) || {}, seg = b.seg || {}, imp = b.imp || {}, sexo = S.prof.sexo;
   const inp = (id, v, ph) => `<input id="${id}" inputmode="decimal" value="${v != null && v !== '' ? String(v).replace('.', ',') : ''}" placeholder="${ph || ''}" autocomplete="off">`;
-  return `<section class="card" id="view-bio"><div class="thead"><div><h2>${b.peso ? 'Editar avaliação' : 'Nova avaliação de bioimpedância'}</h2><div class="sub">Copie os números da sua balança ou do exame. Preencha só o que aparecer.</div></div><button class="ghost" id="bio-back" data-act="bioback">Voltar</button></div>
-   ${!sexo ? `<p class="lmsg" style="margin:8px 0 0">Informe o <b>sexo</b> abaixo para o relatório mostrar as faixas de referência de gordura e cintura-quadril.</p>` : ''}
-   <form class="pgrid" id="bioform" style="margin-top:10px">
-    <label for="bio-date">Data da avaliação<input id="bio-date" type="date" value="${d}"></label>
-    <label for="bio-sexo">Sexo<select id="bio-sexo"><option value="">—</option><option value="M"${sexo === 'M' ? ' selected' : ''}>Masculino</option><option value="F"${sexo === 'F' ? ' selected' : ''}>Feminino</option></select></label>
-    ${BIO.map(([k, l, u]) => `<label for="bio-${k}">${l} (${u})${inp('bio-' + k, b[k], k === 'mgord' || k === 'mmagra' ? 'calculado se vazio' : '')}</label>`).join('')}
-    <label class="ck" for="bio-tmbp" style="grid-column:1/-1"><input type="checkbox" id="bio-tmbp" checked> Usar o metabolismo basal desta avaliação nos cálculos de gasto do app</label>
-    <details class="pm" style="grid-column:1/-1"${seg.g || seg.m ? ' open' : ''}><summary><b>Análise por segmento</b> <span class="sub">(balança de 8 eletrodos ou InBody)</span></summary>
-     <div class="segg">${SEG.map(([k, l]) => `<div class="segrow"><b>${l}</b>
-       <label>Gordura kg${inp('sg-g-' + k + '-kg', ((seg.g || {})[k] || {}).kg)}</label><label>Gordura %${inp('sg-g-' + k + '-p', ((seg.g || {})[k] || {}).p)}</label>
-       <label>Músculo kg${inp('sg-m-' + k + '-kg', ((seg.m || {})[k] || {}).kg)}</label><label>Músculo %${inp('sg-m-' + k + '-p', ((seg.m || {})[k] || {}).p)}</label></div>`).join('')}</div></details>
-    <details class="pm" style="grid-column:1/-1"${imp[5] || imp[50] ? ' open' : ''}><summary><b>Impedância (Ω)</b> <span class="sub">(só em exames completos)</span></summary>
-     <div class="segg">${['5', '50'].map(fq => `<div class="segrow"><b>${fq} kHz</b>${SEG.map(([k, l]) => `<label>${l.replace('esquerdo', 'E').replace('direito', 'D').replace('esquerda', 'E').replace('direita', 'D')}${inp('im-' + fq + '-' + k, (imp[fq] || {})[k])}</label>`).join('')}</div>`).join('')}</div></details>
-    <button type="submit" class="primary" style="grid-column:1/-1">Salvar avaliação</button>
-    ${b.peso ? `<button type="button" class="ghost" data-act="biodel" data-d="${d}" style="grid-column:1/-1">${S.bioConf === d ? 'Toque de novo para apagar' : 'Apagar esta avaliação'}</button>` : ''}
+  const fld = k => { const [, l, u] = BIO.find(z => z[0] === k); return `<label class="bf" for="bio-${k}"><span>${l} <small>${u}</small></span>${inp('bio-' + k, b[k], k === 'mgord' || k === 'mmagra' ? 'automático' : '')}</label>`; };
+  const sec = (t, ks, sub) => `<div class="bsec"><div class="bst">${t}${sub ? ` <small>${sub}</small>` : ''}</div><div class="bgrid">${ks.map(fld).join('')}</div></div>`;
+  const segRow = (k, l) => `<div class="segrow"><b>${l}</b>
+       <label class="bf"><span>Gordura <small>kg</small></span>${inp('sg-g-' + k + '-kg', ((seg.g || {})[k] || {}).kg)}</label><label class="bf"><span>Gordura <small>%</small></span>${inp('sg-g-' + k + '-p', ((seg.g || {})[k] || {}).p)}</label>
+       <label class="bf"><span>Músculo <small>kg</small></span>${inp('sg-m-' + k + '-kg', ((seg.m || {})[k] || {}).kg)}</label><label class="bf"><span>Músculo <small>%</small></span>${inp('sg-m-' + k + '-p', ((seg.m || {})[k] || {}).p)}</label></div>`;
+  const curto = l => l.replace('Braço esquerdo', 'Braço E').replace('Braço direito', 'Braço D').replace('Perna esquerda', 'Perna E').replace('Perna direita', 'Perna D');
+  return `<section class="card" id="view-bio">
+   <div class="bhead"><h2>${b.peso ? 'Editar avaliação' : 'Nova avaliação'}</h2><button class="ghost" id="bio-back" data-act="bioback">Voltar</button></div>
+   <p class="sub" style="margin:2px 0 0">Copie os números da sua balança ou do exame. Preencha só o que aparecer.</p>
+   <form id="bioform" class="bform">
+    <div class="bsec"><div class="bgrid">
+     <label class="bf" for="bio-date"><span>Data</span><input id="bio-date" type="date" value="${d}"></label>
+     <label class="bf" for="bio-sexo"><span>Sexo</span><select id="bio-sexo"><option value="">Escolha</option><option value="M"${sexo === 'M' ? ' selected' : ''}>Masculino</option><option value="F"${sexo === 'F' ? ' selected' : ''}>Feminino</option></select></label>
+    </div>${!sexo ? `<p class="tip" id="bio-sexomsg" style="margin:6px 0 0">O sexo define as faixas de referência de gordura e cintura-quadril.</p>` : ''}</div>
+    ${sec('Principais', ['peso', 'gord', 'mmusc', 'visc'])}
+    ${sec('Composição', ['mgord', 'mmagra', 'agua', 'prot', 'mine'], 'gordura e magra: calculadas se vazias')}
+    ${sec('Metabolismo', ['tmb', 'imet'])}
+    <label class="bchk" for="bio-tmbp"><input type="checkbox" id="bio-tmbp" checked><span>Usar o metabolismo basal desta avaliação nos cálculos de gasto do app</span></label>
+    <details class="pm"${seg.g || seg.m ? ' open' : ''}><summary><b>Análise por segmento</b> <span class="sub">(opcional · balança de 8 eletrodos ou InBody)</span></summary>
+     <div class="segg">${SEG.map(([k, l]) => segRow(k, l)).join('')}</div></details>
+    <details class="pm"${imp[5] || imp[50] ? ' open' : ''}><summary><b>Impedância (Ω)</b> <span class="sub">(opcional · exames completos)</span></summary>
+     <div class="segg">${['5', '50'].map(fq => `<div class="segrow imp"><b>${fq} kHz</b>${SEG.map(([k, l]) => `<label class="bf"><span>${curto(l)}</span>${inp('im-' + fq + '-' + k, (imp[fq] || {})[k])}</label>`).join('')}</div>`).join('')}</div></details>
+    <button type="submit" class="primary" style="width:100%">Salvar avaliação</button>
+    ${b.peso ? `<button type="button" class="ghost" data-act="biodel" data-d="${d}" style="width:100%">${S.bioConf === d ? 'Toque de novo para apagar' : 'Apagar esta avaliação'}</button>` : ''}
    </form><p class="lmsg" id="biomsg" role="status"></p></section>`;
 }
 function bioSave(){
@@ -2900,7 +2923,7 @@ document.addEventListener('input',e=>{ const t=e.target; if(t.dataset && t.datas
 document.addEventListener('change',e=>{ const t=e.target; if(t.dataset && t.dataset.ep && (t.type==='checkbox' || t.tagName==='SELECT')){ edApply(t); if(t.dataset.ep.endsWith('.id') || t.tagName==='SELECT') render(); } });
 document.addEventListener('click',e=>{ const s=e.target.closest('details.edd > summary'); if(s && A.ed){ const k=s.parentElement.dataset.ok; A.ed.open[k]=!s.parentElement.open; } });
 document.addEventListener('submit',e=>{ if(e.target.id==='medform'){ e.preventDefault(); saveMedidas(S.date); } if(e.target.id==='bioform'){ e.preventDefault(); bioSave(); } });
-document.addEventListener('change',e=>{ if(e.target.id==='medsel'){ S.medEx=e.target.value; render(); } if(e.target.id==='biosel'){ S.bioEx=e.target.value; render(); } if(e.target.id==='bio-relsel'){ S.bioRel=e.target.value; S.relPdf=null; S.pdfNome='Bioimpedancia-CheckFit-'+e.target.value.split('-').reverse().join('-')+'.pdf'; render(); } });
+document.addEventListener('change',e=>{ if(e.target.id==='bio-sexo'){ const m=document.getElementById('bio-sexomsg'); if(m) m.hidden=!!e.target.value; } if(e.target.id==='medsel'){ S.medEx=e.target.value; render(); } if(e.target.id==='biosel'){ S.bioEx=e.target.value; render(); } if(e.target.id==='bio-relsel'){ S.bioRel=e.target.value; S.relPdf=null; S.pdfNome='Bioimpedancia-CheckFit-'+e.target.value.split('-').reverse().join('-')+'.pdf'; render(); } });
 document.addEventListener('input',e=>{ if(e.target.id==='rel-nota') relSetNota(e.target.value); });
 document.addEventListener('click',e=>{ const s=e.target.closest('details.medd > summary'); if(s) S.medOpen=!s.parentElement.open; const bp=e.target.closest('#bio-pdfd > summary'); if(bp){ S.bioPdfOpen=!bp.parentElement.open; setTimeout(render,0); } const q=e.target.closest('details[data-aj] > summary'); if(q) S.ajOpen=q.parentElement.open?null:q.parentElement.dataset.aj; });
 fillFoods();
