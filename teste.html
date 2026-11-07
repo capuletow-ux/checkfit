@@ -2901,11 +2901,11 @@ async function meuDiaImg(date, mostrar){
 /* janela de compartilhar */
 async function postAbrir(kind, ref, modo){
   const old = S.post && S.post.kind === kind && S.post.ref === ref ? S.post : null;
-  S.post = {kind, ref, modo:modo || (old && old.modo) || 'cartao', mostrar:old ? old.mostrar : false, foto:old ? old.foto : null, loading:true}; S.plus = false; render();
+  S.post = {kind, ref, modo:modo || (old && old.modo) || 'cartao', mostrar:old ? old.mostrar : false, foto:old ? old.foto : null, pos:old ? old.pos : 'barra', loading:true}; S.plus = false; render();
   const P = S.post;
   if(P.modo === 'foto' && !P.foto){ P.loading = false; render(); return; }
   try{
-    const cv = P.modo === 'adesivo' ? await adesivoPng(kind, ref, P.mostrar) : P.modo === 'foto' ? await comFotoPng(kind, ref, P.mostrar, P.foto) : kind === 'treino' ? await cartaoTreino(ref) : await cartaoDia(ref, P.mostrar);
+    const cv = P.modo === 'adesivo' ? await adesivoPng(kind, ref, P.mostrar) : P.modo === 'foto' ? await comFotoPng(kind, ref, P.mostrar, P.foto, P.pos) : kind === 'treino' ? await cartaoTreino(ref) : await cartaoDia(ref, P.mostrar);
     const blob = await cvBlob(cv), nome = (kind === 'treino' ? 'Treino-concluido' : 'Meu-dia') + (P.modo === 'adesivo' ? '-adesivo' : '') + '-CheckFit.png';
     let file = null; try{ file = new File([blob], nome, {type:'image/png'}); }catch(e){}
     if(S.post !== P) return; Object.assign(P, {loading:false, blob, url:URL.createObjectURL(blob), nome, file, share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))}); }
@@ -2927,7 +2927,7 @@ function postSheet(){
     <div class="opts" style="padding:0 0 8px" role="group" aria-label="Formato">${modos.map(([v, n]) => `<button class="chip" data-act="postmodo" data-v="${v}" aria-pressed="${P.modo === v}">${n}</button>`).join('')}</div>
     ${P.kind === 'dia' ? `<label class="prep" for="post-m" style="margin:0 0 8px"><input type="checkbox" id="post-m" data-act="postm" ${P.mostrar ? 'checked' : ''}> <span>Mostrar calorias${P.modo === 'cartao' ? ' e peso' : ''} na imagem</span></label>` : ''}
     <p class="tip" style="margin:0 0 8px">${dicas[P.modo]}</p>
-    ${P.modo === 'foto' ? `<label class="${P.foto ? 'ghost' : 'primary'} relbtnl" for="post-foto" style="display:flex;justify-content:center;margin-bottom:8px">📷 ${P.foto ? 'Trocar foto' : 'Escolher foto'}</label><input type="file" id="post-foto" accept="image/*" hidden>` : ''}
+    ${P.modo === 'foto' ? `<label class="${P.foto ? 'ghost' : 'primary'} relbtnl" for="post-foto" style="display:flex;justify-content:center;margin-bottom:8px">📷 ${P.foto ? 'Trocar foto' : 'Escolher foto'}</label><input type="file" id="post-foto" accept="image/*" hidden>${P.foto ? `<div class="opts" style="padding:0 0 8px" role="group" aria-label="Posição"><span class="sub" style="align-self:center">Estilo:</span><button class="chip" data-act="postpos" data-v="barra" aria-pressed="${P.pos === 'barra'}">Barra discreta</button><button class="chip" data-act="postpos" data-v="rodape" aria-pressed="${P.pos === 'rodape'}">Faixa embaixo</button><button class="chip" data-act="postpos" data-v="topo" aria-pressed="${P.pos === 'topo'}">Faixa em cima</button></div>` : ''}` : ''}
     ${prev}</div>`;
 }
 function diaPostCard(date){
@@ -2939,6 +2939,7 @@ function postAct(a, b){
   if(a === 'posttreino'){ postAbrir('treino', b.dataset.ini); return true; }
   if(a === 'postclose'){ S.post = null; render(); return true; }
   if(a === 'postm'){ const P = S.post; if(P){ P.mostrar = !!b.checked; postAbrir('dia', P.ref); } return true; }
+  if(a === 'postpos'){ const P = S.post; if(P){ P.pos = b.dataset.v; postAbrir(P.kind, P.ref, 'foto'); } return true; }
   if(a === 'postmodo'){ const P = S.post; if(P) postAbrir(P.kind, P.ref, b.dataset.v); return true; }
   if(a === 'postcopy'){ const P = S.post; if(P && P.blob){ try{ navigator.clipboard.write([new ClipboardItem({'image/png':P.blob})]).then(() => toast('Adesivo copiado! Agora abra os Stories e cole.')).catch(() => toast('Não consegui copiar. Use Salvar ou enviar.')); }catch(e){ toast('Não consegui copiar. Use Salvar ou enviar.'); } } return true; }
   if(a === 'postshare'){ const P = S.post; if(P && P.file) navigator.share({files:[P.file]}).catch(() => {}); return true; }
@@ -2993,6 +2994,7 @@ function cvIcone(x, k, cx, cy, s){
   x.save(); x.strokeStyle = CV.lime; x.fillStyle = CV.lime; x.lineWidth = s * 0.1; x.lineCap = 'round'; x.lineJoin = 'round';
   if(k === 'relogio'){ x.beginPath(); x.arc(cx, cy + s * .06, s * .38, 0, Math.PI * 2); x.stroke(); x.beginPath(); x.moveTo(cx, cy + s * .06); x.lineTo(cx, cy - s * .16); x.moveTo(cx, cy + s * .06); x.lineTo(cx + s * .16, cy + s * .06); x.moveTo(cx - s * .12, cy - s * .44); x.lineTo(cx + s * .12, cy - s * .44); x.moveTo(cx + s * .3, cy - s * .3); x.lineTo(cx + s * .38, cy - s * .38); x.stroke(); }
   else if(k === 'checkq'){ icRR(x, cx - s * .38, cy - s * .38, s * .76, s * .76, s * .14); x.stroke(); x.beginPath(); x.moveTo(cx - s * .17, cy); x.lineTo(cx - s * .03, cy + s * .14); x.lineTo(cx + s * .44, cy - s * .36); x.stroke(); }
+  else if(k === 'camadas'){ [-.22, 0, .22].forEach((d, i) => { x.beginPath(); x.moveTo(cx - s * .38, cy + d * s); x.lineTo(cx, cy + d * s + s * .18); x.lineTo(cx + s * .38, cy + d * s); if(i === 0){ x.lineTo(cx, cy + d * s - s * .18); x.closePath(); x.fill(); } else x.stroke(); }); }
   else if(k === 'cal'){ icRR(x, cx - s * .4, cy - s * .32, s * .8, s * .72, s * .1); x.stroke(); x.beginPath(); x.moveTo(cx - s * .4, cy - s * .08); x.lineTo(cx + s * .4, cy - s * .08); x.moveTo(cx - s * .2, cy - s * .44); x.lineTo(cx - s * .2, cy - s * .24); x.moveTo(cx + s * .2, cy - s * .44); x.lineTo(cx + s * .2, cy - s * .24); x.stroke(); x.beginPath(); x.arc(cx + s * .16, cy + s * .2, s * .07, 0, Math.PI * 2); x.fill(); }
   else if(k === 'gota'){ x.beginPath(); x.moveTo(cx, cy - s * .44); x.bezierCurveTo(cx + s * .1, cy - s * .25, cx + s * .36, cy - s * .02, cx + s * .34, cy + s * .16); x.arc(cx, cy + s * .16, s * .34, 0, Math.PI, false); x.bezierCurveTo(cx - s * .36, cy - s * .02, cx - s * .1, cy - s * .25, cx, cy - s * .44); x.stroke(); }
   else if(k.startsWith('emo:')){ x.font = s * .82 + 'px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(k.slice(4), cx, cy + s * .04); }
@@ -3154,14 +3156,80 @@ async function adesivoPng(kind, ref, mostrar){
   const W = 1080, tmp = document.createElement('canvas'); tmp.width = W; tmp.height = 1100; const h = adDesenhar(tmp.getContext('2d'), W, 30, A);
   const cv = document.createElement('canvas'); cv.width = W; cv.height = Math.ceil(h + 60); adDesenhar(cv.getContext('2d'), W, 30, A); return cv;
 }
-async function comFotoPng(kind, ref, mostrar, url){
+/* versão compacta (faixa) para a foto: rodapé ou topo */
+function adFaixa(x, W, y0, A){
+  x.save(); x.shadowColor = 'rgba(0,0,0,.65)'; x.shadowBlur = 12; x.shadowOffsetY = 2;
+  const M = 60; let y = y0;
+  // linha 1: marca + selo
+  const sz = 50, a = M, b = y; x.lineCap = 'round'; x.lineJoin = 'round'; x.strokeStyle = limeGrad(x, a, b + sz, a + sz, b); x.lineWidth = 6; icRR(x, a + 2, b + 8, sz - 10, sz - 10, 11); x.stroke();
+  x.lineWidth = 7; x.beginPath(); x.moveTo(a + 11, b + 27); x.lineTo(a + 22, b + 38); x.lineTo(a + sz - 1, b + 2); x.stroke();
+  const w1 = ct(x, 'Check', a + sz + 14, b + 43, {s:44, w:800, h:1}); ct(x, 'Fit', a + sz + 14 + w1, b + 43, {s:44, w:800, h:1, c:CV.lime});
+  const sw = cw(x, A.selo, {s:26, w:800, h:1}) + 76, sa = W - M - sw;
+  x.fillStyle = 'rgba(6,40,22,.55)'; icRR(x, sa, b + 2, sw, 52, 26); x.fill(); x.shadowBlur = 0; x.strokeStyle = CV.lime; x.lineWidth = 2.5; icRR(x, sa, b + 2, sw, 52, 26); x.stroke();
+  x.fillStyle = CV.lime; x.beginPath(); x.arc(sa + 28, b + 28, 14, 0, Math.PI * 2); x.fill(); x.strokeStyle = '#0E4F22'; x.lineWidth = 4; x.beginPath(); x.moveTo(sa + 22, b + 28); x.lineTo(sa + 27, b + 33); x.lineTo(sa + 35, b + 23); x.stroke(); x.shadowBlur = 12;
+  ct(x, A.selo, sa + 52, b + 38, {s:26, w:800, h:1, c:CV.lime});
+  y += 76;
+  // linha 2: título + data
+  let s = 58; while(s > 36 && cw(x, A.titulo, {s, w:800, h:1}) > W - 2 * M) s -= 2;
+  ct(x, A.titulo, M, y + s * .82, {s, w:800, h:1, max:W - 2 * M}); y += s * .82 + 42;
+  ct(x, A.sub, M, y, {s:28, w:600, c:'#F2F7F2', max:W - 2 * M}); y += 26;
+  // linha 3: números lado a lado
+  const st = A.st.slice(), col = (W - 2 * M) / st.length;
+  st.forEach((c, i) => { const cx = M + col * i;
+    if(i){ x.save(); x.shadowBlur = 0; x.fillStyle = 'rgba(163,230,53,.7)'; x.fillRect(cx - 14, y + 24, 3, 76); x.restore(); }
+    cvIcone(x, c[0], cx + 30, y + 62, 54); let vs = 42; while(vs > 28 && cw(x, c[1], {s:vs, w:800, h:1}) > col - 90) vs -= 2;
+    ct(x, c[1], cx + 70, y + 64, {s:vs, w:800, h:1}); ct(x, c[2], cx + 70, y + 96, {s:24, w:600, c:'#F2F7F2', max:col - 80}); });
+  y += 116;
+  if(A.faixa){ const [ic, rot, txt] = A.faixa; cvIcone(x, ic, M + 20, y + 22, 40); const rw = rot ? ct(x, rot, M + 50, y + 33, {s:28, w:800, c:CV.lime}) + 10 : 0; ct(x, txt, M + 50 + rw, y + 33, {s:28, w:600, max:W - 2 * M - 60 - rw}); y += 54; }
+  x.restore();
+  return y - y0;
+}
+/* barra fina no rodapé (uma linha só) */
+function adBarraDados(kind, ref, mostrar){
+  const n = sequencia().n, dias = n + (n === 1 ? ' dia' : ' dias');
+  if(kind === 'treino'){ const D = treinoPostDados(ref); if(!D) return null;
+    return {t1:D.rot !== D.nome ? D.rot : 'Treino', t2:D.nome, selo:['TREINO', 'CONCLUÍDO'], st:[['relogio', D.min + ' min', ''], ['camadas', String(D.series), 'séries'], ['sil:🏋️', fmt(Math.round(D.vol)) + ' kg', ''], ['emo:🔥', dias, '']]}; }
+  const D = meuDiaDados(ref), c = D.c, L = v => (Math.round(v / 100) / 10).toLocaleString('pt-BR');
+  return {t1:'Meu dia', t2:D.dest[1], selo:D.dest[0] === '🎉' ? ['100% NO', 'PLANO'] : ['DIA', 'REGISTRADO'], st:[['sil:🍽️', c.ok + '/' + D.n, 'plano'], ['gota', L(c.water) + ' L', ''], D.treinos ? ['sil:🏃', D.minTr + ' min', ''] : ['sil:🍃', 'descanso', ''], ['emo:🔥', dias, '']].concat(mostrar ? [] : [])};
+}
+function adBarra(x, W, cy, B){
+  x.save(); x.shadowColor = 'rgba(0,0,0,.7)'; x.shadowBlur = 10; x.shadowOffsetY = 2; x.lineCap = 'round'; x.lineJoin = 'round';
+  const div = xx => { x.save(); x.shadowBlur = 0; x.fillStyle = 'rgba(163,230,53,.75)'; x.fillRect(xx, cy - 34, 2.5, 68); x.restore(); };
+  // marca
+  const sz = 50, a = 22, b = cy - 27; x.strokeStyle = limeGrad(x, a, b + sz, a + sz, b); x.lineWidth = 6; icRR(x, a + 2, b + 8, sz - 10, sz - 10, 10); x.stroke();
+  x.lineWidth = 7; x.beginPath(); x.moveTo(a + 11, b + 27); x.lineTo(a + 22, b + 38); x.lineTo(a + sz - 1, b + 2); x.stroke();
+  const w1 = ct(x, 'Check', a + sz + 6, cy + 13, {s:36, w:800, h:1}); ct(x, 'Fit', a + sz + 6 + w1, cy + 13, {s:36, w:800, h:1, c:CV.lime});
+  const xd1 = 238; div(xd1);
+  // título
+  const tx = xd1 + 18, tw = 195; let s1 = 30; while(s1 > 22 && cw(x, B.t1, {s:s1, w:700, h:1}) > tw) s1 -= 1; let s2 = 21; while(s2 > 15 && cw(x, B.t2, {s:s2, w:500}) > tw) s2 -= 1;
+  ct(x, B.t1, tx, cy - 2, {s:s1, w:700, h:1, c:CV.lime, max:tw}); ct(x, B.t2, tx, cy + 28, {s:s2, w:500, max:tw});
+  // números
+  const x0 = 466, x1 = 878, n = B.st.length, col = (x1 - x0) / n;
+  B.st.forEach((c, i) => { const xs = x0 + col * i, cx = xs + col / 2; div(xs);
+    cvIcone(x, c[0], cx, cy - 18, 38);
+    let vs = 22, us = 16, vw, uw; for(;; vs--, us = Math.max(12, us - 1)){ vw = cw(x, c[1], {s:vs, w:800}); uw = c[2] ? cw(x, ' ' + c[2], {s:us, w:600}) : 0; if(vw + uw <= col - 18 || vs <= 15) break; }
+    const st = cx - (vw + uw) / 2; ct(x, c[1], st, cy + 26, {s:vs, w:800}); if(c[2]) ct(x, ' ' + c[2], st + vw, cy + 26, {s:us, w:600}); });
+  div(x1);
+  // selo
+  const pa = x1 + 12, pw = W - 14 - pa, ph = 60, pb = cy - ph / 2;
+  x.fillStyle = 'rgba(6,40,22,.5)'; icRR(x, pa, pb, pw, ph, 30); x.fill(); x.shadowBlur = 0; x.strokeStyle = CV.lime; x.lineWidth = 2.5; icRR(x, pa, pb, pw, ph, 30); x.stroke();
+  x.fillStyle = CV.lime; x.beginPath(); x.arc(pa + 30, cy, 18, 0, Math.PI * 2); x.fill(); x.strokeStyle = '#0E4F22'; x.lineWidth = 4.5; x.beginPath(); x.moveTo(pa + 22, cy); x.lineTo(pa + 28, cy + 6); x.lineTo(pa + 38, cy - 7); x.stroke(); x.shadowBlur = 10;
+  let ss = 17; while(ss > 12 && Math.max(cw(x, B.selo[0], {s:ss, w:800, h:1}), cw(x, B.selo[1], {s:ss, w:800, h:1})) > pw - 64) ss -= 1;
+  ct(x, B.selo[0], pa + 56, cy - 3, {s:ss, w:800, h:1, c:CV.lime}); ct(x, B.selo[1], pa + 56, cy + ss + 1, {s:ss, w:800, h:1, c:CV.lime});
+  // linha de luz
+  x.shadowColor = 'rgba(163,230,53,.9)'; x.shadowBlur = 14; x.shadowOffsetY = 0; const g = x.createLinearGradient(18, 0, W - 18, 0); g.addColorStop(0, 'rgba(163,230,53,.2)'); g.addColorStop(.1, CV.lime); g.addColorStop(.9, CV.lime); g.addColorStop(1, 'rgba(163,230,53,.2)');
+  x.strokeStyle = g; x.lineWidth = 3.5; x.beginPath(); x.moveTo(18, cy + 40); x.quadraticCurveTo(W / 2, cy + 54, W - 18, cy + 40); x.stroke();
+  x.restore();
+}
+async function comFotoPng(kind, ref, mostrar, url, pos){
   await postFonts(); const A = adDados(kind, ref, mostrar); if(!A) throw new Error('sem dados');
   const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = url; });
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d');
   const sc = Math.max(W / im.naturalWidth, H / im.naturalHeight), w = im.naturalWidth * sc, h = im.naturalHeight * sc; x.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
-  const tmp = document.createElement('canvas'); tmp.width = W; tmp.height = 1100; const ah = adDesenhar(tmp.getContext('2d'), W, 0, A), y0 = H - ah - 110;
-  const g = x.createLinearGradient(0, y0 - 260, 0, H); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.35, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,.78)'); x.fillStyle = g; x.fillRect(0, y0 - 260, W, H - y0 + 260);
-  adDesenhar(x, W, y0, A);
+  const tmp = document.createElement('canvas'); tmp.width = W; tmp.height = 700; const ah = adFaixa(tmp.getContext('2d'), W, 0, A);
+  if(pos === 'barra'){ const B = adBarraDados(kind, ref, mostrar), cy = H - 120, g = x.createLinearGradient(0, cy - 150, 0, H); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.5, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,.7)'); x.fillStyle = g; x.fillRect(0, cy - 150, W, H - cy + 150); adBarra(x, W, cy, B); return cv; }
+  if(pos === 'topo'){ const y0 = 190, g = x.createLinearGradient(0, 0, 0, y0 + ah + 160); g.addColorStop(0, 'rgba(0,0,0,.78)'); g.addColorStop(0.7, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, W, y0 + ah + 160); adFaixa(x, W, y0, A); }
+  else { const y0 = H - 210 - ah, g = x.createLinearGradient(0, y0 - 160, 0, H); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.3, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,.8)'); x.fillStyle = g; x.fillRect(0, y0 - 160, W, H - y0 + 160); adFaixa(x, W, y0, A); }
   return cv;
 }
 
@@ -3838,7 +3906,7 @@ document.addEventListener('click',e=>{
   if(/^j(or|back|tag|fil|save|cancel|cartatog|prazo|edit|del|apoiook|reload|carta|pdf|pdfshare|img|imgclose|imgshare)$/.test(a)){ jorAct(a,b); return; }
   if(a==='tsom'){ audioUnlock(); if(S.prof.somDesc === false){ S.prof.somDesc = true; saveProf(); } S.somTip = true; render(); setTimeout(beep, 150); return; }
   if(a==='tsomoff'){ S.prof.somDesc = false; S.somTip = false; saveProf(); render(); return; }
-  if(/^post(dia|treino|close|m|share|modo|copy)$/.test(a)){ postAct(a,b); return; }
+  if(/^post(dia|treino|close|m|share|modo|copy|pos)$/.test(a)){ postAct(a,b); return; }
   if(a==='btab'){setTab(b.dataset.v); return;}
   if(a==='celeok'){(S.cele||[]).shift(); render(); return;}
   if(a==='recok'){S.prof.eng=S.prof.eng||{}; S.prof.eng.dispensa=today(); saveProf(); render(); return;}
