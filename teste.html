@@ -2905,7 +2905,7 @@ async function postAbrir(kind, ref, modo){
   const P = S.post;
   if(P.modo === 'foto' && !P.foto){ P.loading = false; render(); return; }
   try{
-    const cv = P.modo === 'adesivo' ? await adesivoPng(kind, ref, P.mostrar) : P.modo === 'foto' ? await comFotoPng(kind, ref, P.mostrar, P.foto, P.pos) : kind === 'treino' ? await cartaoTreino(ref) : await cartaoDia(ref, P.mostrar);
+    const cv = P.modo === 'adesivo' ? await adesivoPng(kind, ref, P.mostrar, P.pos) : P.modo === 'foto' ? await comFotoPng(kind, ref, P.mostrar, P.foto, P.pos) : kind === 'treino' ? await cartaoTreino(ref) : await cartaoDia(ref, P.mostrar);
     const blob = await cvBlob(cv), nome = (kind === 'treino' ? 'Treino-concluido' : 'Meu-dia') + (P.modo === 'adesivo' ? '-adesivo' : '') + '-CheckFit.png';
     let file = null; try{ file = new File([blob], nome, {type:'image/png'}); }catch(e){}
     if(S.post !== P) return; Object.assign(P, {loading:false, blob, url:URL.createObjectURL(blob), nome, file, share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))}); }
@@ -2928,6 +2928,7 @@ function postSheet(){
     ${P.kind === 'dia' ? `<label class="prep" for="post-m" style="margin:0 0 8px"><input type="checkbox" id="post-m" data-act="postm" ${P.mostrar ? 'checked' : ''}> <span>Mostrar calorias${P.modo === 'cartao' ? ' e peso' : ''} na imagem</span></label>` : ''}
     <p class="tip" style="margin:0 0 8px">${dicas[P.modo]}</p>
     ${P.modo === 'foto' ? `<label class="${P.foto ? 'ghost' : 'primary'} relbtnl" for="post-foto" style="display:flex;justify-content:center;margin-bottom:8px">📷 ${P.foto ? 'Trocar foto' : 'Escolher foto'}</label><input type="file" id="post-foto" accept="image/*" hidden>${P.foto ? `<div class="opts" style="padding:0 0 8px" role="group" aria-label="Posição"><span class="sub" style="align-self:center">Estilo:</span><button class="chip" data-act="postpos" data-v="barra" aria-pressed="${P.pos === 'barra'}">Barra discreta</button><button class="chip" data-act="postpos" data-v="rodape" aria-pressed="${P.pos === 'rodape'}">Faixa embaixo</button><button class="chip" data-act="postpos" data-v="topo" aria-pressed="${P.pos === 'topo'}">Faixa em cima</button></div>` : ''}` : ''}
+    ${P.modo === 'adesivo' ? `<div class="opts" style="padding:0 0 8px" role="group" aria-label="Estilo"><span class="sub" style="align-self:center">Estilo:</span><button class="chip" data-act="postpos" data-v="barra" aria-pressed="${P.pos === 'barra'}">Barra discreta</button><button class="chip" data-act="postpos" data-v="rodape" aria-pressed="${P.pos !== 'barra'}">Completo</button></div>` : ''}
     ${prev}</div>`;
 }
 function diaPostCard(date){
@@ -2939,7 +2940,7 @@ function postAct(a, b){
   if(a === 'posttreino'){ postAbrir('treino', b.dataset.ini); return true; }
   if(a === 'postclose'){ S.post = null; render(); return true; }
   if(a === 'postm'){ const P = S.post; if(P){ P.mostrar = !!b.checked; postAbrir('dia', P.ref); } return true; }
-  if(a === 'postpos'){ const P = S.post; if(P){ P.pos = b.dataset.v; postAbrir(P.kind, P.ref, 'foto'); } return true; }
+  if(a === 'postpos'){ const P = S.post; if(P){ P.pos = b.dataset.v; postAbrir(P.kind, P.ref, P.modo); } return true; }
   if(a === 'postmodo'){ const P = S.post; if(P) postAbrir(P.kind, P.ref, b.dataset.v); return true; }
   if(a === 'postcopy'){ const P = S.post; if(P && P.blob){ try{ navigator.clipboard.write([new ClipboardItem({'image/png':P.blob})]).then(() => toast('Adesivo copiado! Agora abra os Stories e cole.')).catch(() => toast('Não consegui copiar. Use Salvar ou enviar.')); }catch(e){ toast('Não consegui copiar. Use Salvar ou enviar.'); } } return true; }
   if(a === 'postshare'){ const P = S.post; if(P && P.file) navigator.share({files:[P.file]}).catch(() => {}); return true; }
@@ -3151,8 +3152,9 @@ function adDesenhar(x, W, y0, A){
   x.restore();
   return y - y0;
 }
-async function adesivoPng(kind, ref, mostrar){
-  await postFonts(); const A = adDados(kind, ref, mostrar); if(!A) throw new Error('sem dados');
+async function adesivoPng(kind, ref, mostrar, pos){
+  await postFonts();
+  if(pos === 'barra'){ const B = adBarraDados(kind, ref, mostrar); if(!B) throw new Error('sem dados'); const W = 1080, cv = document.createElement('canvas'); cv.width = W; cv.height = 150; adBarra(cv.getContext('2d'), W, 66, B); return cv; } const A = adDados(kind, ref, mostrar); if(!A) throw new Error('sem dados');
   const W = 1080, tmp = document.createElement('canvas'); tmp.width = W; tmp.height = 1100; const h = adDesenhar(tmp.getContext('2d'), W, 30, A);
   const cv = document.createElement('canvas'); cv.width = W; cv.height = Math.ceil(h + 60); adDesenhar(cv.getContext('2d'), W, 30, A); return cv;
 }
