@@ -472,6 +472,23 @@ body.hasnav .toast{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
 .restbar .rt,.restbar button{white-space:nowrap}
 .somtip{font-size:13.5px;line-height:1.45;padding:10px 12px;border-radius:12px;background:var(--accent-soft);margin:6px 0}
 .semimg.adprev{background:repeating-conic-gradient(#8a8f98 0 25%,#5b6068 0 50%) 0 0/28px 28px}
+
+body.hab .mk,body.hab .ik,body.hab .hero .bar{display:none}
+.habban{background:var(--accent-soft)}
+.cgrid{flex-wrap:wrap}.cgo{width:100%;margin-top:16px;min-height:56px;font-size:18px}
+.crun{text-align:center;padding:22px 16px}.crun .eyebrow{justify-content:center}
+.cclock{font-family:var(--display);font-weight:800;font-size:76px;line-height:1.05;margin:10px 0 6px;letter-spacing:-1px}
+.crun.pausado .cclock{opacity:.5}
+.cbarw{height:10px;border-radius:6px;background:var(--surface2);overflow:hidden;margin:6px 0}.cbarw i{display:block;height:100%;background:linear-gradient(90deg,#22C55E,#A3E635);border-radius:6px;transition:width .4s}
+.cstats{display:flex;justify-content:center;gap:28px;margin:12px 0 4px}.cstats div{display:flex;flex-direction:column}.cstats b{font-family:var(--display);font-size:38px;font-weight:800;color:var(--fire)}.cstats span{color:var(--muted);font-weight:700}
+.cadj{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.cadjr{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}.cadjr b{white-space:nowrap}.cadjr button{min-width:46px;min-height:46px;font-size:22px;font-weight:800}
+.cbtns{justify-content:center;margin-top:16px}.cbtns button{flex:1;min-height:56px;font-size:17px}
+.cbanner{display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px solid var(--accent)}.cbanner>div{flex:1}.cbanner .num{font-family:var(--display);font-weight:800;font-size:22px;color:var(--fg)}
+.cflifts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.cflift{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--bg);text-align:left}.cflift b{font-size:13.5px}.cflift span{font-family:var(--display);font-weight:800;font-size:20px}.cflift small{color:var(--muted);font-size:11.5px}
+.cflform{margin-top:10px;padding:12px;border-radius:14px;background:var(--accent-soft)}
+#view-wod textarea{width:100%;box-sizing:border-box;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg);padding:10px;font:inherit;font-size:16px}
+.jver2{width:100%;margin:0 0 10px}
 </style>
 </head>
 <body>
@@ -523,6 +540,11 @@ const ACTS = {
  natacao:{n:'Natação', met:[5.8,7,9.8]},
  funcional:{n:'Funcional / HIIT', met:[4,6,8]},
  futebol:{n:'Futebol', met:[6,7,10]},
+ esteira:{n:'Esteira', met:[3.5,6,9]},
+ eliptico:{n:'Elíptico', met:[4.5,5.5,7]},
+ escada:{n:'Escada', met:[4,8,9]},
+ remo:{n:'Remo', met:[4.8,7,8.5]},
+ crossfit:{n:'CrossFit', met:[5.5,8,10]},
  outro:{n:'Outro cardio', met:[4,6,8]}
 };
 const INT = ['Leve','Moderada','Intensa'];
@@ -579,7 +601,7 @@ function dayCalc(date){
 }
 function weightList(){return Object.keys(S.days).sort().filter(k=>+S.days[k].peso>0).map(k=>({d:k,w:+S.days[k].peso}));}
 function weightOn(date){let w=null,wd=null; weightList().forEach(x=>{if(x.d<=date){w=x.w;wd=x.d;}}); if(!w){const l=weightList(); if(l.length){w=l[0].w;wd=l[0].d;}} return {w,wd};}
-function trainK(t,kg){const a=ACTS[t.t]||ACTS.outro, met=a.met[t.i==null?1:t.i]||a.met[1]; return Math.max(0,(met-1)*kg*(+t.min||0)/60);}
+function trainK(t,kg){if(t.kcal!=null&&t.cardio)return +t.kcal;const a=ACTS[t.t]||ACTS.outro, met=a.met[t.i==null?1:t.i]||a.met[1]; return Math.max(0,(met-1)*kg*(+t.min||0)/60);}
 function trainCalc(date){const d=day(date), ts=Array.isArray(d.treinos)?d.treinos:[], kg=weightOn(date).w||0; const list=ts.map(t=>({...t,kcal:trainK(t,kg)})); return {list,kcal:list.reduce((a,x)=>a+x.kcal,0),min:list.reduce((a,x)=>a+(+x.min||0),0),kg};}
 function baseBurn(){return S.prof.tmb ? S.prof.tmb*(S.prof.fator||1.2) : 0;}
 function waterMl(date){
@@ -1659,17 +1681,17 @@ function heroInicio(date, c){
   const nome = ((S.cli && S.cli.nome) || '').split(' ')[0];
   const lin = (ic, v, l, cor) => `<div class="hl"><span class="hi" style="color:${cor}">${ic}</span><b class="num">${v}</b><span class="sub">${l}</span></div>`;
   microCheck(date, c);
-  return engTopo(date) + `<section class="card hero home" aria-label="Resumo do dia">
+  return cardioBanner() + engTopo(date) + `<section class="card hero home" aria-label="Resumo do dia">
     ${S.date === today() && nome ? `<div class="hello">Olá, ${esc(nome)}!</div>` : ''}
     <div class="hgrid">${ring(m.pct)}<div class="hlist">
-      ${lin('🔥', fmt(c.kcal) + ' / ' + fmt(REF), 'kcal', 'var(--fire)')}
+      ${ehHabitos() ? '' : lin('🔥', fmt(c.kcal) + ' / ' + fmt(REF), 'kcal', 'var(--fire)')}
       ${lin('💧', fmtL(c.water) + ' / ' + fmtL(WATER_GOAL), 'L de água', 'var(--water)')}
       ${m.tId || m.feito ? lin('🏋️', (m.feito ? 1 : 0) + ' / 1', 'treino', 'var(--accent)') : ''}
-      ${lin('🍽️', c.ok + ' / ' + PLAN.length, 'refeições no plano', 'var(--ok)')}
+      ${lin(ehHabitos() ? '🌱' : '🍽️', c.ok + ' / ' + PLAN.length, ehHabitos() ? 'refeições com hábitos em dia' : 'refeições no plano', 'var(--ok)')}
     </div></div>
     <div class="row1" style="margin-top:4px">${pill(DAY_STATUS, c.status)}<span class="sub num">${c.extraK ? `extras ${fmt(c.extraK)} kcal` : ''}${c.extraK && c.tr.kcal ? ' · ' : ''}${c.tr.kcal ? `treinos −${fmt(c.tr.kcal)} kcal` : ''}</span></div>
     <div class="bar"><i class="${over ? 'over' : ''}" style="width:${pct}%"></i></div>
-    <button class="primary" id="allplan" data-act="allplan">Segui o plano em todas as refeições</button>
+    <button class="primary" id="allplan" data-act="allplan">${ehHabitos() ? 'Cumpri todos os hábitos de hoje' : 'Segui o plano em todas as refeições'}</button>
   </section>${proximaRefeicao(date)}${bemCard(date)}${jorCard(date)}${desafioCard(date)}${diaPostCard(date)}`;
 }
 function proximaRefeicao(date){
@@ -1698,6 +1720,8 @@ function plusSheet(){
     ${b('plusgo', '📏', 'Medidas', 'cintura, braço, coxa…', 'data-v="med"')}
     ${b('foodopen', '🔍', 'Buscar alimento', 'calorias pela tabela TACO', '')}
     ${b('bionova', '📊', 'Bioimpedância', 'dados da balança ou do exame', '')}
+    ${b('copen', '⏱️', 'Cronômetro de cardio', 'esteira, bike, elíptico… com calorias', '')}
+    ${b('wopen', '🔥', 'WOD de CrossFit', 'treino do dia, resultado e recordes', '')}
     ${b('jor', '📖', 'Minha Jornada', 'escrever no seu diário', '')}
   </div>`;
 }
@@ -1727,7 +1751,8 @@ function suporteBtn(txt, label){
   const num = z.length <= 11 ? '55' + z : z;
   return `<a class="ghost relbtnl" style="min-height:44px" href="https://wa.me/${num}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">${label || 'Falar no WhatsApp'}</a>`;
 }
-function planosView(){
+function planosView(){ return habBanner() + planosView0(); }
+function planosView0(){
   const pOrig = S.planOrig || 'prof', tOrig = S.trnOrig || 'prof', nome = (S.cli && S.cli.nome) || '';
   let h = `<section class="card" id="view-planos"><h2>Meus planos</h2><p class="sub" style="margin:4px 0 0">Seu plano alimentar e sua ficha de treino. Os planos do profissional são carregados pelo CheckFit e não podem ser alterados aqui.</p></section>`;
   // plano alimentar
@@ -1767,6 +1792,7 @@ function caminhoView(){
     <p class="sub" style="margin:0">O CheckFit acompanha o seu dia a partir de um plano alimentar. Escolha uma opção:</p>
     <div class="choice" style="margin-top:12px">
      <button class="ghost ch" id="cam-prof" data-act="caminho" data-v="prof"><b>Tenho nutricionista</b><small>Você envia o plano dela e nós carregamos no app, do jeito que ela prescreveu.</small></button>
+     <button class="ghost ch" id="cam-hab" data-act="caminho" data-v="habitos"><b>Ainda não tenho dieta</b><small>Comece com hábitos saudáveis simples. Quando tiver um plano de nutricionista, é só carregar.</small></button>
      <button class="ghost ch" id="cam-prop" data-act="caminho" data-v="proprio"><b>Quero montar o meu</b><small>Você mesmo cadastra suas refeições, alimentos e calorias.</small></button>
     </div>
     <p class="tip" style="margin:10px 0 0">O CheckFit organiza e registra a sua rotina, mas não prescreve dieta. Para um plano individual, procure um(a) nutricionista.</p>
@@ -1774,6 +1800,7 @@ function caminhoView(){
 }
 async function setCaminho(v){
   if(v === 'proprio'){ edOpen(S.user.uid, 'plano'); return; }
+  if(v === 'habitos'){ habIniciar(); return; }
   try{ await FS.collection('clientes').doc(S.user.uid).set({caminho:v}, {merge:true}); }catch(e){}
   if(S.cli) S.cli.caminho = v; render();
 }
@@ -2702,7 +2729,7 @@ function jorCard(date){
   if(date !== today()) return '';
   const carta = jorCartaHoje(), lem = jorLembranca(), escreveuHoje = ((S.prof.jor || {}).idx || {})[today()];
   if(carta) return `<section class="card jcard jcarta" aria-label="Carta para você"><span class="jci">💌</span><div><b>Chegou uma carta sua</b><div class="sub">Você escreveu para o seu eu de hoje. Quer abrir?</div></div><button class="primary" data-act="jcarta" data-id="${esc(carta)}">Abrir</button></section>`;
-  return `<section class="card jcard" aria-label="Minha Jornada"><span class="jci">📖</span><div><b>Minha Jornada</b><div class="sub">${lem ? 'Há ' + lem.nome + ' você escreveu no seu diário. Que tal reler?' : escreveuHoje ? 'Você já escreveu hoje. Quer acrescentar algo?' : esc(jorConvite(date))}</div></div><button class="${lem ? 'primary' : 'ghost'}" data-act="jor" ${lem ? `data-ver="${lem.d}"` : ''}>${lem ? 'Reler' : 'Escrever'}</button></section>`;
+  return `<section class="card jcard" aria-label="Minha Jornada"><span class="jci">📖</span><div><b>Minha Jornada</b>${(() => { const n = Object.values((S.prof.jor || {}).idx || {}).reduce((a, b) => a + b, 0) + Object.keys((S.prof.jor || {}).cartas || {}).length; return n ? ` <span class="sub">· ${n} ${n === 1 ? 'página' : 'páginas'}</span>` : ''; })()}<div class="sub">${lem ? 'Há ' + lem.nome + ' você escreveu no seu diário. Que tal reler?' : escreveuHoje ? 'Você já escreveu hoje. Quer acrescentar algo?' : esc(jorConvite(date))}</div></div><button class="${lem ? 'primary' : 'ghost'}" data-act="jor" ${lem ? `data-ver="${lem.d}"` : ''}>${lem ? 'Reler' : 'Escrever'}</button></section>`;
 }
 function jorEntrada(e){
   const J = jorState(), T = e.tag === 'carta' ? ['carta', '💌', 'Carta para o futuro'] : JTAG(e.tag), dt = parse(e.d);
@@ -2739,6 +2766,7 @@ function jorView(){
   }
   return `<section class="card" id="view-diario"><div class="bhead"><h2>Minha Jornada</h2><button class="ghost" data-act="jback">Voltar</button></div>
     <p class="sub" style="margin:2px 0 10px">🔒 Só você vê isto. Nem a nutricionista nem o CheckFit têm acesso.</p>
+    ${J.list && J.list.length ? `<button class="ghost jver2" data-act="jpags">📖 Minhas páginas (${J.list.length}) ↓</button>` : ''}
     ${apoio}${comp}</section><section class="card" aria-label="Minhas páginas">${lista}</section>
     <p class="tip" style="text-align:center;margin:4px 16px 16px">Precisa conversar? CVV, <a href="tel:188">188</a>, 24 horas.</p>${J.img ? jorImgSheet() : ''}`;
 }
@@ -2806,6 +2834,7 @@ function jorImgSheet(){
 async function jorAct(a, b){
   const J = jorState();
   if(a === 'jor'){ if(b.dataset.ver){ J.ver = b.dataset.ver; J.filtro = 'todas'; } jorOpen(); if(b.dataset.ver) setTimeout(() => { const el = document.querySelector('.jver'); if(el) el.scrollIntoView({block:'center'}); }, 600); return true; }
+  if(a === 'jpags'){ const el = document.querySelector('[aria-label="Minhas páginas"]'); if(el){ const y = el.getBoundingClientRect().top + window.scrollY - 80; window.scrollTo({top:y, behavior:'smooth'}); } return true; }
   if(a === 'jback'){ S.mode = 'app'; J.ver = null; J.lida = null; render(); window.scrollTo(0, 0); return true; }
   if(a === 'jtag'){ J.tag = b.dataset.v; render(); return true; }
   if(a === 'jfil'){ J.filtro = b.dataset.v; render(); return true; }
@@ -2905,8 +2934,8 @@ async function postAbrir(kind, ref, modo){
   const P = S.post;
   if(P.modo === 'foto' && !P.foto){ P.loading = false; render(); return; }
   try{
-    const cv = P.modo === 'adesivo' ? await adesivoPng(kind, ref, P.mostrar, P.pos) : P.modo === 'foto' ? await comFotoPng(kind, ref, P.mostrar, P.foto, P.pos) : kind === 'treino' ? await cartaoTreino(ref) : await cartaoDia(ref, P.mostrar);
-    const blob = await cvBlob(cv), nome = (kind === 'treino' ? 'Treino-concluido' : 'Meu-dia') + (P.modo === 'adesivo' ? '-adesivo' : '') + '-CheckFit.png';
+    const cv = P.modo === 'adesivo' ? await adesivoPng(kind, ref, P.mostrar, P.pos) : P.modo === 'foto' ? await comFotoPng(kind, ref, P.mostrar, P.foto, P.pos) : await cartaoPor(kind, ref, P.mostrar);
+    const blob = await cvBlob(cv), nome = ({treino:'Treino-concluido', cardio:'Cardio', wod:'WOD'}[kind] || 'Meu-dia') + (P.modo === 'adesivo' ? '-adesivo' : '') + '-CheckFit.png';
     let file = null; try{ file = new File([blob], nome, {type:'image/png'}); }catch(e){}
     if(S.post !== P) return; Object.assign(P, {loading:false, blob, url:URL.createObjectURL(blob), nome, file, share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))}); }
   catch(e){ if(S.post === P){ P.loading = false; P.erro = true; } }
@@ -2923,7 +2952,7 @@ function postSheet(){
       ${P.share ? `<button class="${P.modo === 'adesivo' && navigator.clipboard && window.ClipboardItem ? 'ghost' : 'primary'}" id="post-share" data-act="postshare">${P.modo === 'adesivo' ? 'Salvar ou enviar' : 'Compartilhar (Instagram, WhatsApp…)'}</button>` : ''}
       <a class="${P.share ? 'ghost' : 'primary'} relbtnl" href="${P.url}" download="${esc(P.nome)}" target="_blank" rel="noopener">${P.share ? 'Abrir imagem' : 'Baixar imagem'}</a></div>
       <img class="semimg${P.modo === 'adesivo' ? ' adprev' : ''}" src="${P.url}" alt="Imagem para postar">`;
-  return `<div class="sheetbg" data-act="postclose"></div><div class="sheet" role="dialog" aria-label="Postar"><div class="sheeth"><b>${P.kind === 'treino' ? 'Treino concluído! 💪' : 'Postar meu dia'}</b><button class="ghost" data-act="postclose">Fechar</button></div>
+  return `<div class="sheetbg" data-act="postclose"></div><div class="sheet" role="dialog" aria-label="Postar"><div class="sheeth"><b>${{treino:'Treino concluído! 💪', cardio:'Cardio concluído! 🔥', wod:'WOD concluído! 🏋️'}[P.kind] || 'Postar meu dia'}</b><button class="ghost" data-act="postclose">Fechar</button></div>
     <div class="opts" style="padding:0 0 8px" role="group" aria-label="Formato">${modos.map(([v, n]) => `<button class="chip" data-act="postmodo" data-v="${v}" aria-pressed="${P.modo === v}">${n}</button>`).join('')}</div>
     ${P.kind === 'dia' ? `<label class="prep" for="post-m" style="margin:0 0 8px"><input type="checkbox" id="post-m" data-act="postm" ${P.mostrar ? 'checked' : ''}> <span>Mostrar calorias${P.modo === 'cartao' ? ' e peso' : ''} na imagem</span></label>` : ''}
     <p class="tip" style="margin:0 0 8px">${dicas[P.modo]}</p>
@@ -3112,6 +3141,7 @@ async function cartaoVitoria(e){
 
 /* ---------- Adesivo transparente (para colar sobre a própria foto) e montagem com foto ---------- */
 function adDados(kind, ref, mostrar){
+  if(kind === 'cardio' || kind === 'wod') return adDadosExtra(kind, ref);
   const n = sequencia().n, pres = n + (n === 1 ? ' dia' : ' dias');
   if(kind === 'treino'){ const D = treinoPostDados(ref); if(!D) return null;
     return {selo:'TREINO CONCLUÍDO', titulo:D.nome, sub:dataCap(D.date) + (D.rot !== D.nome ? ' · ' + D.rot : ''),
@@ -3188,6 +3218,7 @@ function adFaixa(x, W, y0, A){
 }
 /* barra fina no rodapé (uma linha só) */
 function adBarraDados(kind, ref, mostrar){
+  if(kind === 'cardio' || kind === 'wod') return adBarraExtra(kind, ref);
   const n = sequencia().n, dias = n + (n === 1 ? ' dia' : ' dias');
   if(kind === 'treino'){ const D = treinoPostDados(ref); if(!D) return null;
     return {t1:D.rot !== D.nome ? D.rot : 'Treino', t2:D.nome, selo:['TREINO', 'CONCLUÍDO'], st:[['relogio', D.min + ' min', ''], ['camadas', String(D.series), 'séries'], ['sil:🏋️', fmt(Math.round(D.vol)) + ' kg', ''], ['emo:🔥', dias, '']]}; }
@@ -3233,6 +3264,265 @@ async function comFotoPng(kind, ref, mostrar, url, pos){
   if(pos === 'topo'){ const y0 = 190, g = x.createLinearGradient(0, 0, 0, y0 + ah + 160); g.addColorStop(0, 'rgba(0,0,0,.78)'); g.addColorStop(0.7, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, W, y0 + ah + 160); adFaixa(x, W, y0, A); }
   else { const y0 = H - 210 - ah, g = x.createLinearGradient(0, y0 - 160, 0, H); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.3, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,.8)'); x.fillStyle = g; x.fillRect(0, y0 - 160, W, H - y0 + 160); adFaixa(x, W, y0, A); }
   return cv;
+}
+
+/* ---------- Cronômetro de cardio (esteira, bike, elíptico…) ---------- */
+const CARDIO = [['esteira', 'Esteira', '🏃'], ['bike', 'Bicicleta', '🚴'], ['eliptico', 'Elíptico', '⛷️'], ['escada', 'Escada', '🪜'], ['caminhada', 'Caminhada', '🚶'], ['corrida', 'Corrida', '🏃'], ['remo', 'Remo', '🚣'], ['outro', 'Outro cardio', '⏱️']];
+const cardioNome = t => (CARDIO.find(c => c[0] === t) || [, (ACTS[t] || ACTS.outro).n])[1];
+let CTICK = null;
+function cardioAtivo(){ for(const d of [today(), addDays(today(), -1)]){ const c = S.days[d] && S.days[d].cardio; if(c && c.ini) return {d, c}; } return null; }
+function cardioPausaMs(c, a, b){ return (c.pausas || []).reduce((s, [p, q]) => { const ini = Math.max(a, p), fim = Math.min(b, q || Date.now()); return s + Math.max(0, fim - ini); }, 0); }
+function cardioAtivoMs(c, ate){ const fim = ate || (c.pausadoEm || Date.now()); return Math.max(0, fim - c.ini - cardioPausaMs(c, c.ini, fim)); }
+/* kcal por minuto, líquidas (sem o metabolismo de repouso, que já está no gasto do dia) */
+function cardioKmin(t, seg, kg){
+  if(t === 'esteira' && +seg.vel > 0){ const v = +seg.vel * 1000 / 60, g = (+seg.incl || 0) / 100, vo2 = +seg.vel >= 7 ? 0.2 * v + 0.9 * v * g : 0.1 * v + 1.8 * v * g; return vo2 * kg / 1000 * 5; }
+  const a = ACTS[t] || ACTS.outro, met = a.met[seg.i == null ? 1 : seg.i] || a.met[1]; return Math.max(0, (met - 1) * kg / 60);
+}
+function cardioCalc(c){
+  const kg = weightOn(today()).w || 0, agora = c.pausadoEm || Date.now(); let kcal = 0, dist = 0;
+  (c.segs || []).forEach((s, i) => { const a = s.a, b = i + 1 < c.segs.length ? c.segs[i + 1].a : agora; const ms = Math.max(0, b - a - cardioPausaMs(c, a, b)), min = ms / 60000;
+    kcal += cardioKmin(c.t, s, kg) * min; if(+s.vel > 0) dist += +s.vel * min / 60; });
+  return {ms:cardioAtivoMs(c), kcal, dist, kg};
+}
+function cardioIniciar(){
+  const P = S.cs, d = S.days[today()] || (S.days[today()] = {meals:{}}), agora = Date.now();
+  const seg = {a:agora}; if(P.t === 'esteira' && numv(P.vel) > 0){ seg.vel = numv(P.vel); seg.incl = numv(P.incl) || 0; } else seg.i = P.i;
+  d.cardio = {t:P.t, ini:agora, segs:[seg], pausas:[], meta:+P.meta || 0};
+  S.prof.cardioPref = {t:P.t, meta:P.meta, vel:P.vel, incl:P.incl, i:P.i}; saveProf();
+  audioUnlock(); wakeOn(); save(today()); render(); cardioTick();
+}
+function cardioPausar(){ const A = cardioAtivo(); if(!A) return; const c = A.c, agora = Date.now();
+  if(c.pausadoEm){ c.pausas.push([c.pausadoEm, agora]); delete c.pausadoEm; wakeOn(); } else { c.pausadoEm = agora; }
+  save(A.d); render(); }
+function cardioAjuste(k, delta){ const A = cardioAtivo(); if(!A) return; const c = A.c, ult = c.segs[c.segs.length - 1], novo = {...ult, a:Date.now()};
+  if(k === 'vel') novo.vel = Math.max(0.5, Math.round(((+ult.vel || 5) + delta) * 10) / 10);
+  else if(k === 'incl') novo.incl = Math.max(0, Math.min(15, (+ult.incl || 0) + delta));
+  else if(k === 'i'){ novo.i = delta; delete novo.vel; }
+  if(Date.now() - ult.a < 4000) c.segs[c.segs.length - 1] = {...novo, a:ult.a}; else c.segs.push(novo);
+  save(A.d); render(); }
+function cardioFinalizar(){
+  const A = cardioAtivo(); if(!A) return; const c = A.c; if(c.pausadoEm){ c.pausas.push([c.pausadoEm, Date.now()]); delete c.pausadoEm; }
+  const R = cardioCalc(c), min = Math.max(1, Math.round(R.ms / 60000)), d = S.days[A.d];
+  const vels = c.segs.filter(s => +s.vel > 0), ult = c.segs[c.segs.length - 1];
+  const tr = {t:c.t, min, i:ult.i == null ? (vels.length ? (ult.vel >= 8 ? 2 : ult.vel >= 5.5 ? 1 : 0) : 1) : ult.i, kcal:Math.round(R.kcal), cardio:1, ini:c.ini, fim:Date.now()};
+  if(vels.length){ tr.vel = Math.round(R.dist / (R.ms / 3600000) * 10) / 10 || ult.vel; tr.dist = Math.round(R.dist * 100) / 100; const inc = c.segs.reduce((m, s) => Math.max(m, +s.incl || 0), 0); if(inc) tr.incl = inc; }
+  d.treinos = Array.isArray(d.treinos) ? d.treinos : []; d.treinos.push(tr); delete d.cardio;
+  clearInterval(CTICK); CTICK = null; wakeOff(); S.mode = 'app'; S.tab = 'inicio'; S.date = A.d; save(A.d); render(); window.scrollTo(0, 0);
+  toast(cardioNome(c.t) + ': ' + min + ' min · ' + fmt(Math.round(R.kcal)) + ' kcal'); setTimeout(() => postAbrir('cardio', String(c.ini)), 400);
+}
+function cardioDescartar(){ if(!S.cDesc){ S.cDesc = true; render(); return; } S.cDesc = false; const A = cardioAtivo(); if(A){ delete S.days[A.d].cardio; save(A.d); } clearInterval(CTICK); CTICK = null; wakeOff(); S.mode = 'app'; render(); }
+const fmtHMS = ms => { const t = Math.floor(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(s).padStart(2, '0'); };
+function cardioTick(){
+  if(CTICK) return;
+  CTICK = setInterval(() => {
+    const A = cardioAtivo(); if(!A){ clearInterval(CTICK); CTICK = null; return; }
+    const c = A.c, R = cardioCalc(c), el = id => document.getElementById(id);
+    if(el('c-clock')) el('c-clock').textContent = fmtHMS(R.ms);
+    if(el('c-kcal')) el('c-kcal').textContent = fmt(Math.round(R.kcal));
+    if(el('c-dist')) el('c-dist').textContent = R.dist ? R.dist.toLocaleString('pt-BR', {maximumFractionDigits:2}) : '—';
+    if(c.meta){ const p = Math.min(100, R.ms / (c.meta * 600)); if(el('c-bar')) el('c-bar').style.width = p + '%'; if(el('c-rest')) el('c-rest').textContent = R.ms >= c.meta * 60000 ? 'Meta batida! 🎉' : 'faltam ' + fmtHMS(c.meta * 60000 - R.ms);
+      if(R.ms >= c.meta * 60000 && !c.metaOk){ c.metaOk = 1; save(A.d); beep(); toast('Meta de ' + c.meta + ' min concluída! Continue ou finalize. 💪'); if(S.mode === 'cardio') render(); } }
+    const bn = el('cb-clock'); if(bn) bn.textContent = fmtHMS(R.ms);
+  }, 500);
+}
+function cardioView(){
+  const A = cardioAtivo();
+  if(!A){
+    const P = S.cs = S.cs || {...{t:'esteira', meta:45, vel:'', incl:'', i:1}, ...(S.prof.cardioPref || {})};
+    return `<section class="card" id="view-cardio"><div class="bhead"><h2>Cronômetro de cardio</h2><button class="ghost" data-act="cback">Voltar</button></div>
+      <div class="sub" style="margin:10px 0 6px;font-weight:700">Atividade</div><div class="opts cgrid" role="group">${CARDIO.map(([k, n, ic]) => `<button class="chip" data-act="cset" data-k="t" data-v="${k}" aria-pressed="${P.t === k}">${ic} ${n}</button>`).join('')}</div>
+      <div class="sub" style="margin:12px 0 6px;font-weight:700">Meta de tempo</div><div class="opts" role="group">${[0, 20, 30, 45, 60].map(v => `<button class="chip" data-act="cset" data-k="meta" data-v="${v}" aria-pressed="${+P.meta === v}">${v ? v + ' min' : 'Livre'}</button>`).join('')}</div>
+      ${P.t === 'esteira' ? `<div class="bgrid" style="margin-top:12px"><label class="bf" for="cs-vel"><span>Velocidade <small>km/h</small></span><input id="cs-vel" data-ep="1" inputmode="decimal" value="${esc(P.vel || '')}" placeholder="ex.: 6"></label><label class="bf" for="cs-incl"><span>Inclinação <small>%</small></span><input id="cs-incl" data-ep="1" inputmode="decimal" value="${esc(P.incl || '')}" placeholder="ex.: 2"></label></div>
+        <p class="tip" style="margin:6px 0 0">Com velocidade e inclinação o cálculo fica mais preciso. Se não souber, deixe em branco e escolha a intensidade.</p>` : ''}
+      ${P.t !== 'esteira' || !(numv(P.vel) > 0) ? `<div class="sub" style="margin:12px 0 6px;font-weight:700">Intensidade</div><div class="opts" role="group">${INT.map((n, i) => `<button class="chip" data-act="cset" data-k="i" data-v="${i}" aria-pressed="${+P.i === i}">${n}</button>`).join('')}</div>` : ''}
+      ${weightOn(today()).w ? '' : '<div class="banner" style="margin-top:10px">Registre seu peso para calcular as calorias.</div>'}
+      <button class="primary cgo" id="c-start" data-act="cstart">▶ Iniciar</button></section>`;
+  }
+  const c = A.c, R = cardioCalc(c), ult = c.segs[c.segs.length - 1], pausado = !!c.pausadoEm;
+  return `<section class="card crun${pausado ? ' pausado' : ''}" id="view-cardio-run"><div style="display:flex;justify-content:flex-start"><button class="ghost eb" data-act="cback">← Voltar ao app</button></div><div class="eyebrow" style="margin-top:6px">${esc(cardioNome(c.t))}${pausado ? ' · em pausa' : ' · em andamento'}</div>
+    <div class="cclock num" id="c-clock">${fmtHMS(R.ms)}</div>
+    ${c.meta ? `<div class="cbarw"><i id="c-bar" style="width:${Math.min(100, R.ms / (c.meta * 600))}%"></i></div><div class="sub" style="text-align:center" id="c-rest">${R.ms >= c.meta * 60000 ? 'Meta batida! 🎉' : 'faltam ' + fmtHMS(c.meta * 60000 - R.ms)}</div>` : ''}
+    <div class="cstats"><div><b class="num" id="c-kcal">${fmt(Math.round(R.kcal))}</b><span>kcal</span></div>${+ult.vel > 0 ? `<div><b class="num" id="c-dist">${R.dist ? R.dist.toLocaleString('pt-BR', {maximumFractionDigits:2}) : '—'}</b><span>km</span></div>` : ''}</div>
+    ${c.t === 'esteira' && +ult.vel > 0 ? `<div class="cadj"><div><span class="sub">Velocidade</span><div class="cadjr"><button class="ghost" data-act="cadj" data-k="vel" data-v="-0.5">−</button><b class="num">${String(ult.vel).replace('.', ',')} km/h</b><button class="ghost" data-act="cadj" data-k="vel" data-v="0.5">+</button></div></div>
+      <div><span class="sub">Inclinação</span><div class="cadjr"><button class="ghost" data-act="cadj" data-k="incl" data-v="-1">−</button><b class="num">${ult.incl || 0}%</b><button class="ghost" data-act="cadj" data-k="incl" data-v="1">+</button></div></div></div>`
+      : `<div class="opts" style="justify-content:center;padding:10px 0 0" role="group" aria-label="Intensidade">${INT.map((n, i) => `<button class="chip" data-act="cadj" data-k="i" data-v="${i}" aria-pressed="${ult.i === i}">${n}</button>`).join('')}</div>`}
+    <div class="row cbtns"><button class="ghost" id="c-pause" data-act="cpause">${pausado ? '▶ Continuar' : '⏸ Pausar'}</button><button class="primary" id="c-fin" data-act="cfin">■ Finalizar</button></div>
+    <button class="linkbtn" data-act="cdesc" style="margin-top:8px">${S.cDesc ? 'Toque de novo para descartar' : 'Descartar'}</button>
+    <p class="tip" style="margin:8px 0 0;text-align:center">Pode sair do app: o tempo continua contando. O bipe da meta só toca com o app aberto. Calorias estimadas pelo seu peso${c.t === 'esteira' ? ', velocidade e inclinação (fórmula ACSM)' : ' e intensidade'}.</p></section>`;
+}
+function cardioBanner(){
+  const A = cardioAtivo(); if(!A || S.mode === 'cardio') return ''; setTimeout(cardioTick, 0);
+  return `<section class="card cbanner" aria-label="Cardio em andamento"><span class="jci">⏱️</span><div><b>${esc(cardioNome(A.c.t))} ${A.c.pausadoEm ? 'em pausa' : 'em andamento'}</b><div class="sub num" id="cb-clock">${fmtHMS(cardioAtivoMs(A.c))}</div></div><button class="primary" data-act="copen">Abrir</button></section>`;
+}
+function cardioAbrir(){ S.mode = 'cardio'; S.plus = false; S.cDesc = false; render(); window.scrollTo(0, 0); if(cardioAtivo()){ cardioTick(); if(!cardioAtivo().c.pausadoEm) wakeOn(); } }
+function cardioAct(a, b){
+  if(a === 'copen'){ cardioAbrir(); return true; }
+  if(a === 'cback'){ S.mode = 'app'; render(); return true; }
+  if(a === 'cset'){ const k = b.dataset.k; S.cs[k] = k === 't' ? b.dataset.v : +b.dataset.v; render(); return true; }
+  if(a === 'cstart'){ cardioIniciar(); return true; }
+  if(a === 'cpause'){ cardioPausar(); return true; }
+  if(a === 'cadj'){ cardioAjuste(b.dataset.k, +b.dataset.v); return true; }
+  if(a === 'cfin'){ cardioFinalizar(); return true; }
+  if(a === 'cdesc'){ cardioDescartar(); return true; }
+  return false;
+}
+function cardioInput(t){ if(!S.cs) return false; if(t.id === 'cs-vel'){ S.cs.vel = t.value; return true; } if(t.id === 'cs-incl'){ S.cs.incl = t.value; return true; } return false; }
+/* dados para posts */
+function cardioPostDados(ini){
+  let date = null, tr = null; Object.keys(S.days).some(d => { const z = ((S.days[d] || {}).treinos || []).find(q => String(q.ini) === String(ini) && q.cardio); if(z){ date = d; tr = z; return true; } return false; });
+  if(!tr) return null; const extra = tr.vel ? String(tr.vel).replace('.', ',') + ' km/h' + (tr.incl ? ' · ' + tr.incl + '% incl.' : '') : INT[tr.i == null ? 1 : tr.i];
+  return {date, tr, nome:cardioNome(tr.t), extra};
+}
+
+/* ---------- CrossFit: WOD do dia, recordes de levantamento e benchmarks ---------- */
+const WOD_FMT = [['fortime', 'For Time'], ['amrap', 'AMRAP'], ['emom', 'EMOM'], ['forca', 'Força / LPO'], ['outro', 'Outro']];
+const wodFmtN = f => (WOD_FMT.find(x => x[0] === f) || WOD_FMT[4])[1];
+const CF_LIFTS = ['Back squat', 'Front squat', 'Deadlift', 'Clean', 'Power clean', 'Clean & jerk', 'Snatch', 'Power snatch', 'Push press', 'Shoulder press', 'Supino', 'Thruster'];
+const CF_BENCH = [['Fran', 'fortime', '21-15-9: thrusters (43/29 kg) e pull-ups'], ['Grace', 'fortime', '30 clean & jerks (61/43 kg)'], ['Isabel', 'fortime', '30 snatches (61/43 kg)'], ['Diane', 'fortime', '21-15-9: deadlift (102/70 kg) e handstand push-ups'], ['Helen', 'fortime', '3 rounds: 400 m corrida, 21 kettlebell swings, 12 pull-ups'], ['Annie', 'fortime', '50-40-30-20-10: double unders e abdominais'], ['Karen', 'fortime', '150 wall balls'], ['Murph', 'fortime', '1,6 km corrida, 100 pull-ups, 200 push-ups, 300 air squats, 1,6 km corrida'], ['Cindy', 'amrap', 'AMRAP 20 min: 5 pull-ups, 10 push-ups, 15 air squats'], ['DT', 'fortime', '5 rounds: 12 deadlifts, 9 hang power cleans, 6 push jerks (70/47 kg)']];
+function wodRes(w){
+  const r = w.res || {};
+  if(w.fmt === 'fortime') return r.mm || r.ss ? (+r.mm || 0) + ':' + String(+r.ss || 0).padStart(2, '0') : '—';
+  if(w.fmt === 'amrap') return (+r.rounds || 0) + (r.reps ? ' + ' + r.reps : '') + ' rounds';
+  if(w.fmt === 'emom') return (+r.min || 0) + ' min';
+  if(w.fmt === 'forca') return (r.kg ? String(r.kg).replace('.', ',') + ' kg' : '—');
+  return r.txt || 'Concluído';
+}
+const wodSeg = w => w.fmt === 'fortime' ? (+w.res.mm || 0) * 60 + (+w.res.ss || 0) : w.fmt === 'amrap' ? (+w.res.rounds || 0) * 1000 + (+w.res.reps || 0) : 0;
+function wodState(){ return S.wf = S.wf || {fmt:'fortime', bench:'', desc:'', mm:'', ss:'', rounds:'', reps:'', emin:'', kg:'', lift:'', txt:'', rx:true, min:'', i:2}; }
+function wodView(){
+  const F = wodState(), cf = S.prof.cf || {}, lifts = cf.lifts || {}, bench = cf.bench || {};
+  const inp = (id, v, ph, w) => `<input id="${id}" data-ep="1" inputmode="${w || 'numeric'}" value="${esc(v || '')}" placeholder="${ph}" autocomplete="off">`;
+  let res = '';
+  if(F.fmt === 'fortime') res = `<div class="bgrid"><label class="bf" for="wf-mm"><span>Tempo <small>min</small></span>${inp('wf-mm', F.mm, '8')}</label><label class="bf" for="wf-ss"><span>&nbsp;<small>seg</small></span>${inp('wf-ss', F.ss, '45')}</label></div>`;
+  else if(F.fmt === 'amrap') res = `<div class="bgrid"><label class="bf" for="wf-rounds"><span>Rounds</span>${inp('wf-rounds', F.rounds, '6')}</label><label class="bf" for="wf-reps"><span>+ Repetições</span>${inp('wf-reps', F.reps, '12')}</label></div>`;
+  else if(F.fmt === 'emom') res = `<label class="bf" for="wf-emin"><span>Minutos completos</span>${inp('wf-emin', F.emin, '12')}</label>`;
+  else if(F.fmt === 'forca') res = `<div class="bgrid"><label class="bf" for="wf-lift"><span>Movimento</span><select id="wf-lift" data-ep="1">${['<option value="">Escolha…</option>'].concat(CF_LIFTS.map(l => `<option${F.lift === l ? ' selected' : ''}>${l}</option>`)).join('')}</select></label><label class="bf" for="wf-kg"><span>Carga <small>kg</small></span>${inp('wf-kg', F.kg, '80', 'decimal')}</label></div>`;
+  else res = `<label class="bf" for="wf-txt"><span>Resultado</span>${inp('wf-txt', F.txt, 'ex.: completei com 20 kg', 'text')}</label>`;
+  const best = n => { const L = bench[n] || []; if(!L.length) return ''; const f = (CF_BENCH.find(b => b[0] === n) || [])[1]; const b = L.slice().sort((a, c) => f === 'amrap' ? c.v - a.v : a.v - c.v)[0]; return b.r; };
+  return `<section class="card" id="view-wod"><div class="bhead"><h2>WOD de CrossFit</h2><button class="ghost" data-act="wback">Voltar</button></div>
+    <div class="sub" style="margin:10px 0 6px;font-weight:700">É um benchmark? <small>(opcional)</small></div>
+    <div class="opts" role="group" style="flex-wrap:wrap">${['', ...CF_BENCH.map(b => b[0])].map(n => `<button class="chip" data-act="wbench" data-v="${n}" aria-pressed="${F.bench === n}">${n || 'WOD do dia'}${n && best(n) ? ' · ' + best(n) : ''}</button>`).join('')}</div>
+    <div class="sub" style="margin:12px 0 6px;font-weight:700">Formato</div><div class="opts" role="group">${WOD_FMT.map(([k, n]) => `<button class="chip" data-act="wfmt" data-v="${k}" aria-pressed="${F.fmt === k}">${n}</button>`).join('')}</div>
+    <label class="bf" for="wf-desc" style="margin-top:12px"><span>O treino que o professor passou</span><textarea id="wf-desc" data-ep="1" rows="4" placeholder="Cole ou escreva o WOD. Ex.: 21-15-9 thrusters e pull-ups">${esc(F.desc || '')}</textarea></label>
+    <div class="sub" style="margin:12px 0 6px;font-weight:700">Seu resultado</div>${res}
+    <div class="opts" role="group" style="padding:10px 0 0"><button class="chip" data-act="wrx" data-v="1" aria-pressed="${F.rx}">RX</button><button class="chip" data-act="wrx" data-v="0" aria-pressed="${!F.rx}">Adaptado (scaled)</button></div>
+    <div class="bgrid" style="margin-top:10px"><label class="bf" for="wf-min"><span>Duração da aula <small>min</small></span>${inp('wf-min', F.min, '60')}</label><div class="bf"><span>Intensidade</span><div class="opts" style="padding:0">${INT.map((n, i) => `<button class="chip" data-act="wint" data-v="${i}" aria-pressed="${F.i === i}">${n}</button>`).join('')}</div></div></div>
+    ${weightOn(today()).w ? '' : '<div class="banner" style="margin-top:10px">Registre seu peso para calcular as calorias.</div>'}
+    <button class="primary cgo" id="wf-save" data-act="wsave">Registrar WOD</button></section>
+    <section class="card" aria-label="Recordes de levantamento"><h2>Recordes de levantamento</h2><p class="sub" style="margin:4px 0 8px">Seu melhor peso em cada movimento. Toque para registrar um novo.</p>
+    <div class="cflifts">${CF_LIFTS.map(l => { const L = lifts[l] || [], b = L.reduce((m, x) => x.kg > (m ? m.kg : 0) ? x : m, null); return `<button class="cflift" data-act="wlift" data-v="${esc(l)}"><b>${esc(l)}</b><span class="num">${b ? String(b.kg).replace('.', ',') + ' kg' : '—'}</span>${b ? `<small>${parse(b.d).toLocaleDateString('pt-BR', {day:'numeric', month:'short', year:'2-digit'})}</small>` : ''}</button>`; }).join('')}</div>
+    ${S.wLift ? `<div class="cflform"><b>${esc(S.wLift)}</b><div class="row" style="margin-top:6px"><input id="wl-kg" data-ep="1" inputmode="decimal" placeholder="kg" class="ajin" style="max-width:120px"><button class="primary" data-act="wliftsave">Salvar</button><button class="ghost" data-act="wliftx">Cancelar</button></div></div>` : ''}</section>`;
+}
+function wodInput(t){
+  if(!S.wf) return false; const map = {'wf-mm':'mm', 'wf-ss':'ss', 'wf-rounds':'rounds', 'wf-reps':'reps', 'wf-emin':'emin', 'wf-kg':'kg', 'wf-txt':'txt', 'wf-min':'min', 'wf-desc':'desc', 'wf-lift':'lift'};
+  if(map[t.id]){ S.wf[map[t.id]] = t.value; return true; } return false;
+}
+function liftPR(nome, kg, d){
+  const cf = S.prof.cf = S.prof.cf || {}; cf.lifts = cf.lifts || {}; const L = cf.lifts[nome] = cf.lifts[nome] || [];
+  const ant = L.reduce((m, x) => Math.max(m, x.kg), 0); L.push({kg, d}); return ant > 0 && kg > ant ? ant : (ant === 0 ? 0 : null);
+}
+function wodSalvar(){
+  const F = wodState(), date = S.date || today(), d = S.days[date] || (S.days[date] = {meals:{}});
+  const res = F.fmt === 'fortime' ? {mm:numv(F.mm) || 0, ss:numv(F.ss) || 0} : F.fmt === 'amrap' ? {rounds:numv(F.rounds) || 0, reps:numv(F.reps) || 0} : F.fmt === 'emom' ? {min:numv(F.emin) || 0} : F.fmt === 'forca' ? {kg:numv(F.kg) || 0, lift:F.lift} : {txt:(F.txt || '').trim()};
+  if(F.fmt === 'fortime' && !res.mm && !res.ss){ toast('Coloque o seu tempo.'); return; }
+  if(F.fmt === 'amrap' && !res.rounds){ toast('Coloque quantos rounds você fez.'); return; }
+  if(F.fmt === 'forca' && (!res.kg || !res.lift)){ toast('Escolha o movimento e a carga.'); return; }
+  const w = {fmt:F.fmt, desc:(F.desc || '').trim(), res, rx:!!F.rx}; if(F.bench) w.bench = F.bench;
+  let pr = null;
+  if(F.bench){ const cf = S.prof.cf = S.prof.cf || {}; cf.bench = cf.bench || {}; const L = cf.bench[F.bench] = cf.bench[F.bench] || [], v = wodSeg(w), am = F.fmt === 'amrap';
+    const ant = L.filter(x => x.rx === w.rx).map(x => x.v); if(ant.length && (am ? v > Math.max(...ant) : v < Math.min(...ant))) pr = 'Novo recorde no ' + F.bench + '!'; L.push({d:date, v, r:wodRes(w), rx:w.rx}); }
+  if(F.fmt === 'forca'){ const a = liftPR(res.lift, res.kg, date); if(a) pr = 'Novo recorde no ' + res.lift + ': ' + String(res.kg).replace('.', ',') + ' kg (antes ' + String(a).replace('.', ',') + ' kg)'; }
+  if(pr) w.pr = pr;
+  const ini = Date.now(), tr = {t:'crossfit', min:Math.round(numv(F.min)) || 60, i:F.i, wod:w, ini};
+  d.treinos = Array.isArray(d.treinos) ? d.treinos : []; d.treinos.push(tr);
+  saveProf(); save(date); S.wf = null; S.mode = 'app'; S.tab = 'inicio'; render(); window.scrollTo(0, 0);
+  if(pr){ S.cele = (S.cele || []).concat([{ic:'🏆', t:'Recorde pessoal!', m:pr}]); render(); }
+  toast('WOD registrado: ' + wodRes(w)); setTimeout(() => postAbrir('wod', String(ini)), pr ? 1200 : 400);
+}
+function wodAct(a, b){
+  const F = wodState();
+  if(a === 'wopen'){ S.mode = 'wod'; S.plus = false; render(); window.scrollTo(0, 0); return true; }
+  if(a === 'wback'){ S.mode = 'app'; render(); return true; }
+  if(a === 'wbench'){ F.bench = b.dataset.v; const B = CF_BENCH.find(x => x[0] === F.bench); if(B){ F.fmt = B[1]; F.desc = B[2]; } render(); return true; }
+  if(a === 'wfmt'){ F.fmt = b.dataset.v; render(); return true; }
+  if(a === 'wrx'){ F.rx = b.dataset.v === '1'; render(); return true; }
+  if(a === 'wint'){ F.i = +b.dataset.v; render(); return true; }
+  if(a === 'wsave'){ wodSalvar(); return true; }
+  if(a === 'wlift'){ S.wLift = b.dataset.v; render(); requestAnimationFrame(() => { const el = document.getElementById('wl-kg'); if(el) el.focus(); }); return true; }
+  if(a === 'wliftx'){ S.wLift = null; render(); return true; }
+  if(a === 'wliftsave'){ const el = document.getElementById('wl-kg'), kg = numv(el && el.value); if(!(kg > 0)){ if(el) el.focus(); return true; }
+    const ant = liftPR(S.wLift, kg, today()); saveProf(); const n = S.wLift; S.wLift = null; render();
+    if(ant){ S.cele = (S.cele || []).concat([{ic:'🏆', t:'Recorde pessoal!', m:n + ': ' + String(kg).replace('.', ',') + ' kg (antes ' + String(ant).replace('.', ',') + ' kg)'}]); render(); } else toast(n + ': ' + String(kg).replace('.', ',') + ' kg salvo.'); return true; }
+  return false;
+}
+function wodPostDados(ini){
+  let date = null, tr = null; Object.keys(S.days).some(d => { const z = ((S.days[d] || {}).treinos || []).find(q => String(q.ini) === String(ini) && q.wod); if(z){ date = d; tr = z; return true; } return false; });
+  return tr ? {date, tr, w:tr.wod} : null;
+}
+
+/* ---------- Modo hábitos (para quem ainda não tem plano de nutricionista) ---------- */
+function habPlano(){
+  const h = (k, n, d) => ({k, ch:[[n, d || '', 0]]});
+  return {nutri:'Hábitos saudáveis (CheckFit)', habitos:true, data:new Date().toLocaleDateString('pt-BR'), agua:2000, meals:[
+    {id:'cafe', time:'07:00', name:'Café da manhã', tip:'Não precisa ser perfeito. Marque o que você conseguiu.', options:[{label:'Hábitos', items:[h('cm1', 'Tomei café da manhã'), h('cm2', 'Teve proteína', 'ovo, iogurte, queijo ou leite'), h('cm3', 'Teve uma fruta')]}]},
+    {id:'almoco', time:'12:00', name:'Almoço', tip:'Prato colorido: metade salada ou legumes, um quarto proteína, um quarto carboidrato.', options:[{label:'Hábitos', items:[h('al1', 'Metade do prato com salada ou legumes'), h('al2', 'Teve proteína', 'carne, frango, peixe, ovo ou feijão'), h('al3', 'Sem fritura'), h('al4', 'Comi devagar, sem tela')]}]},
+    {id:'lanche', time:'16:00', name:'Lanche', tip:'Fome entre as refeições é normal. Escolha algo que sustente.', options:[{label:'Hábitos', items:[h('la1', 'Fruta, iogurte ou castanhas'), h('la2', 'Sem doce ou salgadinho')]}]},
+    {id:'jantar', time:'19:30', name:'Jantar', tip:'Jantar leve ajuda o sono.', options:[{label:'Hábitos', items:[h('ja1', 'Prato equilibrado', 'salada + proteína'), h('ja2', 'Sem refrigerante ou bebida açucarada'), h('ja3', 'Parei de comer 2 h antes de dormir')]}]}
+  ]};
+}
+async function habIniciar(){
+  try{
+    await S.db.doc('config/plano').set({json:JSON.stringify(habPlano()), origem:'proprio', atualizado:new Date().toISOString()});
+    try{ await FS.collection('clientes').doc(S.user.uid).set({caminho:'habitos'}, {merge:true}); }catch(e){}
+    if(S.cli) S.cli.caminho = 'habitos'; toast('Pronto! Seus hábitos do dia estão no Início.');
+  }catch(e){ toast('Não consegui começar agora. Verifique a internet.'); }
+}
+const ehHabitos = () => !!(PLANINFO && PLANINFO.habitos);
+function habBanner(){
+  if(!ehHabitos()) return '';
+  return `<section class="card habban"><b>🌱 Você está no modo hábitos</b><p class="sub" style="margin:6px 0 8px">Em vez de um cardápio, o CheckFit acompanha hábitos saudáveis simples. Você pode editar os hábitos em "Meus ajustes". Para um plano alimentar individual, procure um(a) nutricionista: só esse profissional pode prescrever dieta.</p>
+    <div class="row">${suporteBtn('Olá! Estou no modo hábitos do CheckFit e agora tenho um plano de nutricionista para carregar.', 'Já tenho plano de nutricionista')}</div></section>`;
+}
+
+/* ---------- Posts de cardio e WOD (cartão, adesivo, foto) ---------- */
+function cartaoPor(kind, ref, mostrar){
+  if(kind === 'treino') return cartaoTreino(ref);
+  if(kind === 'cardio') return cartaoCardio(ref);
+  if(kind === 'wod') return cartaoWod(ref);
+  return cartaoDia(ref, mostrar);
+}
+const presTxt = () => { const n = sequencia().n; return n + (n === 1 ? ' dia' : ' dias'); };
+async function cartaoCardio(ini){
+  const D = cardioPostDados(ini); if(!D) throw new Error('sem cardio'); const t = D.tr;
+  const cards = [['relogio', t.min + ' min', 'de ' + D.nome.toLowerCase()], ['emo:🔥', fmt(t.kcal || 0) + ' kcal', 'gastas (estimativa)']];
+  cards.push(t.dist ? ['sil:📍', String(t.dist).replace('.', ',') + ' km', 'percorridos'] : ['checkq', INT[t.i == null ? 1 : t.i], 'intensidade']);
+  cards.push(['cal', presTxt(), 'de presença']);
+  return cvMontar('CARDIO CONCLUÍDO', dataCap(D.date), [{t:'hero', ic:t.t === 'bike' ? 'sil:🚴' : t.t === 'remo' ? 'sil:🚣' : t.t === 'caminhada' ? 'sil:🚶' : 'sil:🏃', titulo:D.nome, sub:D.extra}, {t:'grade', c:cards}, {t:'frase', frase:t.min >= 45 ? 'Cada minuto conta.' : 'Feito é melhor que perfeito.', nome:nomeCurto()}], false);
+}
+async function cartaoWod(ini){
+  const D = wodPostDados(ini); if(!D) throw new Error('sem wod'); const w = D.w, t = D.tr;
+  const bl = [{t:'hero', ic:'sil:🏋️', titulo:w.bench || 'WOD do dia', sub:wodFmtN(w.fmt) + (w.fmt === 'forca' && w.res.lift ? ' · ' + w.res.lift : '')},
+    {t:'grade', c:[['checkq', wodRes(w), 'resultado'], ['sil:💪', w.rx ? 'RX' : 'Adaptado', 'categoria'], ['relogio', t.min + ' min', 'de aula'], ['emo:🔥', presTxt(), 'de presença']]}];
+  if(w.pr) bl.push({t:'faixa', ic:'emo:🏆', rot:'Recorde!', txt:w.pr.replace(/^Novo recorde no /, '')});
+  bl.push({t:'frase', frase:w.pr ? 'Mais forte que ontem.' : 'Sem desculpas. Só suor.', nome:nomeCurto()});
+  return cvMontar('WOD CONCLUÍDO', dataCap(D.date), bl, false);
+}
+/* dados para a faixa e o adesivo completo */
+function adDadosExtra(kind, ref){
+  const pres = presTxt();
+  if(kind === 'cardio'){ const D = cardioPostDados(ref); if(!D) return null; const t = D.tr;
+    return {selo:'CARDIO CONCLUÍDO', titulo:D.nome, sub:dataCap(D.date) + ' · ' + D.extra, st:[['relogio', t.min + ' min', 'de treino'], ['emo:🔥', fmt(t.kcal || 0), 'kcal'], t.dist ? ['sil:📍', String(t.dist).replace('.', ',') + ' km', 'distância'] : ['cal', pres, 'de presença']], faixa:t.dist ? ['cal', '', pres + ' de presença'] : null}; }
+  if(kind === 'wod'){ const D = wodPostDados(ref); if(!D) return null; const w = D.w, t = D.tr;
+    return {selo:'WOD CONCLUÍDO', titulo:w.bench || 'WOD do dia', sub:dataCap(D.date) + ' · ' + wodFmtN(w.fmt), st:[['checkq', wodRes(w), 'resultado'], ['sil:💪', w.rx ? 'RX' : 'Adaptado', 'categoria'], ['relogio', t.min + ' min', 'de aula']], faixa:w.pr ? ['emo:🏆', 'Recorde!', w.pr.replace(/^Novo recorde no /, '')] : ['emo:🔥', '', pres + ' de presença']}; }
+  return null;
+}
+function adBarraExtra(kind, ref){
+  const pres = presTxt();
+  if(kind === 'cardio'){ const D = cardioPostDados(ref); if(!D) return null; const t = D.tr;
+    return {t1:D.nome, t2:D.extra, selo:['CARDIO', 'CONCLUÍDO'], st:[['relogio', t.min + ' min', ''], ['emo:🔥', fmt(t.kcal || 0), 'kcal'], t.dist ? ['sil:📍', String(t.dist).replace('.', ',') + ' km', ''] : ['checkq', INT[t.i == null ? 1 : t.i], ''], ['cal', pres, '']]}; }
+  if(kind === 'wod'){ const D = wodPostDados(ref); if(!D) return null; const w = D.w, t = D.tr;
+    return {t1:'CrossFit', t2:(w.bench || 'WOD do dia') + ' · ' + wodFmtN(w.fmt), selo:['WOD', 'CONCLUÍDO'], st:[['checkq', wodRes(w), ''], ['sil:💪', w.rx ? 'RX' : 'Scaled', ''], ['relogio', t.min + ' min', ''], ['emo:🔥', pres, '']]}; }
+  return null;
 }
 
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
@@ -3608,6 +3898,8 @@ function render(){
   if(S.fullFrom && (S.mode==='app'||S.mode==='rel') && precisaDe() < S.fullFrom){ loadFull(precisaDe()); head(false); mount('carregando', ban+'<div class="card" id="view-carregando"><p class="sub" style="margin:0">Carregando esse período…</p></div>'); return; }
   if(S.mode==='ed' && A.ed){ head(false); mount('ed', ban+edView()); return; }
   if(S.mode==='aj'){ head(false); mount('aj-'+(S.ajKind||'plano'), ban+ajView()); return; }
+  if(S.mode==='cardio'){ head(false); mount('cardio'+(cardioAtivo()?'-run':''), ban+cardioView()); return; }
+  if(S.mode==='wod'){ head(false); mount('wod', ban+wodView()); return; }
   if(S.mode==='diario'){ head(false); mount('diario', ban+jorView()); return; }
   if(S.mode==='semana'){ head(false); mount('semana', ban+semanaView()); setTimeout(()=>semanaPrep(S.semW||'cur'),0); return; }
   if(S.mode==='bio'){ head(false); mount('bio', ban+bioForm()); return; }
@@ -3619,7 +3911,7 @@ function render(){
   S.lastView='app';
   engVerifica();
   document.getElementById('navbar').hidden = !(S.tab==='inicio'||S.tab==='evol');
-  bnv.innerHTML=bnavHTML(); bnv.hidden=false; document.body.classList.add('hasnav');
+  bnv.innerHTML=bnavHTML(); bnv.hidden=false; document.body.classList.add('hasnav'); document.body.classList.toggle('hab', ehHabitos());
   app.innerHTML = ban + renewBanner() + (S.tab==='planos'?planosView():S.tab==='perfil'?perfilView():S.tab==='evol'?evolView():viewDay()) + plusSheet() + foodSheet() + celeHTML() + postSheet();
   if(active){const el=document.getElementById(active); if(el && el.tagName==='INPUT') el.focus();}
 }
@@ -3643,9 +3935,9 @@ function trainCard(date,c){
   const opts=Object.entries(ACTS).map(([k,a])=>`<option value="${k}"${k===tf.t?' selected':''}>${a.n}</option>`).join('');
   return `<section class="card train" aria-label="Treinos">
    <div class="thead"><div><h2>Treinos e cardio</h2><div class="sub">${tr.list.length?`${tr.list.length} atividade(s) · ${fmt(tr.min)} min`:'Nenhum treino registrado neste dia.'}</div></div><div class="fbig num">−${fmt(tr.kcal)}<span> kcal</span></div></div>
-   ${tr.list.length?`<div class="tlist">${tr.list.map((t,i)=>`<div class="trow"><b>${t.sess?'Musculação · '+esc(S.treino?lbl(t.f||''):'treino '+(t.f||'')):(ACTS[t.t]||ACTS.outro).n}<small>${fmt(t.min)} min · ${INT[t.i==null?1:t.i]}</small></b><span class="k num">−${fmt(t.kcal)} kcal</span><button class="x" id="rt-${i}" data-act="rmtrain" data-i="${i}" aria-label="Remover treino">✕</button></div>`).join('')}</div>`:''}
+   ${tr.list.length?`<div class="tlist">${tr.list.map((t,i)=>`<div class="trow"><b>${t.sess?'Musculação · '+esc(S.treino?lbl(t.f||''):'treino '+(t.f||'')):(ACTS[t.t]||ACTS.outro).n}<small>${fmt(t.min)} min · ${t.wod?esc(wodFmtN(t.wod.fmt)+(t.wod.bench?' '+t.wod.bench:'')+' · '+wodRes(t.wod)+(t.wod.rx?' · RX':'')):t.cardio&&t.vel?String(t.vel).replace('.',',')+' km/h'+(t.incl?' · '+t.incl+'%':'')+(t.dist?' · '+String(t.dist).replace('.',',')+' km':''):INT[t.i==null?1:t.i]}</small></b><span class="k num">−${fmt(t.kcal)} kcal</span>${t.cardio||t.wod?`<button class="x" data-act="${t.wod?'posttreinox':'posttreinox'}" data-k="${t.wod?'wod':'cardio'}" data-ini="${t.ini}" aria-label="Postar">📸</button>`:''}<button class="x" id="rt-${i}" data-act="rmtrain" data-i="${i}" aria-label="Remover treino">✕</button></div>`).join('')}</div>`:''}
    ${tr.kg?'':'<div class="banner">Registre seu peso no cartão Peso para calcular o gasto dos treinos.</div>'}
-   <div class="tquick">${S.treino?'':'<button class="chip" id="tq-musc" data-act="tquick" data-t="musculacao">+ Musculação 1h</button>'}<button class="chip" id="tq-beach" data-act="tquick" data-t="beach">+ Beach tennis 1h</button><button class="chip" id="tq-walk" data-act="tquick" data-t="caminhada">+ Caminhada 1h (6 km/h)</button></div>
+   <div class="tquick"><button class="chip" id="tq-cardio" data-act="copen">▶ Cronômetro de cardio</button><button class="chip" id="tq-wod" data-act="wopen">🔥 WOD de CrossFit</button>${S.treino?'':'<button class="chip" id="tq-musc" data-act="tquick" data-t="musculacao">+ Musculação 1h</button>'}<button class="chip" id="tq-beach" data-act="tquick" data-t="beach">+ Beach tennis 1h</button><button class="chip" id="tq-walk" data-act="tquick" data-t="caminhada">+ Caminhada 1h (6 km/h)</button></div>
    <form class="tform"><select id="tt" aria-label="Atividade">${opts}</select><input id="tm" inputmode="numeric" value="${tf.min||''}" placeholder="min" aria-label="Duração em minutos"><select id="ti" aria-label="Intensidade">${INT.map((n,i)=>`<option value="${i}"${i===tf.i?' selected':''}>${n}</option>`).join('')}</select>
    <div class="go"><span class="tprev" id="tprev">${tprevText()}</span><button type="submit">Adicionar treino</button></div></form>
   </section>`;
@@ -3908,6 +4200,9 @@ document.addEventListener('click',e=>{
   if(/^j(or|back|tag|fil|save|cancel|cartatog|prazo|edit|del|apoiook|reload|carta|pdf|pdfshare|img|imgclose|imgshare)$/.test(a)){ jorAct(a,b); return; }
   if(a==='tsom'){ audioUnlock(); if(S.prof.somDesc === false){ S.prof.somDesc = true; saveProf(); } S.somTip = true; render(); setTimeout(beep, 150); return; }
   if(a==='tsomoff'){ S.prof.somDesc = false; S.somTip = false; saveProf(); render(); return; }
+  if(/^c(open|back|set|start|pause|adj|fin|desc)$/.test(a)){ cardioAct(a,b); return; }
+  if(/^w(open|back|bench|fmt|rx|int|save|lift|liftx|liftsave)$/.test(a)){ wodAct(a,b); return; }
+  if(a==='posttreinox'){ postAbrir(b.dataset.k, String(b.dataset.ini)); return; }
   if(/^post(dia|treino|close|m|share|modo|copy|pos)$/.test(a)){ postAct(a,b); return; }
   if(a==='btab'){setTab(b.dataset.v); return;}
   if(a==='celeok'){(S.cele||[]).shift(); render(); return;}
@@ -3994,7 +4289,7 @@ document.addEventListener('submit',e=>{ if(e.target.id==='medform'){ e.preventDe
 document.addEventListener('change',e=>{ if(e.target.id==='bio-sexo'){ const m=document.getElementById('bio-sexomsg'); if(m) m.hidden=!!e.target.value; } if(e.target.id==='medsel'){ S.medEx=e.target.value; render(); } if(e.target.id==='biosel'){ S.bioEx=e.target.value; render(); } if(e.target.id==='bio-relsel'){ S.bioRel=e.target.value; S.relPdf=null; S.pdfNome='Bioimpedancia-CheckFit-'+e.target.value.split('-').reverse().join('-')+'.pdf'; render(); } });
 document.addEventListener('input',e=>{ if(e.target.id==='rel-nota') relSetNota(e.target.value); });
 document.addEventListener('click',e=>{ const s=e.target.closest('details.medd:not(.bemd) > summary'); if(s) S.medOpen=!s.parentElement.open; const bm=e.target.closest('details[data-bem] > summary'); if(bm) S.bemOpen=!bm.parentElement.open; const bp=e.target.closest('#bio-pdfd > summary'); if(bp){ S.bioPdfOpen=!bp.parentElement.open; setTimeout(render,0); } const q=e.target.closest('details[data-aj] > summary'); if(q) S.ajOpen=q.parentElement.open?null:q.parentElement.dataset.aj; });
-document.addEventListener('input',e=>{ const t=e.target; if(S.food && foodInput(t)) return; if(S.mode==='diario' && jorInput(t)) return;
+document.addEventListener('input',e=>{ const t=e.target; if(S.food && foodInput(t)) return; if(S.mode==='diario' && jorInput(t)) return; if(S.mode==='cardio' && cardioInput(t)) return; if(S.mode==='wod' && wodInput(t)) return;
   if(t.id==='ajtn'||t.id==='ajtq') tacoAuto(document.getElementById('ajtn'),document.getElementById('ajtq'),document.getElementById('ajtk'));
   const mo=t.id && t.id.match(/^ajo[nq](\d+)$/); if(mo) tacoAuto(document.getElementById('ajon'+mo[1]),document.getElementById('ajoq'+mo[1]),document.getElementById('ajok'+mo[1])); });
 document.addEventListener('change',e=>{ const t=e.target, m=t.id && t.id.match(/^xn-(.+)$/); if(!m) return; const i=tacoPorNome(t.value), k=document.getElementById('xk-'+m[1]); if(i>=0 && k && !k.value){ t.value=TACO[i][0]+' (100 g)'; k.value=TACO[i][2]; } });
