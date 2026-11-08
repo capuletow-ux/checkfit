@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>try{if(navigator.standalone||matchMedia("(display-mode: standalone)").matches)document.documentElement.classList.add("pwa")}catch(e){}</script>
 <title>CheckFit</title>
 <meta name="theme-color" content="#F2F4F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#071E28" media="(prefers-color-scheme: dark)">
@@ -509,6 +510,11 @@ body.hab .mk,body.hab .ik,body.hab .hero .bar{display:none}
 .psw{flex:0 0 42px;height:26px;border-radius:13px;background:var(--line);position:relative;transition:background .2s}
 .psw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s}
 .pusho.on .psw{background:var(--accent)}.pusho.on .psw::after{left:19px}
+
+html.pwa,html.pwa body{height:100%;overflow:hidden;overscroll-behavior:none}
+html.pwa body{padding-bottom:0}
+html.pwa .wrap{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+@media print{html.pwa,html.pwa body{height:auto;overflow:visible}html.pwa .wrap{position:static;overflow:visible}}
 </style>
 </head>
 <body>
@@ -3741,6 +3747,13 @@ function pushAct(a, b){
   return false;
 }
 
+/* ---------- App instalado: rolagem dentro do conteúdo ---------- */
+(function(){
+  if(!document.documentElement.classList.contains('pwa')) return;
+  const W = () => document.querySelector('.wrap'), orig = window.scrollTo.bind(window);
+  window.scrollTo = function(a, b){ const w = W(); if(!w) return orig(a, b); if(a && typeof a === 'object') w.scrollTo(a); else w.scrollTo(a || 0, b || 0); };
+  try{ Object.defineProperty(window, 'scrollY', {configurable:true, get:() => { const w = W(); return w ? w.scrollTop : 0; }}); }catch(e){}
+})();
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
 const WD_LONG = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 const slug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'ex';
