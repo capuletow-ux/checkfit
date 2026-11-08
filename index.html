@@ -514,6 +514,30 @@ html.pwa,html.pwa body{height:100%;overflow:hidden;overscroll-behavior:none}
 html.pwa body{padding-bottom:0}
 html.pwa .wrap{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
 @media print{html.pwa,html.pwa body{height:auto;overflow:visible}html.pwa .wrap{position:static;overflow:visible}}
+
+.remlist{display:flex;flex-direction:column;margin-top:8px}
+.remrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:11px 0;color:inherit;font:inherit;cursor:pointer;min-height:52px}
+.remrow:first-child{border-top:0}
+.remck{flex:0 0 28px;height:28px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--accent-ink);font-size:15px}
+.remrow.ok .remck{background:var(--accent);border-color:var(--accent)}
+.remrow.late .remck{border-color:var(--warn)}
+.remh{flex:0 0 46px;font-weight:800;color:var(--muted)}
+.remn{flex:1;min-width:0}.remn b{display:block;font-size:15px;overflow-wrap:anywhere}.remn small{display:block;color:var(--muted);font-size:12.5px}
+.remrow.ok .remn b{text-decoration:line-through;text-decoration-color:var(--muted);opacity:.75}
+.remest{margin-top:8px}
+.remli{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line)}.remli:first-child{border-top:0}
+.remli>span:first-child{font-size:20px;line-height:1.2}.remli b{display:block}.remli small{display:block;color:var(--muted);font-size:12.5px}
+.remcads{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.remcad{border:1px solid var(--line);border-radius:14px;padding:12px}
+.remcadh{display:flex;align-items:center;gap:10px}
+.remic{flex:0 0 40px;height:40px;border-radius:12px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:20px}
+.remtags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.remtag{font-size:12.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:var(--surface2);color:var(--fg)}
+.remtag.warn{background:var(--warn-soft);color:var(--warn)}.remtag.good{background:var(--accent-soft);color:var(--accent)}
+.remhs{display:flex;flex-direction:column;gap:8px}
+.remhi{display:flex;gap:8px;align-items:center}.remhi input{flex:1}
+#view-rem{display:flex;flex-direction:column;gap:10px}
+#remform .opts{padding:0}
 </style>
 </head>
 <body>
@@ -1718,7 +1742,7 @@ function heroInicio(date, c){
     <div class="row1" style="margin-top:4px">${pill(DAY_STATUS, c.status)}<span class="sub num">${c.extraK ? `extras ${fmt(c.extraK)} kcal` : ''}${c.extraK && c.tr.kcal ? ' · ' : ''}${c.tr.kcal ? `treinos −${fmt(c.tr.kcal)} kcal` : ''}</span></div>
     <div class="bar"><i class="${over ? 'over' : ''}" style="width:${pct}%"></i></div>
     <button class="primary" id="allplan" data-act="allplan">${ehHabitos() ? 'Cumpri todos os hábitos de hoje' : 'Segui o plano em todas as refeições'}</button>
-  </section>${proximaRefeicao(date)}${bemCard(date)}${jorCard(date)}${desafioCard(date)}${diaPostCard(date)}`;
+  </section>${proximaRefeicao(date)}${remCard(date)}${bemCard(date)}${jorCard(date)}${desafioCard(date)}${diaPostCard(date)}`;
 }
 function proximaRefeicao(date){
   if(date !== today() || !PLAN.length) return '';
@@ -1743,6 +1767,7 @@ function plusSheet(){
     ${S.treino ? b('plusgo', '🏋️', 'Treino de musculação', 'abrir o treino do dia', 'data-v="musc"') : ''}
     ${b('plusgo', '🏃', 'Outra atividade', 'corrida, beach tennis, caminhada…', 'data-v="ativ"')}
     ${b('plusgo', '⚖️', 'Peso', 'registrar o peso de hoje', 'data-v="peso"')}
+    ${b('remopen', '💊', 'Suplementos e remédios', remLista().length ? 'marcar o que tomou hoje' : 'cadastrar e receber lembretes', '')}
     ${b('plusgo', '📏', 'Medidas', 'cintura, braço, coxa…', 'data-v="med"')}
     ${b('foodopen', '🔍', 'Buscar alimento', 'calorias pela tabela TACO', '')}
     ${b('bionova', '📊', 'Bioimpedância', 'dados da balança ou do exame', '')}
@@ -1777,7 +1802,7 @@ function suporteBtn(txt, label){
   const num = z.length <= 11 ? '55' + z : z;
   return `<a class="ghost relbtnl" style="min-height:44px" href="https://wa.me/${num}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">${label || 'Falar no WhatsApp'}</a>`;
 }
-function planosView(){ return habBanner() + planosView0(); }
+function planosView(){ return habBanner() + planosView0() + remPlanos(); }
 function planosView0(){
   const pOrig = S.planOrig || 'prof', tOrig = S.trnOrig || 'prof', nome = (S.cli && S.cli.nome) || '';
   let h = `<section class="card" id="view-planos"><h2>Meus planos</h2><p class="sub" style="margin:4px 0 0">Seu plano alimentar e sua ficha de treino. Os planos do profissional são carregados pelo CheckFit e não podem ser alterados aqui.</p></section>`;
@@ -2392,7 +2417,7 @@ function foodInput(t){
 function temRegistro(d){
   if(!d) return false; if(d._h) return !!(S.hist && S.hist[d._hd] && S.hist[d._hd].p);
   const ms = d.meals || {}; if(Object.values(ms).some(r => r && (r.st || r.skip || (r.items && Object.values(r.items).some(i => i && i.on)) || (r.extras && r.extras.length)))) return true;
-  return !!((Array.isArray(d.agua) && d.agua.length) || +d.peso > 0 || (d.treinos && d.treinos.length) || (d.musc && d.musc.length) || d.med || d.bio || d.bem);
+  return !!((Array.isArray(d.agua) && d.agua.length) || +d.peso > 0 || (d.treinos && d.treinos.length) || (d.musc && d.musc.length) || d.med || d.bio || d.bem || (d.tomas && Object.keys(d.tomas).length));
 }
 function flagsDia(date){
   const d = S.days[date];
@@ -3655,8 +3680,8 @@ function instAct(a){
 
 /* ---------- Notificações (Firebase Cloud Messaging) ---------- */
 const VAPID = 'BNQMNYKWRkMPsJtQlD6hXFqNBF6c1MNySITMGPfheFRAK-08oL_xb_SKJQ_ML9e4o1uxLA9wJiVni1YBqMIheN8';
-const PUSH_PADRAO = {refeicoes:true, agua:false, peso:false, pesoHora:'07:30', seq:true, carta:true, descanso:true};
-const PUSH_OPC = [['descanso', '⏱️', 'Fim do descanso no treino', 'Avisa quando acabar o intervalo, mesmo com o celular bloqueado'], ['refeicoes', '🍽️', 'Horários das refeições', 'No horário de cada refeição do seu plano, se ainda não marcou'], ['agua', '💧', 'Água', 'Às 10h, 13h, 16h e 19h, se a meta ainda não foi batida'], ['peso', '⚖️', 'Registrar o peso', 'Uma vez por dia, no horário que você escolher'], ['seq', '🔥', 'Sequência em risco', 'Às 20h30, se você ainda não registrou nada no dia'], ['carta', '💌', 'Cartas para o futuro', 'No dia em que uma carta sua chegar']];
+const PUSH_PADRAO = {refeicoes:true, agua:false, peso:false, pesoHora:'07:30', seq:true, carta:true, descanso:true, rem:true, remNome:false, remRep:true};
+const PUSH_OPC = [['descanso', '⏱️', 'Fim do descanso no treino', 'Avisa quando acabar o intervalo, mesmo com o celular bloqueado'], ['rem', '💊', 'Suplementos e remédios', 'No horário de cada item, se ainda não marcou como tomado'], ['refeicoes', '🍽️', 'Horários das refeições', 'No horário de cada refeição do seu plano, se ainda não marcou'], ['agua', '💧', 'Água', 'Às 10h, 13h, 16h e 19h, se a meta ainda não foi batida'], ['peso', '⚖️', 'Registrar o peso', 'Uma vez por dia, no horário que você escolher'], ['seq', '🔥', 'Sequência em risco', 'Às 20h30, se você ainda não registrou nada no dia'], ['carta', '💌', 'Cartas para o futuro', 'No dia em que uma carta sua chegar']];
 const pushSuporta = () => !!(window.firebase && firebase.messaging && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window);
 const pushBloqueadoIOS = () => ehIOS() && !ehStandalone();
 const pushAtivo = () => !!(S.push && S.push.ativo && (S.push.tokens || []).length && window.Notification && Notification.permission === 'granted');
@@ -3668,11 +3693,12 @@ async function pushCarregar(){
 }
 function pushDados(){
   const cartas = Object.values((S.prof.jor || {}).cartas || {}).filter(c => !c.aberta && c.abrir).map(c => c.abrir);
-  return {tz:-new Date().getTimezoneOffset(), refeicoes:PLAN.filter(m => /^\d{1,2}:\d{2}$/.test(m.time || '')).map(m => ({id:m.id, h:m.time, n:m.name})), cartas, aguaMeta:WATER_GOAL};
+  const remedios = (typeof remLista === 'function' ? remLista() : []).map(m => ({id:m.id, n:m.n, t:m.tipo, dose:m.dose || '', hs:(m.hs || []).filter(h => /^\d{2}:\d{2}$/.test(h)), d:m.dias || 'todo', wd:m.wd || [], ini:m.ini || '', ae:((typeof remAcaba === 'function' && remAcaba(m)) || {}).data || ''}));
+  return {remedios, tz:-new Date().getTimezoneOffset(), refeicoes:PLAN.filter(m => /^\d{1,2}:\d{2}$/.test(m.time || '')).map(m => ({id:m.id, h:m.time, n:m.name})), cartas, aguaMeta:WATER_GOAL};
 }
 async function pushSync(forca){
   if(!S.push || !S.push.ativo || !S.planReady) return;
-  const d = pushDados(), atual = JSON.stringify({tz:S.push.tz, refeicoes:S.push.refeicoes, cartas:S.push.cartas, aguaMeta:S.push.aguaMeta});
+  const d = pushDados(), atual = JSON.stringify({remedios:S.push.remedios, tz:S.push.tz, refeicoes:S.push.refeicoes, cartas:S.push.cartas, aguaMeta:S.push.aguaMeta});
   if(!forca && atual === JSON.stringify(d)) return;
   Object.assign(S.push, d); try{ await pushRef().set({...d, prox:0}, {merge:true}); }catch(e){}
 }
@@ -3734,7 +3760,7 @@ function pushCard(){
   else if(pushBloqueadoIOS()) corpo = `<p class="sub" style="margin:4px 0 8px">No iPhone, as notificações funcionam com o CheckFit instalado na tela inicial e aberto pelo ícone.</p><button class="primary" data-act="instgo">Como instalar</button>`;
   else if(window.Notification && Notification.permission === 'denied') corpo = '<p class="sub" style="margin:4px 0 0">As notificações estão bloqueadas. Libere em <b>Ajustes › Notificações › CheckFit</b> e volte aqui.</p>';
   else if(!pushAtivo()) corpo = `<p class="sub" style="margin:4px 0 8px">Receba o aviso de fim do descanso e lembretes do dia, mesmo com o celular bloqueado.</p><button class="primary" id="push-on" data-act="pushon" ${S.pushBusy ? 'disabled' : ''}>${S.pushBusy ? 'Ativando…' : '🔔 Ativar notificações'}</button>`;
-  else corpo = `<div class="pushl">${PUSH_OPC.map(([k, ic, n, d]) => `<button class="pusho${Lp[k] ? ' on' : ''}" data-act="pushpref" data-k="${k}" aria-pressed="${!!Lp[k]}"><span class="pic">${ic}</span><span><b>${n}</b><small>${d}</small></span><span class="psw" aria-hidden="true"></span></button>${k === 'peso' && Lp.peso ? `<div class="opts" style="padding:0 0 6px 46px" role="group" aria-label="Horário do peso">${['06:30', '07:30', '08:30', '09:30'].map(h => `<button class="chip" data-act="pushhora" data-v="${h}" aria-pressed="${Lp.pesoHora === h}">${h}</button>`).join('')}</div>` : ''}`).join('')}</div>
+  else corpo = `<div class="pushl">${PUSH_OPC.map(([k, ic, n, d]) => `<button class="pusho${Lp[k] ? ' on' : ''}" data-act="pushpref" data-k="${k}" aria-pressed="${!!Lp[k]}"><span class="pic">${ic}</span><span><b>${n}</b><small>${d}</small></span><span class="psw" aria-hidden="true"></span></button>${k === 'rem' && Lp.rem ? `<div class="opts" style="padding:0 0 6px 46px" role="group" aria-label="Opções dos lembretes de suplementos e remédios"><button class="chip" data-act="pushpref" data-k="remNome" aria-pressed="${!!Lp.remNome}">Mostrar o nome</button><button class="chip" data-act="pushpref" data-k="remRep" aria-pressed="${!!Lp.remRep}">Lembrar de novo em 30 min</button></div>` : ''}${k === 'peso' && Lp.peso ? `<div class="opts" style="padding:0 0 6px 46px" role="group" aria-label="Horário do peso">${['06:30', '07:30', '08:30', '09:30'].map(h => `<button class="chip" data-act="pushhora" data-v="${h}" aria-pressed="${Lp.pesoHora === h}">${h}</button>`).join('')}</div>` : ''}`).join('')}</div>
     <div class="row" style="margin-top:10px"><button class="ghost" id="push-test" data-act="pushtest">Enviar teste</button><button class="linkbtn" data-act="pushoff">Desativar neste aparelho</button></div>`;
   return `<section class="card" aria-label="Notificações"><h2>🔔 Notificações</h2>${corpo}</section>`;
 }
@@ -3761,6 +3787,164 @@ function pushAct(a, b){
   window.scrollTo = function(a, b){ const w = W(); if(!w) return orig(a, b); if(a && typeof a === 'object') w.scrollTo(a); else w.scrollTo(a || 0, b || 0); };
   try{ Object.defineProperty(window, 'scrollY', {configurable:true, get:() => { const w = W(); return w ? w.scrollTop : 0; }}); }catch(e){}
 })();
+/* ---------- Suplementos e remédios: cadastro, marcação diária, estoque, adesão ---------- */
+const REM_TIPOS = {remedio:['💊', 'Remédio'], suplemento:['🧴', 'Suplemento'], vitamina:['🍊', 'Vitamina']};
+const REM_WD = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const REM_SUG = ['Creatina', 'Whey protein', 'Vitamina D', 'Ômega 3', 'Multivitamínico', 'Magnésio', 'Vitamina C', 'Vitamina B12', 'Ferro', 'Colágeno', 'Cafeína', 'Probiótico'];
+const remLista = () => (S.prof.remedios || []).filter(m => m && m.id);
+const remSt = () => S.rem = S.rem || {ed:null, conf:false, msg:''};
+const remHm = h => /^\d{2}:\d{2}$/.test(h || '');
+function remHoje(m, date){
+  if(m.ini && date < m.ini) return false;
+  if(m.dias === 'semana') return (m.wd || []).includes(parse(date).getDay());
+  if(m.dias === 'alterna'){ const n = Math.round((parse(date) - parse(m.ini || date)) / 864e5); return n % 2 === 0; }
+  return true;
+}
+const remTomas = date => (S.days[date] && S.days[date].tomas) || {};
+function remDoses(date){
+  const t = remTomas(date), out = [];
+  remLista().forEach(m => { if(remHoje(m, date)) (m.hs || []).filter(remHm).forEach(h => out.push({m, h, k:m.id + '@' + h, ok:!!t[m.id + '@' + h]})); });
+  return out.sort((a, b) => a.h < b.h ? -1 : a.h > b.h ? 1 : a.m.n.localeCompare(b.m.n));
+}
+function remFreq(m){ return m.dias === 'semana' ? (m.wd || []).length / 7 : m.dias === 'alterna' ? 0.5 : 1; }
+function remAcaba(m){
+  if(m.est == null || m.est === '') return null;
+  const dia = (m.hs || []).filter(remHm).length * (+m.porDose || 1) * remFreq(m); if(!(dia > 0)) return null;
+  const dias = Math.max(0, Math.floor(+m.est / dia)); return {dias, data:addDays(today(), dias)};
+}
+function remAdesao(m, n){
+  n = n || 30; let prog = 0, ok = 0;
+  for(let i = 1; i <= n; i++){ const d = addDays(today(), -i); if((m.criado || '') > d || (m.ini && m.ini > d) || !S.days[d] || S.days[d]._h) continue; if(!remHoje(m, d)) continue; const t = remTomas(d); (m.hs || []).filter(remHm).forEach(h => { prog++; if(t[m.id + '@' + h]) ok++; }); }
+  return prog ? Math.round(ok / prog * 100) : null;
+}
+function remDiasTxt(m){
+  if(m.dias === 'semana') return (m.wd || []).length === 7 ? 'Todo dia' : (m.wd || []).slice().sort().map(i => REM_WD[i]).join(', ') || 'Nenhum dia';
+  if(m.dias === 'alterna') return 'Dia sim, dia não';
+  return 'Todo dia';
+}
+function remMarcar(date, k){
+  const m = remLista().find(x => x.id === k.split('@')[0]); if(!m) return;
+  const d = S.days[date] || (S.days[date] = {meals:{}}); d.tomas = d.tomas || {};
+  const ia = !d.tomas[k];
+  if(ia) d.tomas[k] = Date.now(); else delete d.tomas[k];
+  if(m.est != null && m.est !== ''){ m.est = Math.max(0, +m.est + (ia ? -1 : 1) * (+m.porDose || 1)); saveProf(); }
+  save(date); try{ pushSync(); }catch(e){}
+  if(ia){ const r = remDoses(date); if(r.length && r.every(x => x.ok)) toast('Tudo tomado hoje! 💪'); }
+  render();
+}
+/* cartão do dia (Início) */
+function remCard(date){
+  const L = remLista(); if(!L.length) return '';
+  const ds = remDoses(date), feitos = ds.filter(x => x.ok).length;
+  const alertas = L.map(m => ({m, a:remAcaba(m)})).filter(x => x.a && x.a.dias <= 5);
+  const agora = new Date().toTimeString().slice(0, 5);
+  const linhas = ds.length ? ds.map(x => { const [ic] = REM_TIPOS[x.m.tipo] || REM_TIPOS.suplemento, atras = !x.ok && date === today() && x.h < agora;
+    return `<button class="remrow${x.ok ? ' ok' : ''}${atras ? ' late' : ''}" data-act="remtoma" data-d="${date}" data-k="${esc(x.k)}" aria-pressed="${x.ok}"><span class="remck" aria-hidden="true">${x.ok ? '✓' : ''}</span><span class="num remh">${x.h}</span><span class="remn"><b>${ic} ${esc(x.m.n)}</b>${x.m.dose ? `<small>${esc(x.m.dose)}</small>` : ''}</span>${atras ? '<span class="pill s-warn">pendente</span>' : ''}</button>`; }).join('')
+    : `<p class="sub" style="margin:4px 0 0">Nada programado para ${date === today() ? 'hoje' : 'este dia'}.</p>`;
+  return `<section class="card" id="remcard" aria-label="Suplementos e remédios"><h2>Suplementos e remédios</h2><div class="sub">${ds.length ? `${feitos} de ${ds.length} ${ds.length === 1 ? 'tomado' : 'tomados'}` : 'Hoje'}</div>
+    <div class="remlist">${linhas}</div>
+    ${alertas.map(x => `<div class="banner remest">📦 <b>${esc(x.m.n)}</b> ${x.a.dias === 0 ? 'acabou pelas suas marcações.' : `dura mais ${x.a.dias} ${x.a.dias === 1 ? 'dia' : 'dias'}. Hora de repor.`} <button class="linkbtn" data-act="remedit" data-id="${esc(x.m.id)}">Atualizar estoque</button></div>`).join('')}
+    <button class="linkbtn" data-act="remopen" style="margin-top:8px">Gerenciar itens</button>
+  </section>`;
+}
+/* seção em Planos */
+function remPlanos(){
+  const L = remLista();
+  return `<section class="card" aria-label="Suplementos e remédios"><div class="thead"><div><h2>Suplementos e remédios</h2><div class="sub">${L.length ? L.length + (L.length === 1 ? ' item cadastrado' : ' itens cadastrados') : 'Vitaminas, suplementos e remédios do dia a dia'}</div></div></div>
+    ${L.length ? `<div class="lines" style="margin-top:8px">${L.map(m => `<div class="remli"><span>${(REM_TIPOS[m.tipo] || REM_TIPOS.suplemento)[0]}</span><span><b>${esc(m.n)}</b><small>${esc([m.dose, (m.hs || []).join(' · '), remDiasTxt(m)].filter(Boolean).join(' · '))}</small></span></div>`).join('')}</div>` : '<p class="sub" style="margin:6px 0 0">Cadastre o que você toma e o CheckFit lembra na hora certa.</p>'}
+    <div class="row" style="margin-top:10px"><button class="primary" id="rem-plan" data-act="remopen">${L.length ? 'Gerenciar' : 'Cadastrar'}</button></div></section>`;
+}
+/* tela de cadastro */
+function remNovo(){ return {id:'', n:'', tipo:'suplemento', dose:'', hs:['08:00'], dias:'todo', wd:[1, 2, 3, 4, 5], ini:today(), obs:'', est:null, porDose:1, estOn:false}; }
+function remLer(){
+  const E = remSt().ed; if(!E) return; const v = id => { const el = document.getElementById(id); return el ? el.value : null; };
+  if(v('rm-n') != null) E.n = v('rm-n').trim().slice(0, 60);
+  if(v('rm-dose') != null) E.dose = v('rm-dose').trim().slice(0, 60);
+  if(v('rm-obs') != null) E.obs = v('rm-obs').trim().slice(0, 140);
+  if(v('rm-ini') != null && v('rm-ini')) E.ini = v('rm-ini');
+  E.hs = E.hs.map((h, i) => { const x = v('rm-h-' + i); return x != null ? x : h; });
+  if(v('rm-est') != null){ const n = parseFloat(String(v('rm-est')).replace(',', '.')); E.est = isFinite(n) ? n : null; }
+  if(v('rm-pd') != null){ const n = parseFloat(String(v('rm-pd')).replace(',', '.')); E.porDose = n > 0 ? n : 1; }
+}
+function remForm(){
+  const E = remSt().ed, ch = (act, v, l, on) => `<button type="button" class="chip" data-act="${act}" data-v="${v}" aria-pressed="${!!on}">${l}</button>`;
+  return `<section class="card" id="view-rem-ed"><div class="bhead"><h2>${E.id ? 'Editar item' : 'Novo item'}</h2><button class="ghost" data-act="remcancel">Cancelar</button></div>
+   <form class="bform" id="remform" onsubmit="return false">
+    <label class="bf" for="rm-n"><span>Nome</span><input id="rm-n" list="rm-sug" value="${esc(E.n)}" placeholder="Ex.: Creatina, Vitamina D, Losartana" autocomplete="off" autocapitalize="sentences"></label>
+    <datalist id="rm-sug">${REM_SUG.map(s => `<option value="${s}">`).join('')}</datalist>
+    <div class="bf"><span>Tipo</span><div class="opts" role="group" aria-label="Tipo">${Object.entries(REM_TIPOS).map(([k, [ic, l]]) => ch('remtipo', k, ic + ' ' + l, E.tipo === k)).join('')}</div></div>
+    <label class="bf" for="rm-dose"><span>Dose <small>opcional</small></span><input id="rm-dose" value="${esc(E.dose)}" placeholder="Ex.: 5 g, 1 cápsula, 20 gotas" autocomplete="off"></label>
+    <div class="bf"><span>Horários</span><div class="remhs">${E.hs.map((h, i) => `<div class="remhi"><input id="rm-h-${i}" type="time" value="${esc(h)}" aria-label="Horário ${i + 1}">${E.hs.length > 1 ? `<button type="button" class="ghost" data-act="remhdel" data-i="${i}" aria-label="Remover horário">✕</button>` : ''}</div>`).join('')}</div>${E.hs.length < 6 ? '<button type="button" class="linkbtn" data-act="remhadd" style="align-self:flex-start">+ Outro horário</button>' : ''}</div>
+    <div class="bf"><span>Dias</span><div class="opts" role="group" aria-label="Dias">${ch('remdias', 'todo', 'Todo dia', E.dias === 'todo')}${ch('remdias', 'semana', 'Dias da semana', E.dias === 'semana')}${ch('remdias', 'alterna', 'Dia sim, dia não', E.dias === 'alterna')}</div>
+     ${E.dias === 'semana' ? `<div class="opts" role="group" aria-label="Dias da semana" style="margin-top:6px">${REM_WD.map((l, i) => ch('remwd', i, l, (E.wd || []).includes(i))).join('')}</div>` : ''}
+     ${E.dias === 'alterna' ? `<label class="bf" for="rm-ini" style="margin-top:6px"><span>Começa em</span><input id="rm-ini" type="date" value="${esc(E.ini || today())}"></label>` : ''}</div>
+    <div class="bf"><span>Estoque <small>opcional: o app avisa quando estiver acabando</small></span><div class="opts" role="group" aria-label="Controlar estoque">${ch('remeston', '0', 'Não controlar', !E.estOn)}${ch('remeston', '1', 'Controlar estoque', E.estOn)}</div>
+     ${E.estOn ? `<div class="bgrid" style="margin-top:6px"><label class="bf" for="rm-est"><span>Quantas unidades tem</span><input id="rm-est" inputmode="decimal" value="${E.est != null ? String(E.est).replace('.', ',') : ''}" placeholder="Ex.: 60"></label><label class="bf" for="rm-pd"><span>Unidades por dose</span><input id="rm-pd" inputmode="decimal" value="${String(E.porDose || 1).replace('.', ',')}"></label></div>` : ''}</div>
+    <label class="bf" for="rm-obs"><span>Observação <small>opcional</small></span><input id="rm-obs" value="${esc(E.obs)}" placeholder="Ex.: em jejum, junto com o almoço" autocomplete="off"></label>
+    ${remSt().msg ? `<p class="banner" role="alert" style="margin:0">${esc(remSt().msg)}</p>` : ''}
+    <button type="button" class="primary" id="rm-salvar" data-act="remsalvar">Salvar</button>
+    ${E.id ? (remSt().conf ? `<div class="banner" style="margin:0">Excluir <b>${esc(E.n)}</b>? Os lembretes param. <div class="row" style="margin-top:8px"><button type="button" class="primary" data-act="remdelok">Excluir</button><button type="button" class="ghost" data-act="remdelno">Manter</button></div></div>` : '<button type="button" class="linkbtn" data-act="remdel" style="align-self:center">Excluir este item</button>') : ''}
+   </form></section>`;
+}
+function remView(){
+  const R = remSt(); if(R.ed) return remForm();
+  const L = remLista();
+  const lista = L.length ? L.map(m => { const [ic, tl] = REM_TIPOS[m.tipo] || REM_TIPOS.suplemento, a = remAcaba(m), ad = remAdesao(m);
+    return `<div class="remcad"><div class="remcadh"><span class="remic">${ic}</span><div style="min-width:0;flex:1"><b>${esc(m.n)}</b><div class="sub">${esc(tl)}${m.dose ? ' · ' + esc(m.dose) : ''}</div></div><button class="ghost" data-act="remedit" data-id="${esc(m.id)}">Editar</button></div>
+      <div class="remtags"><span class="remtag num">🕒 ${(m.hs || []).join(' · ')}</span><span class="remtag">${esc(remDiasTxt(m))}</span>${a ? `<span class="remtag${a.dias <= 5 ? ' warn' : ''}">📦 ${fmt(+m.est)} ${+m.est === 1 ? 'unidade' : 'unidades'} · ${a.dias} ${a.dias === 1 ? 'dia' : 'dias'}</span>` : ''}${ad != null ? `<span class="remtag${ad >= 80 ? ' good' : ''}">${ad}% em dia (30 dias)</span>` : ''}</div>${m.obs ? `<div class="sub" style="margin-top:6px">${esc(m.obs)}</div>` : ''}</div>`; }).join('')
+    : '<p class="sub" style="margin:4px 0 0">Nenhum item ainda. Cadastre suas vitaminas, suplementos e remédios de uso diário.</p>';
+  const notif = !pushAtivo() ? `<div class="banner" style="margin:0">🔔 Para receber os lembretes no celular, ative as notificações em <b>Perfil</b>.</div>` : '';
+  return `<section class="card" id="view-rem"><div class="bhead"><h2>Suplementos e remédios</h2><button class="ghost" data-act="remback">Voltar</button></div>
+    <p class="sub" style="margin:2px 0 0">O CheckFit lembra no horário e você marca quando tomar.</p>
+    <div class="remcads">${lista}</div>
+    <button class="primary" id="rem-novo" data-act="remnovo" style="width:100%">+ Adicionar item</button>
+    ${notif}
+    <p class="tip" style="margin:0">O CheckFit só lembra o que você cadastrou. Ele não indica remédios, suplementos nem doses: siga sempre a orientação do seu médico ou nutricionista.</p></section>`;
+}
+function remSalvar(){
+  remLer(); const R = remSt(), E = R.ed;
+  const hs = [...new Set(E.hs.filter(remHm))].sort();
+  if(!E.n){ R.msg = 'Escreva o nome do item.'; render(); return; }
+  if(!hs.length){ R.msg = 'Escolha pelo menos um horário.'; render(); return; }
+  if(E.dias === 'semana' && !(E.wd || []).length){ R.msg = 'Escolha pelo menos um dia da semana.'; render(); return; }
+  const L = (S.prof.remedios || []).slice(), velho = L.find(x => x.id === E.id);
+  const m = {id:E.id || ('r' + Date.now().toString(36)), n:E.n, tipo:E.tipo, dose:E.dose, hs, dias:E.dias, wd:E.dias === 'semana' ? E.wd.slice().sort() : [], ini:E.dias === 'alterna' ? (E.ini || today()) : (velho && velho.ini) || '', obs:E.obs,
+    est:E.estOn && E.est != null ? E.est : null, porDose:E.porDose || 1, criado:(velho && velho.criado) || today()};
+  if(velho) L[L.indexOf(velho)] = m; else L.push(m);
+  S.prof.remedios = L; saveProf(); try{ pushSync(); }catch(e){}
+  R.ed = null; R.msg = ''; R.conf = false; toast(velho ? 'Item atualizado.' : 'Item cadastrado. ' + (pushAtivo() ? 'O lembrete já está ativo. 🔔' : 'Ative as notificações no Perfil para receber o lembrete.')); render();
+}
+function remIr(){
+  S.mode = 'app'; S.tab = 'inicio'; S.view = 'dia'; S.date = today(); render();
+  setTimeout(() => { const el = document.getElementById('remcard'); if(el) el.scrollIntoView({block:'start', behavior:'smooth'}); }, 250);
+}
+function remHash(){ if(location.hash === '#rem'){ try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){} if(S.ready) remIr(); else S.remIrDepois = true; } }
+window.addEventListener('hashchange', remHash);
+try{ navigator.serviceWorker && navigator.serviceWorker.addEventListener('message', e => { if(e.data && e.data.cf === 'abrir' && /#rem/.test(e.data.url || '')) remIr(); }); }catch(e){}
+remHash();
+function remAct(a, b){
+  const R = remSt();
+  if(a === 'remopen'){ S.plus = false; R.ed = null; R.msg = ''; S.mode = 'rem'; render(); window.scrollTo(0, 0); return true; }
+  if(a === 'remback'){ S.mode = 'app'; render(); window.scrollTo(0, 0); return true; }
+  if(a === 'remtoma'){ remMarcar(b.dataset.d, b.dataset.k); return true; }
+  if(a === 'remnovo'){ R.ed = remNovo(); R.msg = ''; R.conf = false; render(); window.scrollTo(0, 0); return true; }
+  if(a === 'remedit'){ const m = remLista().find(x => x.id === b.dataset.id); if(!m) return true; R.ed = {...remNovo(), ...JSON.parse(JSON.stringify(m)), estOn:m.est != null}; if(!R.ed.wd.length) R.ed.wd = [1, 2, 3, 4, 5]; R.msg = ''; R.conf = false; S.mode = 'rem'; render(); window.scrollTo(0, 0); return true; }
+  if(!R.ed) return false;
+  if(a === 'remcancel'){ R.ed = null; R.msg = ''; R.conf = false; render(); window.scrollTo(0, 0); return true; }
+  remLer();
+  if(a === 'remtipo'){ R.ed.tipo = b.dataset.v; render(); return true; }
+  if(a === 'remhadd'){ const u = R.ed.hs[R.ed.hs.length - 1] || '08:00', h = Math.min(23, +u.slice(0, 2) + 4); R.ed.hs.push(String(h).padStart(2, '0') + u.slice(2)); render(); return true; }
+  if(a === 'remhdel'){ R.ed.hs.splice(+b.dataset.i, 1); render(); return true; }
+  if(a === 'remdias'){ R.ed.dias = b.dataset.v; if(R.ed.dias === 'alterna' && !R.ed.ini) R.ed.ini = today(); render(); return true; }
+  if(a === 'remwd'){ const i = +b.dataset.v, w = R.ed.wd || []; R.ed.wd = w.includes(i) ? w.filter(x => x !== i) : [...w, i]; render(); return true; }
+  if(a === 'remeston'){ R.ed.estOn = b.dataset.v === '1'; render(); return true; }
+  if(a === 'remsalvar'){ remSalvar(); return true; }
+  if(a === 'remdel'){ R.conf = true; render(); return true; }
+  if(a === 'remdelno'){ R.conf = false; render(); return true; }
+  if(a === 'remdelok'){ S.prof.remedios = (S.prof.remedios || []).filter(x => x.id !== R.ed.id); saveProf(); try{ pushSync(); }catch(e){} R.ed = null; R.conf = false; toast('Item excluído.'); render(); window.scrollTo(0, 0); return true; }
+  return false;
+}
+
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
 const WD_LONG = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 const slug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'ex';
@@ -4139,6 +4323,7 @@ function render(){
   if(S.mode==='wod'){ head(false); mount('wod', ban+wodView()); return; }
   if(S.mode==='diario'){ head(false); mount('diario', ban+jorView()); return; }
   if(S.mode==='semana'){ head(false); mount('semana', ban+semanaView()); setTimeout(()=>semanaPrep(S.semW||'cur'),0); return; }
+  if(S.mode==='rem'){ head(false); mount('rem'+(remSt().ed?'-ed':''), ban+remView()); return; }
   if(S.mode==='bio'){ head(false); mount('bio', ban+bioForm()); return; }
   if(S.mode==='biorel'){ head(false); mount('biorel', ban+bioRelView()); const LB=bioList(), dB=(LB.find(z=>z.d===S.bioRel)||LB[LB.length-1]||{}).d; if(dB) setTimeout(()=>bioImgPrep(dB),0); return; }
   if(S.mode==='treino'){ head(false); mount('treino', ban+treinoView()+postSheet()); return; }
@@ -4147,6 +4332,7 @@ function render(){
   const active=document.activeElement && document.activeElement.id;
   S.lastView='app';
   engVerifica();
+  if(S.remIrDepois){ S.remIrDepois=false; setTimeout(remIr,50); }
   document.getElementById('navbar').hidden = !(S.tab==='inicio'||S.tab==='evol');
   bnv.innerHTML=bnavHTML(); bnv.hidden=false; document.body.classList.add('hasnav'); document.body.classList.toggle('hab', ehHabitos());
   app.innerHTML = ban + renewBanner() + (S.tab==='planos'?planosView():S.tab==='perfil'?perfilView():S.tab==='evol'?evolView():viewDay()) + plusSheet() + foodSheet() + celeHTML() + postSheet() + instSheet();
@@ -4441,6 +4627,7 @@ document.addEventListener('click',e=>{
   if(/^w(open|back|bench|fmt|cat|int|save|lift|liftx|liftsave|tgo|tok|tx|tr|tperd)$/.test(a)){ wodAct(a,b); return; }
   if(/^inst(go|no|x)$/.test(a)){ instAct(a); return; }
   if(/^push/.test(a) && pushAct(a,b)) return;
+  if(/^rem/.test(a) && remAct(a,b)) return;
   if(a==='posttreinox'){ postAbrir(b.dataset.k, String(b.dataset.ini)); return; }
   if(/^post(dia|treino|close|m|share|modo|copy|pos)$/.test(a)){ postAct(a,b); return; }
   if(a==='btab'){setTab(b.dataset.v); return;}
