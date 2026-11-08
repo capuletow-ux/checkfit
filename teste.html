@@ -18,7 +18,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;1,800&family=Inter:wght@400;600;700;800&display=swap">
 <style>
@@ -3706,14 +3705,22 @@ async function pushPref(k, v){
   S.push.prefs = {...PUSH_PADRAO, ...(S.push.prefs || {}), [k]:v}; render();
   try{ await pushRef().set({prefs:S.push.prefs, prox:0}, {merge:true}); }catch(e){ toast('Não consegui salvar agora.'); }
 }
-const pushFn = nome => firebase.app().functions('us-central1').httpsCallable(nome);
+/* chama as funções do servidor direto (sem o SDK de functions, que tenta registrar outro service worker do Messaging) */
+const pushFn = nome => async data => {
+  const u = firebase.auth().currentUser; if(!u) throw new Error('entre na sua conta de novo');
+  const tk = await u.getIdToken();
+  const r = await fetch('https://us-central1-dieta-alexandre.cloudfunctions.net/' + nome, {method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer ' + tk}, body:JSON.stringify({data:data || {}})});
+  let j = {}; try{ j = await r.json(); }catch(e){}
+  if(!r.ok || j.error) throw new Error((j.error && j.error.message) || ('servidor respondeu ' + r.status));
+  return {data:j.result};
+};
 async function pushTestar(){
   try{ const r = await pushFn('testar')({}); toast(r.data && r.data.enviados ? 'Teste enviado! Deve chegar em segundos.' : 'Nenhum aparelho recebeu. Desative e ative de novo.'); }
   catch(e){ toast('Falha no teste: ' + ((e && e.message) || e)); }
 }
 /* descanso do treino: agenda no servidor; cancela quando o app está aberto na hora */
 function pushDescanso(seg){
-  if(!pushAtivo() || (S.push.prefs || {}).descanso === false || !firebase.functions) return;
+  if(!pushAtivo() || (S.push.prefs || {}).descanso === false) return;
   try{ pushFn('agendar')({seg:Math.round(seg)}).catch(() => {}); }catch(e){}
 }
 function pushCancelaDescanso(){
