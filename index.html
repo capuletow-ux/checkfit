@@ -16,6 +16,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;1,800&family=Inter:wght@400;600;700;800&display=swap">
 <style>
@@ -497,6 +499,16 @@ body.hab .mk,body.hab .ik,body.hab .hero .bar{display:none}
 .insteps{list-style:none;padding:0;margin:4px 0 14px;display:flex;flex-direction:column;gap:12px}
 .insteps li{display:flex;gap:12px;align-items:flex-start}
 .instic{flex:0 0 44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px}
+
+.pushl{display:flex;flex-direction:column;margin-top:6px}
+.pusho{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 0;color:inherit;font:inherit;cursor:pointer}
+.pusho:last-of-type{border-bottom:0}
+.pusho .pic{flex:0 0 34px;height:34px;border-radius:10px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:18px}
+.pusho b{display:block;font-size:15px}.pusho small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35;margin-top:2px}
+.pusho>span:nth-child(2){flex:1}
+.psw{flex:0 0 42px;height:26px;border-radius:13px;background:var(--line);position:relative;transition:background .2s}
+.psw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s}
+.pusho.on .psw{background:var(--accent)}.pusho.on .psw::after{left:19px}
 </style>
 </head>
 <body>
@@ -656,11 +668,12 @@ function bindUser(user){
   const base=FS.collection('users').doc(user.uid);
   S.db={ doc:p=>{const [c,d]=p.split('/'); return base.collection(c).doc(d);}, collection:p=>base.collection(p) };
   diasBind(user);
+  S.push=null; S.pushLoaded=null; pushCarregar();
   S.unsubs.push(S.db.doc('config/alimentos').onSnapshot(s=>{ S.custom=(s.exists && s.data().lista)||[]; fillFoods(); },()=>{}));
   S.unsubs.push(S.db.doc('config/treino').onSnapshot(s=>{ S.trnOrig = s.exists ? (s.data().origem||'prof') : null; let t=null; if(s.exists){ try{ t=JSON.parse(s.data().json||'null'); }catch(e){} } S.treinoBase=validTreino(t)?t:null; aplicaAjustes(); if(S.ready) render(); },()=>{}));
-  S.unsubs.push(S.db.doc('config/plano').onSnapshot(s=>{ S.planOrig = s.exists ? (s.data().origem||'prof') : null; let p=null; if(s.exists){ try{ p=JSON.parse(s.data().json||'null'); }catch(e){} } S.planBase=validPlan(p)?p:null; aplicaAjustes(); S.planReady=true; if(PLAN.length){ const pi=document.getElementById('planimport'); if(pi) pi.remove(); } render(); },()=>{ S.planReady=true; render(); }));
+  S.unsubs.push(S.db.doc('config/plano').onSnapshot(s=>{ S.planOrig = s.exists ? (s.data().origem||'prof') : null; let p=null; if(s.exists){ try{ p=JSON.parse(s.data().json||'null'); }catch(e){} } S.planBase=validPlan(p)?p:null; aplicaAjustes(); S.planReady=true; try{ pushSync(); }catch(e){} if(PLAN.length){ const pi=document.getElementById('planimport'); if(pi) pi.remove(); } render(); },()=>{ S.planReady=true; render(); }));
   S.unsubs.push(S.db.doc('config/ajustes').onSnapshot(s=>{ let a=null; if(s.exists){ try{ a=JSON.parse(s.data().json||'null'); }catch(e){} } S.aj=ajNorm(a); aplicaAjustes(); if(S.ready) render(); },()=>{}));
-  S.unsubs.push(S.db.doc('config/perfil').onSnapshot(s=>{ S.prof={...PROF_DEF,...(s.exists?s.data():{})}; if(S.ready) render(); },()=>{}));
+  S.unsubs.push(S.db.doc('config/perfil').onSnapshot(s=>{ S.prof={...PROF_DEF,...(s.exists?s.data():{})}; try{ pushSync(); }catch(e){} if(S.ready) render(); },()=>{}));
   render();
 }
 async function init(){
@@ -1689,7 +1702,7 @@ function heroInicio(date, c){
   const nome = ((S.cli && S.cli.nome) || '').split(' ')[0];
   const lin = (ic, v, l, cor) => `<div class="hl"><span class="hi" style="color:${cor}">${ic}</span><b class="num">${v}</b><span class="sub">${l}</span></div>`;
   microCheck(date, c);
-  return cardioBanner() + instCard(date) + engTopo(date) + `<section class="card hero home" aria-label="Resumo do dia">
+  return cardioBanner() + instCard(date) + pushNudge(date) + engTopo(date) + `<section class="card hero home" aria-label="Resumo do dia">
     ${S.date === today() && nome ? `<div class="hello">Olá, ${esc(nome)}!</div>` : ''}
     <div class="hgrid">${ring(m.pct)}<div class="hlist">
       ${ehHabitos() ? '' : lin('🔥', fmt(c.kcal) + ' / ' + fmt(REF), 'kcal', 'var(--fire)')}
@@ -1818,6 +1831,7 @@ function perfilView(){
   const t = temaAtual(), ch = (v, l) => `<button class="chip" data-act="tema" data-v="${v}" aria-pressed="${t === v}">${l}</button>`;
   return `<section class="card" id="view-perfil"><h2>Perfil</h2><div class="sub" style="margin-top:4px">${esc((S.cli && S.cli.nome) || '')} · ${esc((S.user && S.user.email) || '')}</div></section>
    <section class="card"><h2>Aparência</h2><div class="opts" style="padding:8px 0 0" role="group" aria-label="Tema">${ch('auto', 'Automático')}${ch('claro', 'Claro')}${ch('escuro', 'Escuro')}</div><p class="tip" style="margin:8px 0 0">Automático segue o modo claro ou escuro do celular.</p></section>
+   ${pushCard()}
    ${conqCard()}
    ${profileCard()}`;
 }
@@ -3610,7 +3624,7 @@ function instCard(date){
   if(date !== today() || ehStandalone()) return '';
   const disp = S.prof.instDisp; if(disp && addDays(disp, 7) > today()) return '';
   if(!ehIOS() && !INST_EVT) return '';
-  return `<section class="card jcard instcard" aria-label="Instalar o CheckFit"><span class="jci"><img src="icon-192.png" alt="" width="40" height="40" style="border-radius:10px;display:block" onerror="this.replaceWith(document.createTextNode('📲'))"></span><div><b>Instale o CheckFit</b><div class="sub">Abre como app, em tela cheia, direto da tela inicial. Em breve com lembretes.</div></div>
+  return `<section class="card jcard instcard" aria-label="Instalar o CheckFit"><span class="jci"><img src="icon-192.png" alt="" width="40" height="40" style="border-radius:10px;display:block" onerror="this.replaceWith(document.createTextNode('📲'))"></span><div><b>Instale o CheckFit</b><div class="sub">Abre como app, em tela cheia, direto da tela inicial. E com notificações de descanso e lembretes.</div></div>
     <div style="display:flex;flex-direction:column;gap:6px"><button class="primary" id="inst-go" data-act="instgo">${INST_EVT ? 'Instalar' : 'Como instalar'}</button><button class="linkbtn" data-act="instno">Agora não</button></div></section>`;
 }
 function instSheet(){
@@ -3631,6 +3645,99 @@ function instAct(a){
   if(a === 'instgo'){ if(INST_EVT){ const e = INST_EVT; INST_EVT = null; e.prompt(); e.userChoice && e.userChoice.finally(() => render()); } else { S.inst = true; render(); } return true; }
   if(a === 'instno'){ S.prof.instDisp = today(); saveProf(); render(); return true; }
   if(a === 'instx'){ S.inst = false; render(); return true; }
+  return false;
+}
+
+/* ---------- Notificações (Firebase Cloud Messaging) ---------- */
+const VAPID = 'BNQMNYKWRkMPsJtQlD6hXFqNBF6c1MNySITMGPfheFRAK-08oL_xb_SKJQ_ML9e4o1uxLA9wJiVni1YBqMIheN8';
+const PUSH_PADRAO = {refeicoes:true, agua:false, peso:false, pesoHora:'07:30', seq:true, carta:true, descanso:true};
+const PUSH_OPC = [['descanso', '⏱️', 'Fim do descanso no treino', 'Avisa quando acabar o intervalo, mesmo com o celular bloqueado'], ['refeicoes', '🍽️', 'Horários das refeições', 'No horário de cada refeição do seu plano, se ainda não marcou'], ['agua', '💧', 'Água', 'Às 10h, 13h, 16h e 19h, se a meta ainda não foi batida'], ['peso', '⚖️', 'Registrar o peso', 'Uma vez por dia, no horário que você escolher'], ['seq', '🔥', 'Sequência em risco', 'Às 20h30, se você ainda não registrou nada no dia'], ['carta', '💌', 'Cartas para o futuro', 'No dia em que uma carta sua chegar']];
+const pushSuporta = () => !!(window.firebase && firebase.messaging && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window);
+const pushBloqueadoIOS = () => ehIOS() && !ehStandalone();
+const pushAtivo = () => !!(S.push && S.push.ativo && (S.push.tokens || []).length && window.Notification && Notification.permission === 'granted');
+const pushRef = () => FS.collection('lembretes').doc(S.user.uid);
+async function pushCarregar(){
+  if(!S.user || S.pushLoaded === S.user.uid) return; S.pushLoaded = S.user.uid;
+  try{ const s = await pushRef().get(); S.push = s.exists ? s.data() : {}; }catch(e){ S.push = {}; }
+  pushSync(); try{ render(); }catch(e){}
+}
+function pushDados(){
+  const cartas = Object.values((S.prof.jor || {}).cartas || {}).filter(c => !c.aberta && c.abrir).map(c => c.abrir);
+  return {tz:-new Date().getTimezoneOffset(), refeicoes:PLAN.filter(m => /^\d{1,2}:\d{2}$/.test(m.time || '')).map(m => ({id:m.id, h:m.time, n:m.name})), cartas, aguaMeta:WATER_GOAL};
+}
+async function pushSync(forca){
+  if(!S.push || !S.push.ativo || !S.planReady) return;
+  const d = pushDados(), atual = JSON.stringify({tz:S.push.tz, refeicoes:S.push.refeicoes, cartas:S.push.cartas, aguaMeta:S.push.aguaMeta});
+  if(!forca && atual === JSON.stringify(d)) return;
+  Object.assign(S.push, d); try{ await pushRef().set({...d, prox:0}, {merge:true}); }catch(e){}
+}
+async function pushAtivar(){
+  if(!pushSuporta()){ toast('Este aparelho não aceita notificações do app.'); return; }
+  if(pushBloqueadoIOS()){ S.inst = true; render(); return; }
+  S.pushBusy = true; render();
+  try{
+    const perm = await Notification.requestPermission();
+    if(perm !== 'granted'){ toast('Notificações não permitidas. Libere em Ajustes › Notificações › CheckFit.'); S.pushBusy = false; render(); return; }
+    const reg = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
+    const token = await firebase.messaging().getToken({vapidKey:VAPID, serviceWorkerRegistration:reg});
+    if(!token) throw new Error('o aparelho não gerou o código de notificação');
+    try{ localStorage.setItem('cf-push-token', token); }catch(e){}
+    const prefs = {...PUSH_PADRAO, ...((S.push && S.push.prefs) || {})};
+    await pushRef().set({tokens:firebase.firestore.FieldValue.arrayUnion(token), prefs, ativo:true, prox:0}, {merge:true});
+    S.push = {...(S.push || {}), prefs, ativo:true, tokens:[...new Set([...((S.push && S.push.tokens) || []), token])]};
+    await pushSync(true); toast('Notificações ativadas! 🔔');
+  }catch(e){ console.error(e); toast('Não consegui ativar: ' + ((e && e.message) || e)); }
+  S.pushBusy = false; render();
+}
+async function pushDesativar(){
+  let token = null; try{ token = localStorage.getItem('cf-push-token'); }catch(e){}
+  try{ if(token) await pushRef().update({tokens:firebase.firestore.FieldValue.arrayRemove(token)}); try{ await firebase.messaging().deleteToken(); }catch(e){} }catch(e){}
+  if(S.push){ S.push.tokens = (S.push.tokens || []).filter(t => t !== token); if(!S.push.tokens.length) S.push.ativo = false; }
+  try{ if(S.push && !S.push.ativo) await pushRef().set({ativo:false}, {merge:true}); }catch(e){}
+  toast('Notificações desativadas neste aparelho.'); render();
+}
+async function pushPref(k, v){
+  S.push.prefs = {...PUSH_PADRAO, ...(S.push.prefs || {}), [k]:v}; render();
+  try{ await pushRef().set({prefs:S.push.prefs, prox:0}, {merge:true}); }catch(e){ toast('Não consegui salvar agora.'); }
+}
+const pushFn = nome => firebase.app().functions('us-central1').httpsCallable(nome);
+async function pushTestar(){
+  try{ const r = await pushFn('testar')({}); toast(r.data && r.data.enviados ? 'Teste enviado! Deve chegar em segundos.' : 'Nenhum aparelho recebeu. Desative e ative de novo.'); }
+  catch(e){ toast('Falha no teste: ' + ((e && e.message) || e)); }
+}
+/* descanso do treino: agenda no servidor; cancela quando o app está aberto na hora */
+function pushDescanso(seg){
+  if(!pushAtivo() || (S.push.prefs || {}).descanso === false || !firebase.functions) return;
+  try{ pushFn('agendar')({seg:Math.round(seg)}).catch(() => {}); }catch(e){}
+}
+function pushCancelaDescanso(){
+  if(!pushAtivo() || !S.push) return;
+  try{ pushRef().set({descanso:null}, {merge:true}).catch(() => {}); }catch(e){}
+}
+function pushCard(){
+  const Lp = {...PUSH_PADRAO, ...((S.push && S.push.prefs) || {})};
+  let corpo;
+  if(!pushSuporta() && !pushBloqueadoIOS()) corpo = '<p class="sub" style="margin:4px 0 0">Este aparelho ou navegador não aceita notificações do app.</p>';
+  else if(pushBloqueadoIOS()) corpo = `<p class="sub" style="margin:4px 0 8px">No iPhone, as notificações funcionam com o CheckFit instalado na tela inicial e aberto pelo ícone.</p><button class="primary" data-act="instgo">Como instalar</button>`;
+  else if(window.Notification && Notification.permission === 'denied') corpo = '<p class="sub" style="margin:4px 0 0">As notificações estão bloqueadas. Libere em <b>Ajustes › Notificações › CheckFit</b> e volte aqui.</p>';
+  else if(!pushAtivo()) corpo = `<p class="sub" style="margin:4px 0 8px">Receba o aviso de fim do descanso e lembretes do dia, mesmo com o celular bloqueado.</p><button class="primary" id="push-on" data-act="pushon" ${S.pushBusy ? 'disabled' : ''}>${S.pushBusy ? 'Ativando…' : '🔔 Ativar notificações'}</button>`;
+  else corpo = `<div class="pushl">${PUSH_OPC.map(([k, ic, n, d]) => `<button class="pusho${Lp[k] ? ' on' : ''}" data-act="pushpref" data-k="${k}" aria-pressed="${!!Lp[k]}"><span class="pic">${ic}</span><span><b>${n}</b><small>${d}</small></span><span class="psw" aria-hidden="true"></span></button>${k === 'peso' && Lp.peso ? `<div class="opts" style="padding:0 0 6px 46px" role="group" aria-label="Horário do peso">${['06:30', '07:30', '08:30', '09:30'].map(h => `<button class="chip" data-act="pushhora" data-v="${h}" aria-pressed="${Lp.pesoHora === h}">${h}</button>`).join('')}</div>` : ''}`).join('')}</div>
+    <div class="row" style="margin-top:10px"><button class="ghost" id="push-test" data-act="pushtest">Enviar teste</button><button class="linkbtn" data-act="pushoff">Desativar neste aparelho</button></div>`;
+  return `<section class="card" aria-label="Notificações"><h2>🔔 Notificações</h2>${corpo}</section>`;
+}
+/* lembrete no Início para quem instalou mas não ativou */
+function pushNudge(date){
+  if(date !== today() || !ehStandalone() || !pushSuporta() || pushAtivo() || (window.Notification && Notification.permission === 'denied')) return '';
+  const disp = S.prof.pushDisp; if(disp && addDays(disp, 7) > today()) return '';
+  return `<section class="card jcard instcard" aria-label="Ativar notificações"><span class="jci">🔔</span><div><b>Ative as notificações</b><div class="sub">Aviso de fim do descanso e lembretes do dia, mesmo com o celular bloqueado.</div></div><div style="display:flex;flex-direction:column;gap:6px"><button class="primary" data-act="pushon">Ativar</button><button class="linkbtn" data-act="pushno">Agora não</button></div></section>`;
+}
+function pushAct(a, b){
+  if(a === 'pushon'){ pushAtivar(); return true; }
+  if(a === 'pushoff'){ pushDesativar(); return true; }
+  if(a === 'pushtest'){ pushTestar(); return true; }
+  if(a === 'pushpref'){ const k = b.dataset.k, Lp = {...PUSH_PADRAO, ...((S.push && S.push.prefs) || {})}; pushPref(k, !Lp[k]); return true; }
+  if(a === 'pushhora'){ pushPref('pesoHora', b.dataset.v); return true; }
+  if(a === 'pushno'){ S.prof.pushDisp = today(); saveProf(); render(); return true; }
   return false;
 }
 
@@ -3802,8 +3909,8 @@ async function wakeOn(){ try{ if('wakeLock' in navigator && !WL) WL = await navi
 function wakeOff(){ try{ if(WL) WL.release(); }catch(e){} WL = null; }
 document.addEventListener('touchend', () => { if(S.mode === 'treino' || S.rest) audioUnlock(); }, {passive:true});
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible' && S.mode === 'treino'){ WL = null; const s = sessAtual(); if(s && !s.fim) wakeOn(); } });
-function startRest(sec, label){ audioUnlock(); S.rest = {end:Date.now() + sec * 1000, total:sec, label, done:false}; ensureTick(); }
-function stopRest(){ S.rest = null; const el = document.getElementById('restbar'); if(el) el.hidden = true; }
+function startRest(sec, label){ audioUnlock(); S.rest = {end:Date.now() + sec * 1000, total:sec, label, done:false}; ensureTick(); pushDescanso(sec); }
+function stopRest(){ if(S.rest && !S.rest.cx && S.rest.end > Date.now()) pushCancelaDescanso(); S.rest = null; const el = document.getElementById('restbar'); if(el) el.hidden = true; }
 function ensureTick(){ if(TICK) return; TICK = setInterval(tick, 250); }
 function tick(){
   const clk = document.getElementById('sessclock'), sess = S.mode === 'treino' ? sessAtual() : null;
@@ -3812,6 +3919,7 @@ function tick(){
   if(S.rest && bar){
     const left = (S.rest.end - Date.now()) / 1000;
     bar.hidden = false;
+    if(left <= 2 && !S.rest.cx && document.visibilityState === 'visible'){ S.rest.cx = true; pushCancelaDescanso(); }
     if(left <= 0 && !S.rest.done){ S.rest.done = true; beep(); if(left < -3) toast('O descanso terminou há ' + Math.round(-left) + ' s. Bora para a próxima série! 💪'); }
     const txt = bar.querySelector('.rt'), fill = bar.querySelector('.rfill');
     if(txt) txt.textContent = left > 0 ? fmtClock(left) : 'Próxima série!';
@@ -4276,7 +4384,7 @@ document.addEventListener('click',e=>{
   if(a==='setadd'){addSerie(b.dataset.g,b.dataset.s); return;}
   if(a==='setdel'){delSerie(b.dataset.g,b.dataset.s); return;}
   if(a==='tprep'){const ss=sessAtual(); if(ss){ ss.prep=b.checked; save(S.date); } return;}
-  if(a==='rplus'){ if(S.rest){ S.rest.end+=15000; S.rest.total+=15; S.rest.done=false; } return;}
+  if(a==='rplus'){ if(S.rest){ S.rest.end+=15000; S.rest.total+=15; S.rest.done=false; S.rest.cx=false; pushDescanso((S.rest.end-Date.now())/1000); } return;}
   if(a==='rskip'){ stopRest(); return;}
   if(a==='delacct'){S.confirmDel=true; S.delMsg=''; render(); return;}
   if(a==='delno'){S.confirmDel=false; render(); return;}
@@ -4312,6 +4420,7 @@ document.addEventListener('click',e=>{
   if(/^c(open|back|set|start|pause|adj|fin|desc)$/.test(a)){ cardioAct(a,b); return; }
   if(/^w(open|back|bench|fmt|cat|int|save|lift|liftx|liftsave|tgo|tok|tx|tr|tperd)$/.test(a)){ wodAct(a,b); return; }
   if(/^inst(go|no|x)$/.test(a)){ instAct(a); return; }
+  if(/^push/.test(a) && pushAct(a,b)) return;
   if(a==='posttreinox'){ postAbrir(b.dataset.k, String(b.dataset.ini)); return; }
   if(/^post(dia|treino|close|m|share|modo|copy|pos)$/.test(a)){ postAct(a,b); return; }
   if(a==='btab'){setTab(b.dataset.v); return;}
