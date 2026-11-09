@@ -221,6 +221,66 @@ function iaParaPlano(r) {
   if (r.agua_ml > 0 && r.agua_ml < 10000) p.agua = Math.round(r.agua_ml);
   return p;
 }
+const FICHA_INSTRUCOES = `Você transcreve fichas de treino de musculação passadas por professores/personal trainers para o app CheckFit.
+Regras obrigatórias:
+- Transcreva fielmente. Não invente exercícios, séries, repetições, cargas nem treinos.
+- Não dê orientação de treino e não altere nada do que o professor escreveu.
+- Cada treino (A, B, C… ou Treino 1, 2…) vira um item de "treinos", com letra, nome (grupos musculares, ex.: "Costas e bíceps") e exercícios na ordem da ficha.
+- Séries como lista de blocos {qtd, reps}: "3x10-12" vira [{qtd:3, reps:"10–12"}]; "1x15 + 2x8" vira dois blocos. Use "–" em faixas. Tempo (ex.: prancha 1 min) vai em reps como "1 min".
+- Se um exercício não tiver séries escritas, use [{qtd:3, reps:"conforme o professor"}] e registre uma dúvida.
+- tipo: "multi" para multiarticulares (supinos, remadas, puxadas, agachamentos, leg press, desenvolvimentos, levantamentos), "mono" para os demais.
+- Carga em kg só se estiver escrita. Descanso em segundos só se estiver escrito.
+- Abdominais, panturrilhas ou alongamentos separados podem virar um treino próprio.
+- "dias": só se a ficha disser em que dia da semana fazer cada treino.
+- "duvidas": no máximo 5, curtas, falando com o aluno, só sobre o que muda o treino (série ilegível, exercício confuso, página que parece faltar).
+- Se o documento não for uma ficha de treino, marque e_ficha como false.
+- Responda SEMPRE chamando a ferramenta salvar_ficha, uma única vez, sem texto antes ou depois.`;
+const FICHA_SCHEMA = {
+  type: 'object',
+  properties: {
+    e_ficha: {type: 'boolean'},
+    prof: {type: 'string', description: 'Nome do professor/personal, se aparecer'},
+    objetivo: {type: 'string'},
+    notas: {type: 'string', description: 'Orientações gerais da ficha'},
+    aquecimento_series: {type: 'number'},
+    descanso_multi_seg: {type: 'number'}, descanso_mono_seg: {type: 'number'},
+    dias: {type: 'array', items: {type: 'object', properties: {dia_semana: {type: 'string'}, treino: {type: 'string'}}, required: ['dia_semana', 'treino']}},
+    treinos: {type: 'array', items: {type: 'object', properties: {
+      letra: {type: 'string'}, nome: {type: 'string'}, preparacao: {type: 'string'},
+      exercicios: {type: 'array', items: {type: 'object', properties: {
+        nome: {type: 'string'}, tipo: {type: 'string', enum: ['multi', 'mono']},
+        series: {type: 'array', items: {type: 'object', properties: {qtd: {type: 'number'}, reps: {type: 'string'}}, required: ['qtd', 'reps']}},
+        carga_kg: {type: 'number'}, descanso_seg: {type: 'number'}, obs: {type: 'string'}
+      }, required: ['nome', 'tipo', 'series']}}
+    }, required: ['letra', 'nome', 'exercicios']}},
+    duvidas: {type: 'array', items: {type: 'string'}}
+  },
+  required: ['e_ficha', 'treinos', 'duvidas']
+};
+const DIAS_SEM = {domingo: 0, segunda: 1, terca: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6};
+function iaParaFicha(r) {
+  const corta = (s, n) => String(s || '').trim().slice(0, n), ids = new Set();
+  const fichas = (r.treinos || []).map((t, i) => {
+    let id = corta(t.letra, 3).toUpperCase().replace(/[^A-Z0-9]/g, '') || String.fromCharCode(65 + i);
+    while (ids.has(id)) id += '2';
+    ids.add(id);
+    const ex = (t.exercicios || []).filter((e) => e && e.nome).map((e) => {
+      const s = (e.series || []).filter((b) => b && +b.qtd > 0).map((b) => [Math.min(20, Math.round(+b.qtd)), corta(b.reps, 30).replace(/(\d)\s*-\s*(\d)/g, '$1–$2') || '—']);
+      const o = {n: corta(e.nome, 70), t: e.tipo === 'multi' ? 'multi' : 'mono', s: s.length ? s : [[3, 'conforme o professor']]};
+      if (+e.carga_kg > 0) o.c = Math.round(+e.carga_kg * 2) / 2;
+      if (+e.descanso_seg > 0 && +e.descanso_seg <= 600) o.desc = Math.round(+e.descanso_seg);
+      if (corta(e.obs, 140)) o.obs = corta(e.obs, 140);
+      return o;
+    });
+    return ex.length ? {id, nome: corta(t.nome, 50) || 'Treino ' + id, prep: corta(t.preparacao, 160), ex} : null;
+  }).filter(Boolean);
+  const T = {prof: corta(r.prof, 60), objetivo: corta(r.objetivo, 40), notas: corta(r.notas, 500), aquec: Math.max(0, Math.min(3, Math.round(+r.aquecimento_series || 0))),
+    desc: {multi: +r.descanso_multi_seg > 0 ? Math.round(+r.descanso_multi_seg) : 90, mono: +r.descanso_mono_seg > 0 ? Math.round(+r.descanso_mono_seg) : 60}, fichas, fonte: 'ia'};
+  const ag = {};
+  (r.dias || []).forEach((d) => { const k = String(d.dia_semana || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/-?feira/, '').trim(), n = DIAS_SEM[k], f = fichas.find((x) => x.id === String(d.treino || '').toUpperCase().replace(/[^A-Z0-9]/g, '')); if (n != null && f) ag[n] = f.id; });
+  if (Object.keys(ag).length) T.agenda = ag;
+  return T;
+}
 exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, memory: '512MiB'}, async (req) => {
   const uid = req.auth && req.auth.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Entre no app primeiro.');
@@ -245,14 +305,15 @@ exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, me
     return n + 1;
   });
   if (uso < 0) throw new HttpsError('resource-exhausted', `Você já enviou ${IA_LIMITE_DIA} planos hoje. Tente de novo amanhã ou fale com o suporte.`);
-  conteudo.push({type: 'text', text: 'Transcreva este plano alimentar chamando a ferramenta salvar_plano.'});
+  const ficha = req.data && req.data.tipo === 'ficha', ferramenta = ficha ? 'salvar_ficha' : 'salvar_plano';
+  conteudo.push({type: 'text', text: ficha ? 'Transcreva esta ficha de treino chamando a ferramenta salvar_ficha.' : 'Transcreva este plano alimentar chamando a ferramenta salvar_plano.'});
   let resp;
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {'x-api-key': String(ANTHROPIC_API_KEY.value() || '').trim(), 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-      body: JSON.stringify({model: IA_MODELO, max_tokens: 8000, system: IA_INSTRUCOES,
-        tools: [{name: 'salvar_plano', description: 'Salva o plano alimentar transcrito.', input_schema: IA_SCHEMA}],
+      body: JSON.stringify({model: IA_MODELO, max_tokens: 8000, system: ficha ? FICHA_INSTRUCOES : IA_INSTRUCOES,
+        tools: [ficha ? {name: 'salvar_ficha', description: 'Salva a ficha de treino transcrita.', input_schema: FICHA_SCHEMA} : {name: 'salvar_plano', description: 'Salva o plano alimentar transcrito.', input_schema: IA_SCHEMA}],
         tool_choice: {type: 'auto'},
         messages: [{role: 'user', content: conteudo}]})
     });
@@ -266,7 +327,7 @@ exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, me
   }
   const uso_ = resp.usage || {};
   await usoRef.set({tokensEntrada: admin.firestore.FieldValue.increment(uso_.input_tokens || 0), tokensSaida: admin.firestore.FieldValue.increment(uso_.output_tokens || 0)}, {merge: true}).catch(() => {});
-  const bloco = (resp.content || []).find((c) => c.type === 'tool_use' && c.name === 'salvar_plano');
+  const bloco = (resp.content || []).find((c) => c.type === 'tool_use' && c.name === ferramenta);
   let r = bloco && bloco.input;
   if (!r) { // o modelo respondeu em texto: tenta achar o JSON
     const txt = (resp.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('\n');
@@ -274,6 +335,13 @@ exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, me
     if (i >= 0 && j > i) { try { r = JSON.parse(txt.slice(i, j + 1)); } catch (e) { console.error('IA texto sem JSON', txt.slice(0, 300)); } }
   }
   if (!r) throw new HttpsError('internal', 'Não consegui entender o documento. Tente uma foto mais nítida.');
+  const duv = (r.duvidas || []).slice(0, 6).map((d) => String(d).slice(0, 200));
+  if (ficha) {
+    if (r.e_ficha === false) return {ok: false, motivo: 'nao-ficha', duvidas: duv, restantes: IA_LIMITE_DIA - uso};
+    const treino = iaParaFicha(r);
+    if (!treino.fichas.length) return {ok: false, motivo: 'vazio', duvidas: duv, restantes: IA_LIMITE_DIA - uso};
+    return {ok: true, treino, duvidas: duv, restantes: IA_LIMITE_DIA - uso};
+  }
   if (r.e_plano === false) return {ok: false, motivo: 'nao-plano', duvidas: r.duvidas || [], restantes: IA_LIMITE_DIA - uso};
   const plano = iaParaPlano(r);
   if (!plano.meals.length) return {ok: false, motivo: 'vazio', duvidas: r.duvidas || [], restantes: IA_LIMITE_DIA - uso};
