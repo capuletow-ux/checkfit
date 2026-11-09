@@ -538,6 +538,26 @@ html.pwa .wrap{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;over
 .remhi{display:flex;gap:8px;align-items:center}.remhi input{flex:1}
 #view-rem{display:flex;flex-direction:column;gap:10px}
 #remform .opts{padding:0}
+
+#view-ler{display:flex;flex-direction:column;gap:12px}
+.lerarqs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.lerarq{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface2);display:flex;flex-direction:column;align-items:center}
+.lerarq img{width:100%;height:110px;object-fit:cover;display:block}
+.lerarq small{font-size:12px;color:var(--muted);padding:4px 6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lerarq button{position:absolute;top:4px;right:4px;min-height:30px;min-width:30px;padding:0;border-radius:50%;background:var(--surface)}
+.lerpdf{height:110px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:var(--accent)}
+.lerpick{display:flex;align-items:center;justify-content:center;min-height:52px;cursor:pointer;font-weight:800;border-style:dashed}
+.lerok{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4}.lerok input{margin-top:3px;width:20px;height:20px;flex:0 0 20px}
+.lerspin{width:44px;height:44px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);margin:18px auto 6px;animation:lerspin 1s linear infinite}
+@keyframes lerspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.lerspin{animation-duration:3s}}
+.lerduv ul{margin:6px 0 0;padding-left:18px}.lerduv li{margin:2px 0}
+.lermeals{display:flex;flex-direction:column;gap:10px}
+.lermeal{border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.lermh{display:flex;gap:8px;align-items:center}.lermh input{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:8px 10px;min-height:44px;font-size:16px;font-family:inherit}.lermh input[type=time]{flex:0 0 108px}.lermh input:not([type]){flex:1;min-width:0;font-weight:800}
+.lermh input.falta{border-color:var(--warn);background:var(--warn-soft)}
+.lerop{font-size:12.5px;font-weight:800;color:var(--accent);margin-top:8px;text-transform:uppercase;letter-spacing:.04em}
+.leritens{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.45}.lerou{color:var(--muted);font-size:12px}
 </style>
 </head>
 <body>
@@ -1802,7 +1822,7 @@ function suporteBtn(txt, label){
   const num = z.length <= 11 ? '55' + z : z;
   return `<a class="ghost relbtnl" style="min-height:44px" href="https://wa.me/${num}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">${label || 'Falar no WhatsApp'}</a>`;
 }
-function planosView(){ return habBanner() + planosView0() + remPlanos(); }
+function planosView(){ return habBanner() + planosView0() + lerPlanos() + remPlanos(); }
 function planosView0(){
   const pOrig = S.planOrig || 'prof', tOrig = S.trnOrig || 'prof', nome = (S.cli && S.cli.nome) || '';
   let h = `<section class="card" id="view-planos"><h2>Meus planos</h2><p class="sub" style="margin:4px 0 0">Seu plano alimentar e sua ficha de treino. Os planos do profissional são carregados pelo CheckFit e não podem ser alterados aqui.</p></section>`;
@@ -1834,15 +1854,16 @@ function planosView0(){
 /* Primeiro acesso sem plano: escolher o caminho */
 function caminhoView(){
   const c = (S.cli && S.cli.caminho) || '', nome = (S.cli && S.cli.nome) || '';
-  if(c === 'prof') return `<section class="card login" id="caminho"><h2>Seu plano está sendo preparado</h2>
-    <p class="sub" style="margin:0">Envie o plano da sua nutricionista (PDF ou foto) pelo WhatsApp. Assim que ele for carregado, o app abre direto no seu diário.</p>
-    <div class="row" style="margin-top:12px">${suporteBtn('Olá! Acabei de criar minha conta no CheckFit e quero enviar meu plano alimentar. Sou ' + nome + '.', 'Enviar meu plano pelo WhatsApp')}</div>
+  if(c === 'prof') return `<section class="card login" id="caminho"><h2>Envie o plano da sua nutricionista</h2>
+    <p class="sub" style="margin:0">Tire foto das páginas ou escolha o PDF. O CheckFit monta o plano no app em menos de 1 minuto e você confere antes de usar.</p>
+    <div class="row" style="margin-top:12px"><button class="primary" id="cam-ler" data-act="leropen">📄 Enviar meu plano</button></div>
+    <div class="row" style="margin-top:6px">${suporteBtn('Olá! Acabei de criar minha conta no CheckFit e quero enviar meu plano alimentar. Sou ' + nome + '.', 'Prefiro enviar pelo WhatsApp')}</div>
     <button class="linkbtn" data-act="caminho" data-v="" style="margin-top:6px">Prefiro montar meu próprio plano</button>
     <details class="pm" style="margin-top:6px"><summary class="sub">Recebi um texto de plano</summary>${planView()}</details></section>`;
   return `<section class="card login" id="caminho"><h2>Como você quer começar?</h2>
     <p class="sub" style="margin:0">O CheckFit acompanha o seu dia a partir de um plano alimentar. Escolha uma opção:</p>
     <div class="choice" style="margin-top:12px">
-     <button class="ghost ch" id="cam-prof" data-act="caminho" data-v="prof"><b>Tenho nutricionista</b><small>Você envia o plano dela e nós carregamos no app, do jeito que ela prescreveu.</small></button>
+     <button class="ghost ch" id="cam-prof" data-act="caminho" data-v="prof"><b>Tenho nutricionista</b><small>Você envia foto ou PDF do plano dela e o app monta tudo, do jeito que ela prescreveu.</small></button>
      <button class="ghost ch" id="cam-hab" data-act="caminho" data-v="habitos"><b>Ainda não tenho dieta</b><small>Comece com hábitos saudáveis simples. Quando tiver um plano de nutricionista, é só carregar.</small></button>
      <button class="ghost ch" id="cam-prop" data-act="caminho" data-v="proprio"><b>Quero montar o meu</b><small>Você mesmo cadastra suas refeições, alimentos e calorias.</small></button>
     </div>
@@ -3945,6 +3966,124 @@ function remAct(a, b){
   return false;
 }
 
+/* ---------- Enviar meu plano: leitura do plano alimentar por IA ---------- */
+const LER_MAX_IMG = 6, LER_MAX_PDF = 10 * 1024 * 1024;
+const lerSt = () => S.ler = S.ler || {fase:'escolher', arqs:[], aceite:false, plano:null, duvidas:[], msg:''};
+function lerAbrir(){ S.plus = false; S.ler = null; lerSt(); S.mode = 'ler'; render(); window.scrollTo(0, 0); }
+function lerB64(file){ return new Promise((ok, er) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = () => er(r.error); r.readAsDataURL(file); }); }
+function lerReduz(file){
+  return new Promise((ok, er) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const m = 1800, k = Math.min(1, m / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); const d = c.toDataURL('image/jpeg', 0.85);
+      ok({tipo:'image/jpeg', dados:d.split(',')[1], prev:c.width > 240 ? (() => { const t = document.createElement('canvas'), q = 240 / c.width; t.width = 240; t.height = Math.round(c.height * q); t.getContext('2d').drawImage(c, 0, 0, t.width, t.height); return t.toDataURL('image/jpeg', 0.7); })() : d});
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); er(new Error('imagem')); };
+    img.src = url;
+  });
+}
+async function lerArquivos(files){
+  const L = lerSt(); L.msg = '';
+  for(const f of Array.from(files || [])){
+    try{
+      if(f.type === 'application/pdf' || /\.pdf$/i.test(f.name)){
+        if(f.size > LER_MAX_PDF){ L.msg = 'O PDF tem mais de 10 MB. Envie fotos das páginas no lugar.'; continue; }
+        L.arqs = [{nome:f.name, tipo:'application/pdf', dados:await lerB64(f)}];
+      } else if(/^image\//.test(f.type) || /\.(jpe?g|png|heic|heif|webp)$/i.test(f.name)){
+        if(L.arqs.some(a => a.tipo === 'application/pdf')) L.arqs = [];
+        if(L.arqs.length >= LER_MAX_IMG){ L.msg = `Use no máximo ${LER_MAX_IMG} fotos.`; break; }
+        const r = await lerReduz(f); L.arqs.push({nome:f.name, ...r});
+      } else L.msg = 'Formato não aceito. Use foto ou PDF.';
+    }catch(e){ L.msg = 'Não consegui abrir "' + f.name + '". Tente tirar a foto de novo.'; }
+  }
+  render();
+}
+async function lerEnviar(){
+  const L = lerSt(); const ac = document.getElementById('ler-aceite'); if(ac) L.aceite = ac.checked;
+  if(!L.arqs.length){ L.msg = 'Escolha a foto ou o PDF do plano.'; render(); return; }
+  if(!L.aceite){ L.msg = 'Para continuar, marque que concorda com a leitura por inteligência artificial.'; render(); return; }
+  L.fase = 'lendo'; L.msg = ''; render(); window.scrollTo(0, 0);
+  try{
+    const r = await pushFn('lerPlano')({arquivos:L.arqs.map(a => ({tipo:a.tipo, dados:a.dados}))});
+    const d = r.data || {}; L.restantes = d.restantes;
+    if(!d.ok){ L.fase = 'escolher'; L.msg = d.motivo === 'nao-plano' ? 'Isso não parece um plano alimentar. ' + ((d.duvidas || [])[0] || 'Confira o arquivo e tente de novo.') : 'Não encontrei refeições nesse arquivo. Tente uma foto mais nítida, com a página inteira.'; render(); return; }
+    L.plano = d.plano; L.duvidas = d.duvidas || []; L.fase = 'revisar'; render(); window.scrollTo(0, 0);
+  }catch(e){ L.fase = 'escolher'; L.msg = (e && e.message) || 'Não consegui ler o plano agora.'; render(); }
+}
+function lerLe(){
+  const P = lerSt().plano; if(!P) return;
+  P.meals.forEach((m, i) => { const h = document.getElementById('ler-h-' + i), n = document.getElementById('ler-n-' + i); if(h) m.time = h.value; if(n && n.value.trim()) m.name = n.value.trim().slice(0, 40); });
+  const nu = document.getElementById('ler-nutri'); if(nu) P.nutri = nu.value.trim().slice(0, 80);
+  const ag = document.getElementById('ler-agua'); if(ag){ const v = parseInt(ag.value, 10); if(v > 0 && v < 10000) P.agua = v; else delete P.agua; }
+}
+async function lerSalvar(){
+  lerLe(); const L = lerSt(), P = L.plano;
+  if(!P.meals.length){ L.msg = 'O plano ficou sem refeições.'; render(); return; }
+  const sem = P.meals.filter(m => !/^\d{2}:\d{2}$/.test(m.time || ''));
+  if(sem.length){ L.msg = 'Coloque o horário de: ' + sem.map(m => m.name).join(', ') + '.'; render(); return; }
+  P.meals.sort((a, b) => a.time < b.time ? -1 : 1);
+  const plano = {...P, data:P.data || new Date().toLocaleDateString('pt-BR')};
+  if(!validPlan(plano)){ L.msg = 'O plano está incompleto. Envie outra foto ou fale com o suporte.'; render(); return; }
+  try{
+    await S.db.doc('config/plano').set({json:JSON.stringify(plano), origem:'ia', atualizado:new Date().toISOString(), ia:{em:Date.now(), duvidas:L.duvidas.length}});
+    S.ler = null; S.mode = 'app'; S.tab = 'inicio'; S.date = today(); toast('Plano carregado! Bom começo. 💪'); render(); window.scrollTo(0, 0);
+  }catch(e){ console.error(e); L.msg = 'Não consegui salvar agora. Verifique a internet e tente de novo.'; render(); }
+}
+function lerEscolha(ch){ return ch.map(c => esc(c[0]) + (c[1] ? ' <span class="sub">' + esc(c[1]) + '</span>' : '')).join(' <span class="lerou">ou</span> '); }
+function lerView(){
+  const L = lerSt(), nome = (S.cli && S.cli.nome) || '', voltar = `<button class="ghost" data-act="lerback">${S.planReady ? 'Voltar' : 'Cancelar'}</button>`;
+  const zap = suporteBtn('Olá! Quero enviar meu plano alimentar para o CheckFit. Sou ' + nome + '.', 'Prefiro enviar pelo WhatsApp');
+  const msg = L.msg ? `<p class="banner" role="alert" style="margin:0">${esc(L.msg)}</p>` : '';
+  if(L.fase === 'lendo') return `<section class="card" id="view-ler"><h2>Lendo seu plano…</h2><div class="lerspin" aria-hidden="true"></div><p class="sub" style="margin:0;text-align:center">Isso leva até 1 minuto. Não feche o app.</p></section>`;
+  if(L.fase === 'revisar'){
+    const P = L.plano;
+    return `<section class="card" id="view-ler"><div class="bhead"><h2>Confira seu plano</h2>${voltar}</div>
+      <p class="sub" style="margin:0">Compare com o papel da sua nutricionista. Ajuste os horários e os nomes se precisar.</p>
+      ${L.duvidas.length ? `<div class="banner lerduv" role="note"><b>Pontos para conferir</b><ul>${L.duvidas.map(d => `<li>${esc(d)}</li>`).join('')}</ul></div>` : ''}
+      <div class="bgrid"><label class="bf" for="ler-nutri"><span>Nutricionista</span><input id="ler-nutri" value="${esc(P.nutri || '')}" placeholder="Nome e CRN"></label><label class="bf" for="ler-agua"><span>Água por dia (ml)</span><input id="ler-agua" inputmode="numeric" value="${P.agua || ''}" placeholder="Ex.: 2500"></label></div>
+      <div class="lermeals">${P.meals.map((m, i) => `<div class="lermeal"><div class="lermh"><input id="ler-h-${i}" type="time" value="${esc(m.time || '')}" aria-label="Horário de ${esc(m.name)}" class="${m.time ? '' : 'falta'}"><input id="ler-n-${i}" value="${esc(m.name)}" aria-label="Nome da refeição"><button class="ghost" data-act="lerdel" data-i="${i}" aria-label="Remover ${esc(m.name)}">✕</button></div>
+        ${m.options.map(o => `${m.options.length > 1 ? `<div class="lerop">${esc(o.label)}</div>` : ''}<ul class="leritens">${o.items.map(it => `<li>${lerEscolha(it.ch)}</li>`).join('')}</ul>`).join('')}
+        ${m.tip ? `<p class="tip" style="margin:6px 0 0">${esc(m.tip)}</p>` : ''}</div>`).join('')}</div>
+      <p class="tip" style="margin:0">As calorias de cada alimento são estimativas do CheckFit. O que vale é o plano da sua nutricionista.</p>
+      ${msg}
+      <button class="primary" id="ler-salvar" data-act="lersalvar" style="width:100%">Usar este plano</button>
+      <div class="row" style="justify-content:center"><button class="linkbtn" data-act="lerdenovo">Enviar outra foto</button></div>
+      <div class="row" style="justify-content:center">${zap}</div></section>`;
+  }
+  const temPdf = L.arqs.some(a => a.tipo === 'application/pdf');
+  return `<section class="card" id="view-ler"><div class="bhead"><h2>Enviar meu plano</h2>${voltar}</div>
+    <p class="sub" style="margin:0">Tire uma foto de cada página do plano da sua nutricionista, ou escolha o PDF. O CheckFit monta o plano no app e você confere antes de usar.</p>
+    ${L.arqs.length ? `<div class="lerarqs">${L.arqs.map((a, i) => `<div class="lerarq">${a.prev ? `<img src="${a.prev}" alt="Página ${i + 1}">` : '<span class="lerpdf">PDF</span>'}<small>${a.tipo === 'application/pdf' ? esc(a.nome) : 'Página ' + (i + 1)}</small><button class="ghost" data-act="lerrm" data-i="${i}" aria-label="Remover">✕</button></div>`).join('')}</div>` : ''}
+    <label class="ghost lerpick" for="ler-file">${L.arqs.length ? (temPdf ? 'Trocar arquivo' : '+ Adicionar página') : '📷 Tirar foto ou escolher arquivo'}<input id="ler-file" type="file" accept="image/*,application/pdf" multiple hidden></label>
+    <p class="tip" style="margin:0">Dica: foto de cima, com boa luz e a página inteira aparecendo.</p>
+    <label class="lerok"><input type="checkbox" id="ler-aceite" ${L.aceite ? 'checked' : ''}> <span>Concordo que o documento seja lido por um serviço de inteligência artificial só para montar meu plano no CheckFit.</span></label>
+    ${msg}
+    <button class="primary" id="ler-enviar" data-act="lerenviar" style="width:100%" ${L.arqs.length ? '' : 'disabled'}>Ler meu plano</button>
+    ${L.restantes != null ? `<p class="tip" style="margin:0;text-align:center">Você ainda pode enviar ${L.restantes} ${L.restantes === 1 ? 'vez' : 'vezes'} hoje.</p>` : ''}
+    <div class="row" style="justify-content:center">${zap}</div></section>`;
+}
+function lerAct(a, b){
+  const L = lerSt();
+  if(a === 'leropen'){ lerAbrir(); return true; }
+  if(a === 'lerback'){ S.ler = null; S.mode = 'app'; render(); window.scrollTo(0, 0); return true; }
+  const ac = document.getElementById('ler-aceite'); if(ac) L.aceite = ac.checked;
+  if(a === 'lerrm'){ L.arqs.splice(+b.dataset.i, 1); render(); return true; }
+  if(a === 'lerenviar'){ lerEnviar(); return true; }
+  if(a === 'lerdel'){ lerLe(); L.plano.meals.splice(+b.dataset.i, 1); render(); return true; }
+  if(a === 'lerdenovo'){ L.fase = 'escolher'; L.plano = null; L.msg = ''; render(); window.scrollTo(0, 0); return true; }
+  if(a === 'lersalvar'){ lerSalvar(); return true; }
+  return false;
+}
+document.addEventListener('change', e => { if(e.target && e.target.id === 'ler-file'){ lerArquivos(e.target.files); e.target.value = ''; } });
+
+function lerPlanos(){
+  const ia = PLANINFO && PLANINFO.fonte === 'ia';
+  return `<section class="card" aria-label="Plano novo"><h2>Plano novo da nutricionista?</h2><p class="sub" style="margin:4px 0 10px">Envie foto ou PDF e o app troca o plano${ia ? '' : ' atual'} em menos de 1 minuto. Seus registros continuam salvos.</p><button class="primary" id="plan-ler" data-act="leropen">📄 Enviar plano novo</button></section>`;
+}
+
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
 const WD_LONG = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 const slug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'ex';
@@ -4323,6 +4462,7 @@ function render(){
   if(S.mode==='wod'){ head(false); mount('wod', ban+wodView()); return; }
   if(S.mode==='diario'){ head(false); mount('diario', ban+jorView()); return; }
   if(S.mode==='semana'){ head(false); mount('semana', ban+semanaView()); setTimeout(()=>semanaPrep(S.semW||'cur'),0); return; }
+  if(S.mode==='ler'){ head(false); mount('ler-'+(lerSt().fase), ban+lerView()); return; }
   if(S.mode==='rem'){ head(false); mount('rem'+(remSt().ed?'-ed':''), ban+remView()); return; }
   if(S.mode==='bio'){ head(false); mount('bio', ban+bioForm()); return; }
   if(S.mode==='biorel'){ head(false); mount('biorel', ban+bioRelView()); const LB=bioList(), dB=(LB.find(z=>z.d===S.bioRel)||LB[LB.length-1]||{}).d; if(dB) setTimeout(()=>bioImgPrep(dB),0); return; }
@@ -4628,6 +4768,7 @@ document.addEventListener('click',e=>{
   if(/^inst(go|no|x)$/.test(a)){ instAct(a); return; }
   if(/^push/.test(a) && pushAct(a,b)) return;
   if(/^rem/.test(a) && remAct(a,b)) return;
+  if(/^ler/.test(a) && lerAct(a,b)) return;
   if(a==='posttreinox'){ postAbrir(b.dataset.k, String(b.dataset.ini)); return; }
   if(/^post(dia|treino|close|m|share|modo|copy|pos)$/.test(a)){ postAct(a,b); return; }
   if(a==='btab'){setTab(b.dataset.v); return;}
