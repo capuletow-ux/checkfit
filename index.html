@@ -1822,7 +1822,7 @@ function suporteBtn(txt, label){
   const num = z.length <= 11 ? '55' + z : z;
   return `<a class="ghost relbtnl" style="min-height:44px" href="https://wa.me/${num}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">${label || 'Falar no WhatsApp'}</a>`;
 }
-function planosView(){ return habBanner() + planosView0() + lerPlanos() + remPlanos(); }
+function planosView(){ return habBanner() + planosView0() + remPlanos(); }
 function planosView0(){
   const pOrig = S.planOrig || 'prof', tOrig = S.trnOrig || 'prof', nome = (S.cli && S.cli.nome) || '';
   let h = `<section class="card" id="view-planos"><h2>Meus planos</h2><p class="sub" style="margin:4px 0 0">Seu plano alimentar e sua ficha de treino. Os planos do profissional são carregados pelo CheckFit e não podem ser alterados aqui.</p></section>`;
@@ -1831,7 +1831,7 @@ function planosView0(){
     <div class="lines" style="margin-top:8px">${PLAN.map(m => `<details class="pm"><summary><span class="num" style="font-weight:800">${esc(m.time || '')}</span> <b>${esc(m.name)}</b><span class="sub"> · ${m.options.length > 1 ? m.options.length + ' opções · ' : ''}${fmt(mealKcal(m))} kcal</span></summary>
       ${m.options.map(o => `<div class="pmo">${m.options.length > 1 ? `<div class="sub" style="font-weight:800">${esc(o.label)}${o.aj ? ' <span class="pill s-ok">seu ajuste</span>' : ''}</div>` : ''}<ul>${o.items.map(i => `<li>${esc((i.ch[0] || [])[0] || '')}${(i.ch[0] || [])[1] ? ' · ' + esc(i.ch[0][1]) : ''}${i.opt ? ' <span class="sub">(opcional)</span>' : ''}${i.ch.length > 1 ? `<div class="sub">ou: ${i.ch.slice(1).map(c => esc(c[0])).join(', ')}</div>` : ''}</li>`).join('')}</ul></div>`).join('')}
       ${m.tip ? `<p class="tip" style="margin:6px 0 0">${esc(m.tip)}</p>` : ''}</details>`).join('')}</div>
-    <div class="row" style="margin-top:10px">${pOrig === 'proprio' ? `<button class="primary" id="pl-edit" data-act="ced" data-k="plano">Editar meu plano</button>` : `<button class="primary" id="aj-plano" data-act="majustes" data-k="plano">Meus ajustes</button>` + suporteBtn('Olá! Minha nutricionista atualizou meu plano alimentar. Segue o plano novo para carregar no CheckFit. Sou ' + nome + '.', 'Enviar plano atualizado')}</div>
+    <div class="row" style="margin-top:10px">${pOrig === 'proprio' ? `<button class="primary" id="pl-edit" data-act="ced" data-k="plano">Editar meu plano</button>` : `<button class="primary" id="aj-plano" data-act="majustes" data-k="plano">Meus ajustes</button>` + `<button class="ghost" id="pl-ler" data-act="leropen">📄 Enviar plano atualizado</button>`}</div>
     ${pOrig !== 'proprio' ? `<p class="tip" style="margin:8px 0 0">Este plano foi prescrito pela sua nutricionista. Em <b>Meus ajustes</b> você pode incluir trocas de alimentos, opções próprias (como um YoPro no dia corrido) e mudar horários, sem alterar o original. Quando a nutricionista mudar o plano, toque em <b>Enviar plano atualizado</b> e mande o plano novo (PDF ou foto) pelo WhatsApp do CheckFit. Nós atualizamos aqui no app para você.</p>` : `<p class="tip" style="margin:8px 0 0">Plano montado por você. O CheckFit não prescreve dieta: para um plano individual, procure um(a) nutricionista.</p>`}
   </section>`;
   // treino
@@ -3620,7 +3620,7 @@ const ehHabitos = () => !!(PLANINFO && PLANINFO.habitos);
 function habBanner(){
   if(!ehHabitos()) return '';
   return `<section class="card habban"><b>🌱 Você está no modo hábitos</b><p class="sub" style="margin:6px 0 8px">Em vez de um cardápio, o CheckFit acompanha hábitos saudáveis simples. Você pode editar os hábitos em "Meus ajustes". Para um plano alimentar individual, procure um(a) nutricionista: só esse profissional pode prescrever dieta.</p>
-    <div class="row">${suporteBtn('Olá! Estou no modo hábitos do CheckFit e agora tenho um plano de nutricionista para carregar.', 'Já tenho plano de nutricionista')}</div></section>`;
+    <div class="row"><button class="primary" data-act="leropen">📄 Já tenho plano de nutricionista</button></div></section>`;
 }
 
 /* ---------- Posts de cardio e WOD (cartão, adesivo, foto) ---------- */
