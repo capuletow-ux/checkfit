@@ -555,7 +555,8 @@ html.pwa .wrap{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;over
 .lermeals{display:flex;flex-direction:column;gap:10px}
 .lermeal{border:1px solid var(--line);border-radius:14px;padding:10px 12px}
 .lermh{display:flex;gap:8px;align-items:center}.lermh input{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:8px 10px;min-height:44px;font-size:16px;font-family:inherit}.lermh input[type=time]{flex:0 0 108px}.lermh input:not([type]){flex:1;min-width:0;font-weight:800}
-.lermh input.falta{border-color:var(--warn);background:var(--warn-soft)}
+.lermh input.falta{border-color:var(--warn);background:var(--warn-soft)}.lermh input.sug{border-style:dashed;border-color:var(--accent)}
+.lermlab{display:flex;gap:8px;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:4px}.lermlab span:first-child{flex:0 0 auto;min-width:108px}.lermlab em{font-style:normal;font-weight:600;color:var(--accent)}
 .lerop{font-size:12.5px;font-weight:800;color:var(--accent);margin-top:8px;text-transform:uppercase;letter-spacing:.04em}
 .leritens{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.45}.lerou{color:var(--muted);font-size:12px}
 </style>
@@ -4010,12 +4011,23 @@ async function lerEnviar(){
     const r = await pushFn('lerPlano')({arquivos:L.arqs.map(a => ({tipo:a.tipo, dados:a.dados}))});
     const d = r.data || {}; L.restantes = d.restantes;
     if(!d.ok){ L.fase = 'escolher'; L.msg = d.motivo === 'nao-plano' ? 'Isso não parece um plano alimentar. ' + ((d.duvidas || [])[0] || 'Confira o arquivo e tente de novo.') : 'Não encontrei refeições nesse arquivo. Tente uma foto mais nítida, com a página inteira.'; render(); return; }
-    L.plano = d.plano; L.duvidas = d.duvidas || []; L.fase = 'revisar'; render(); window.scrollTo(0, 0);
+    L.plano = d.plano; lerSugere(L.plano); L.duvidas = d.duvidas || []; L.fase = 'revisar'; render(); window.scrollTo(0, 0);
   }catch(e){ L.fase = 'escolher'; L.msg = (e && e.message) || 'Não consegui ler o plano agora.'; render(); }
+}
+const LER_SUG = [[/desjejum|acordar|jejum/, '06:30'], [/caf[eé]/, '07:30'], [/lanche.*manh|cola[cç][aã]o/, '10:00'], [/almo[cç]o/, '12:30'], [/lanche.*tarde|merenda/, '15:30'], [/pr[eé].?treino/, '17:00'], [/p[oó]s.?treino/, '19:00'], [/jantar/, '19:30'], [/ceia/, '21:30']];
+function lerSugere(P){
+  const vistos = [];
+  P.meals.forEach((m, i) => {
+    if(/^\d{2}:\d{2}$/.test(m.time || '')) return;
+    const n = (m.name || '').toLowerCase(), hit = LER_SUG.find(([re]) => re.test(n));
+    let h = hit ? hit[1] : null;
+    if(!h){ const ant = P.meals.slice(0, i).map(x => x.time).filter(t => /^\d{2}:\d{2}$/.test(t || '')).pop(); if(ant){ const [a, b] = ant.split(':').map(Number), t = Math.min(23 * 60 + 30, a * 60 + b + 180); h = String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); } }
+    if(h){ m.time = h; m._sug = true; }
+  });
 }
 function lerLe(){
   const P = lerSt().plano; if(!P) return;
-  P.meals.forEach((m, i) => { const h = document.getElementById('ler-h-' + i), n = document.getElementById('ler-n-' + i); if(h) m.time = h.value; if(n && n.value.trim()) m.name = n.value.trim().slice(0, 40); });
+  P.meals.forEach((m, i) => { const h = document.getElementById('ler-h-' + i), n = document.getElementById('ler-n-' + i); if(h){ if(h.value !== m.time) delete m._sug; m.time = h.value; } if(n && n.value.trim()) m.name = n.value.trim().slice(0, 40); });
   const nu = document.getElementById('ler-nutri'); if(nu) P.nutri = nu.value.trim().slice(0, 80);
   const ag = document.getElementById('ler-agua'); if(ag){ const v = parseInt(ag.value, 10); if(v > 0 && v < 10000) P.agua = v; else delete P.agua; }
 }
@@ -4024,7 +4036,7 @@ async function lerSalvar(){
   if(!P.meals.length){ L.msg = 'O plano ficou sem refeições.'; render(); return; }
   const sem = P.meals.filter(m => !/^\d{2}:\d{2}$/.test(m.time || ''));
   if(sem.length){ L.msg = 'Coloque o horário de: ' + sem.map(m => m.name).join(', ') + '.'; render(); return; }
-  P.meals.sort((a, b) => a.time < b.time ? -1 : 1);
+  P.meals.sort((a, b) => a.time < b.time ? -1 : 1); P.meals.forEach(m => delete m._sug);
   const plano = {...P, data:P.data || new Date().toLocaleDateString('pt-BR')};
   if(!validPlan(plano)){ L.msg = 'O plano está incompleto. Envie outra foto ou fale com o suporte.'; render(); return; }
   try{
@@ -4041,10 +4053,10 @@ function lerView(){
   if(L.fase === 'revisar'){
     const P = L.plano;
     return `<section class="card" id="view-ler"><div class="bhead"><h2>Confira seu plano</h2>${voltar}</div>
-      <p class="sub" style="margin:0">Compare com o papel da sua nutricionista. Ajuste os horários e os nomes se precisar.</p>
+      <p class="sub" style="margin:0">Compare com o papel da sua nutricionista. Ajuste os horários e os nomes se precisar.${P.meals.some(m => m._sug) ? ' Onde o plano não trazia horário, o app sugeriu um: toque para trocar.' : ''}</p>
       ${L.duvidas.length ? `<div class="banner lerduv" role="note"><b>Pontos para conferir</b><ul>${L.duvidas.map(d => `<li>${esc(d)}</li>`).join('')}</ul></div>` : ''}
       <div class="bgrid"><label class="bf" for="ler-nutri"><span>Nutricionista</span><input id="ler-nutri" value="${esc(P.nutri || '')}" placeholder="Nome e CRN"></label><label class="bf" for="ler-agua"><span>Água por dia (ml)</span><input id="ler-agua" inputmode="numeric" value="${P.agua || ''}" placeholder="Ex.: 2500"></label></div>
-      <div class="lermeals">${P.meals.map((m, i) => `<div class="lermeal"><div class="lermh"><input id="ler-h-${i}" type="time" value="${esc(m.time || '')}" aria-label="Horário de ${esc(m.name)}" class="${m.time ? '' : 'falta'}"><input id="ler-n-${i}" value="${esc(m.name)}" aria-label="Nome da refeição"><button class="ghost" data-act="lerdel" data-i="${i}" aria-label="Remover ${esc(m.name)}">✕</button></div>
+      <div class="lermeals">${P.meals.map((m, i) => `<div class="lermeal"><div class="lermlab"><span>Horário${m._sug ? ' <em>sugerido, ajuste se quiser</em>' : (m.time ? '' : ' <em>escolha o horário</em>')}</span><span>Refeição</span></div><div class="lermh"><input id="ler-h-${i}" type="time" value="${esc(m.time || '')}" aria-label="Horário de ${esc(m.name)}" class="${m.time ? (m._sug ? 'sug' : '') : 'falta'}"><input id="ler-n-${i}" value="${esc(m.name)}" aria-label="Nome da refeição"><button class="ghost" data-act="lerdel" data-i="${i}" aria-label="Remover ${esc(m.name)}">✕</button></div>
         ${m.options.map(o => `${m.options.length > 1 ? `<div class="lerop">${esc(o.label)}</div>` : ''}<ul class="leritens">${o.items.map(it => `<li>${lerEscolha(it.ch)}</li>`).join('')}</ul>`).join('')}
         ${m.tip ? `<p class="tip" style="margin:6px 0 0">${esc(m.tip)}</p>` : ''}</div>`).join('')}</div>
       <p class="tip" style="margin:0">As calorias de cada alimento são estimativas do CheckFit. O que vale é o plano da sua nutricionista.</p>
