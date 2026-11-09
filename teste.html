@@ -4050,7 +4050,7 @@ function lerLe(){
 async function lerSalvar(){
   lerLe(); const L = lerSt();
   if(L.tipo === 'ficha'){
-    const T = {...L.treino, inicio:today()};
+    const T = {...L.treino, inicio:L.treino.inicio || today()};
     if(!T.fichas.length || !validTreino(T)){ L.msg = 'A ficha ficou incompleta. Envie outra foto ou fale com o suporte.'; render(); return; }
     try{
       await S.db.doc('config/treino').set({json:JSON.stringify(T), origem:'ia', atualizado:new Date().toISOString(), ia:{em:Date.now(), duvidas:L.duvidas.length}});
@@ -4086,8 +4086,10 @@ function lerView(){
       <label class="bf" for="ler-prof"><span>Professor</span><input id="ler-prof" value="${esc(T.prof || '')}" placeholder="Nome do professor ou personal"></label>
       ${ag ? `<p class="tip" style="margin:0">Dias da semana: ${esc(ag)}</p>` : ''}
       <div class="lermeals">${T.fichas.map((f, i) => `<div class="lermeal"><div class="lermlab lerf"><span>Treino</span><span>Nome</span></div><div class="lermh"><span class="lerid">${esc(f.id)}</span><input id="ler-fn-${i}" value="${esc(f.nome)}" aria-label="Nome do treino ${esc(f.id)}"><button class="ghost" data-act="lerdel" data-i="${i}" aria-label="Remover treino ${esc(f.id)}">✕</button></div>
-        <ul class="leritens">${f.ex.map(e => `<li>${esc(e.n)} <span class="sub">${esc(e.s.map(b => b[0] + '×' + b[1]).join(' + '))}${e.c ? ' · ' + String(e.c).replace('.', ',') + ' kg' : ''}${e.desc ? ' · descanso ' + lerMs(e.desc) : ''}</span>${e.obs ? `<br><span class="lerou">${esc(e.obs)}</span>` : ''}</li>`).join('')}</ul>
+        <ul class="leritens">${f.ex.map(e => `<li>${esc(e.n)} <span class="sub">${e.s ? esc(e.s.map(b => b[0] + '×' + b[1]).join(' + ')) : 'séries da semana'}${e.c ? ' · ' + String(e.c).replace('.', ',') + ' kg' : ''}${e.desc ? ' · descanso ' + lerMs(e.desc) : ''}</span>${e.obs ? `<br><span class="lerou">${esc(e.obs)}</span>` : ''}</li>`).join('')}</ul>
         ${f.prep ? `<p class="tip" style="margin:6px 0 0">Antes: ${esc(f.prep)}</p>` : ''}</div>`).join('')}</div>
+      ${(T.extras || []).length ? `<div class="lermeal"><div class="lerop" style="margin-top:0">Extras</div><ul class="leritens">${T.extras.map(x => `<li><b>${esc(x.nome)}</b> <span class="sub">${x.freq === 2 ? 'dia sim, dia não' : 'a cada ' + x.freq + ' dias'}</span><br><span class="lerou">${esc(x.ex.map(e => e.n + ' ' + e.s.map(b => b[0] + '×' + b[1]).join(' + ')).join(' · '))}</span></li>`).join('')}</ul></div>` : ''}
+      ${(T.semanas || []).length ? `<div class="lermeal"><div class="lerop" style="margin-top:0">Periodização · ${T.semanas.length} semanas${T.inicio ? ' a partir de ' + T.inicio.split('-').reverse().join('/') : ''}</div><ol class="leritens">${T.semanas.map(w => `<li>${esc(w.txt)}</li>`).join('')}</ol></div>` : ''}
       ${T.notas ? `<p class="tip" style="margin:0">${esc(T.notas)}</p>` : ''}
       <div class="bf"><span>Descanso padrão entre as séries <small>use o que o professor passou</small></span><div class="bgrid"><label class="bf" for="ler-d-multi"><span>Multiarticulares</span><input id="ler-d-multi" inputmode="numeric" value="${lerMs(T.desc.multi)}" placeholder="1:30"></label><label class="bf" for="ler-d-mono"><span>Demais exercícios</span><input id="ler-d-mono" inputmode="numeric" value="${lerMs(T.desc.mono)}" placeholder="1:00"></label></div></div>
       <p class="tip" style="margin:0">Exercícios com descanso próprio na ficha já aparecem com o tempo ao lado. Depois de salvar, em <b>Planos › Editar minha ficha</b>, dá para mudar o descanso, a carga e as séries de qualquer exercício.</p>
