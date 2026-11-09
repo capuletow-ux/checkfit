@@ -242,18 +242,19 @@ exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, me
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {'x-api-key': ANTHROPIC_API_KEY.value(), 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
+      headers: {'x-api-key': String(ANTHROPIC_API_KEY.value() || '').trim(), 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
       body: JSON.stringify({model: IA_MODELO, max_tokens: 8000, system: IA_INSTRUCOES,
         tools: [{name: 'salvar_plano', description: 'Salva o plano alimentar transcrito.', input_schema: IA_SCHEMA}],
         tool_choice: {type: 'tool', name: 'salvar_plano'},
         messages: [{role: 'user', content: conteudo}]})
     });
-    resp = await r.json();
-    if (!r.ok) { console.error('IA erro', r.status, JSON.stringify(resp).slice(0, 500)); throw new Error('api ' + r.status); }
+    resp = await r.json().catch(() => ({}));
+    if (!r.ok) { console.error('IA erro', r.status, JSON.stringify(resp).slice(0, 500)); const t = (resp.error && resp.error.type) || ''; throw new Error('api ' + r.status + (t ? ' ' + t : '')); }
   } catch (e) {
-    console.error('IA falhou', e && e.message);
+    const cod = String((e && e.message) || 'rede').replace(/[^\w .-]/g, '').slice(0, 60);
+    console.error('IA falhou', cod);
     await usoRef.set({n: admin.firestore.FieldValue.increment(-1)}, {merge: true}).catch(() => {});
-    throw new HttpsError('unavailable', 'Não consegui ler o plano agora. Tente de novo em alguns minutos.');
+    throw new HttpsError('unavailable', 'Não consegui ler o plano agora. Tente de novo em alguns minutos. (código: ' + cod + ')');
   }
   const uso_ = resp.usage || {};
   await usoRef.set({tokensEntrada: admin.firestore.FieldValue.increment(uso_.input_tokens || 0), tokensSaida: admin.firestore.FieldValue.increment(uso_.output_tokens || 0)}, {merge: true}).catch(() => {});
