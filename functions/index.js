@@ -249,9 +249,9 @@ exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, me
         messages: [{role: 'user', content: conteudo}]})
     });
     resp = await r.json().catch(() => ({}));
-    if (!r.ok) { console.error('IA erro', r.status, JSON.stringify(resp).slice(0, 500)); const t = (resp.error && resp.error.type) || ''; throw new Error('api ' + r.status + (t ? ' ' + t : '')); }
+    if (!r.ok) { console.error('IA erro', r.status, JSON.stringify(resp).slice(0, 500)); const t = (resp.error && resp.error.type) || '', m = String((resp.error && resp.error.message) || '').replace(/sk-[\w-]+/g, '').slice(0, 140); throw new Error('api ' + r.status + (t ? ' ' + t : '') + (m ? ': ' + m : '')); }
   } catch (e) {
-    const cod = String((e && e.message) || 'rede').replace(/[^\w .-]/g, '').slice(0, 60);
+    const cod = String((e && e.message) || 'rede').replace(/[^\w .:,'()/-]/g, '').slice(0, 200);
     console.error('IA falhou', cod);
     await usoRef.set({n: admin.firestore.FieldValue.increment(-1)}, {merge: true}).catch(() => {});
     throw new HttpsError('unavailable', 'Não consegui ler o plano agora. Tente de novo em alguns minutos. (código: ' + cod + ')');
