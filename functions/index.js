@@ -167,7 +167,8 @@ Regras obrigatórias:
 - Orientações gerais da refeição (ex.: "beber 500 ml de água ao acordar") vão em "dica".
 - Água diária em ml, se o plano informar.
 - Tudo que estiver ilegível, ambíguo ou incompleto vai para "duvidas", em frases curtas e claras para o paciente.
-- Se o documento não for um plano alimentar, marque e_plano como false e não preencha refeições.`;
+- Se o documento não for um plano alimentar, marque e_plano como false e não preencha refeições.
+- Responda SEMPRE chamando a ferramenta salvar_plano, uma única vez, sem texto antes ou depois.`;
 const IA_SCHEMA = {
   type: 'object',
   properties: {
@@ -245,7 +246,7 @@ exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, me
       headers: {'x-api-key': String(ANTHROPIC_API_KEY.value() || '').trim(), 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
       body: JSON.stringify({model: IA_MODELO, max_tokens: 8000, system: IA_INSTRUCOES,
         tools: [{name: 'salvar_plano', description: 'Salva o plano alimentar transcrito.', input_schema: IA_SCHEMA}],
-        tool_choice: {type: 'tool', name: 'salvar_plano'},
+        tool_choice: {type: 'auto'},
         messages: [{role: 'user', content: conteudo}]})
     });
     resp = await r.json().catch(() => ({}));
@@ -259,7 +260,12 @@ exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, me
   const uso_ = resp.usage || {};
   await usoRef.set({tokensEntrada: admin.firestore.FieldValue.increment(uso_.input_tokens || 0), tokensSaida: admin.firestore.FieldValue.increment(uso_.output_tokens || 0)}, {merge: true}).catch(() => {});
   const bloco = (resp.content || []).find((c) => c.type === 'tool_use' && c.name === 'salvar_plano');
-  const r = bloco && bloco.input;
+  let r = bloco && bloco.input;
+  if (!r) { // o modelo respondeu em texto: tenta achar o JSON
+    const txt = (resp.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('\n');
+    const i = txt.indexOf('{'), j = txt.lastIndexOf('}');
+    if (i >= 0 && j > i) { try { r = JSON.parse(txt.slice(i, j + 1)); } catch (e) { console.error('IA texto sem JSON', txt.slice(0, 300)); } }
+  }
   if (!r) throw new HttpsError('internal', 'Não consegui entender o documento. Tente uma foto mais nítida.');
   if (r.e_plano === false) return {ok: false, motivo: 'nao-plano', duvidas: r.duvidas || [], restantes: IA_LIMITE_DIA - uso};
   const plano = iaParaPlano(r);
