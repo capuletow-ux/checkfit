@@ -2,7 +2,8 @@
    - agendar: o app pede um aviso para daqui a X segundos (fim do descanso do treino)
    - enviarAgendado: fila que dispara o aviso na hora certa (Cloud Tasks)
    - testar: envia uma notificação de teste
-   - lembretesTick: a cada 15 min envia os lembretes do dia (refeições, água, peso, sequência, cartas, suplementos e remédios) */
+   - lembretesTick: a cada 15 min envia os lembretes do dia (refeições, água, peso, sequência, cartas, suplementos e remédios)
+   - lerPlano: lê o plano alimentar (foto ou PDF) com IA e devolve no formato do app */
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const {onTaskDispatched} = require('firebase-functions/v2/tasks');
 const {onSchedule} = require('firebase-functions/v2/scheduler');
@@ -147,4 +148,120 @@ exports.lembretesTick = onSchedule({schedule: 'every 15 minutes', timeZone: 'Ame
   const agora = Date.now();
   const q = await db.collection('lembretes').where('prox', '<=', agora).limit(500).get();
   for (const doc of q.docs) { try { await processar(doc, agora); } catch (e) { console.error('lembrete', doc.id, e); } }
+});
+
+/* ---------- Leitura do plano alimentar por IA (Claude API) ---------- */
+const {defineSecret} = require('firebase-functions/params');
+const ANTHROPIC_API_KEY = defineSecret('ANTHROPIC_API_KEY');
+const IA_MODELO = 'claude-sonnet-5-5';
+const IA_LIMITE_DIA = 5;
+const IA_INSTRUCOES = `Você transcreve planos alimentares prescritos por nutricionistas para o app CheckFit.
+Regras obrigatórias:
+- Transcreva fielmente o que está no documento. Não invente refeições, alimentos, quantidades nem horários.
+- Não dê orientação nutricional, não altere quantidades e não sugira alimentos que não estejam no plano.
+- Cada refeição tem uma ou mais opções (ex.: "Opção 1", "Opção 2"). Se o plano não separa opções, use uma opção só chamada "Plano".
+- Dentro de cada opção, cada item é um grupo de alimentos. As substituições/equivalentes que o plano permite para aquele item ficam como escolhas do mesmo item, na ordem do documento (a principal primeiro).
+- Quantidades exatamente como escritas (ex.: "2 colheres de sopa", "150 g", "1 unidade média").
+- kcal: estimativa aproximada para a quantidade indicada, com base em tabelas como a TACO. Se não der para estimar, use 0.
+- Horário no formato HH:MM quando o plano informar; se não informar, deixe vazio.
+- Orientações gerais da refeição (ex.: "beber 500 ml de água ao acordar") vão em "dica".
+- Água diária em ml, se o plano informar.
+- Tudo que estiver ilegível, ambíguo ou incompleto vai para "duvidas", em frases curtas e claras para o paciente.
+- Se o documento não for um plano alimentar, marque e_plano como false e não preencha refeições.`;
+const IA_SCHEMA = {
+  type: 'object',
+  properties: {
+    e_plano: {type: 'boolean'},
+    nutri: {type: 'string', description: 'Nome e registro (CRN) do profissional, se aparecer'},
+    data: {type: 'string', description: 'Data do plano, se aparecer'},
+    agua_ml: {type: 'number'},
+    refeicoes: {type: 'array', items: {type: 'object', properties: {
+      nome: {type: 'string'}, horario: {type: 'string'}, dica: {type: 'string'},
+      opcoes: {type: 'array', items: {type: 'object', properties: {
+        rotulo: {type: 'string'},
+        itens: {type: 'array', items: {type: 'object', properties: {
+          escolhas: {type: 'array', items: {type: 'object', properties: {
+            alimento: {type: 'string'}, quantidade: {type: 'string'}, kcal: {type: 'number'}
+          }, required: ['alimento', 'quantidade', 'kcal']}}
+        }, required: ['escolhas']}}
+      }, required: ['rotulo', 'itens']}}
+    }, required: ['nome', 'horario', 'opcoes']}},
+    duvidas: {type: 'array', items: {type: 'string'}}
+  },
+  required: ['e_plano', 'refeicoes', 'duvidas']
+};
+const slug = (s, usados) => {
+  let b = String(s || 'item').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 16) || 'item', k = b, i = 2;
+  while (usados.has(k)) k = b + (i++);
+  usados.add(k); return k;
+};
+function iaParaPlano(r) {
+  const ids = new Set(), corta = (s, n) => String(s || '').trim().slice(0, n);
+  const meals = (r.refeicoes || []).map((m) => {
+    const ks = new Set();
+    const options = (m.opcoes || []).map((o) => ({
+      label: corta(o.rotulo, 60) || 'Plano',
+      items: (o.itens || []).map((it) => {
+        const ch = (it.escolhas || []).filter((c) => c && c.alimento).map((c) => [corta(c.alimento, 80), corta(c.quantidade, 40), Math.max(0, Math.round(+c.kcal || 0))]);
+        return ch.length ? {k: slug(ch[0][0], ks), ch} : null;
+      }).filter(Boolean)
+    })).filter((o) => o.items.length);
+    const h = /^\d{1,2}:\d{2}$/.test(m.horario || '') ? m.horario.padStart(5, '0') : '';
+    return options.length ? {id: slug(m.nome, ids), time: h, name: corta(m.nome, 40) || 'Refeição', tip: corta(m.dica, 300), options} : null;
+  }).filter(Boolean);
+  const p = {nutri: corta(r.nutri, 80), data: corta(r.data, 20), meals, fonte: 'ia'};
+  if (r.agua_ml > 0 && r.agua_ml < 10000) p.agua = Math.round(r.agua_ml);
+  return p;
+}
+exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, memory: '512MiB'}, async (req) => {
+  const uid = req.auth && req.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Entre no app primeiro.');
+  const arqs = (req.data && req.data.arquivos) || [];
+  if (!Array.isArray(arqs) || !arqs.length || arqs.length > 6) throw new HttpsError('invalid-argument', 'Envie de 1 a 6 imagens, ou 1 PDF.');
+  let total = 0;
+  const conteudo = arqs.map((a) => {
+    const tipo = String(a.tipo || ''), dados = String(a.dados || '');
+    total += dados.length;
+    if (tipo === 'application/pdf') return {type: 'document', source: {type: 'base64', media_type: 'application/pdf', data: dados}};
+    if (/^image\/(jpeg|png|webp|gif)$/.test(tipo)) return {type: 'image', source: {type: 'base64', media_type: tipo, data: dados}};
+    throw new HttpsError('invalid-argument', 'Formato não aceito. Use foto (JPG/PNG) ou PDF.');
+  });
+  if (total > 14 * 1024 * 1024) throw new HttpsError('invalid-argument', 'Arquivo grande demais. Envie fotos menores ou um PDF de até 10 MB.');
+  // limite diário por pessoa
+  const hoje = new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10), usoRef = db.doc(`iaUso/${uid}`);
+  const uso = await db.runTransaction(async (t) => {
+    const s = await t.get(usoRef), d = s.exists ? s.data() : {};
+    const n = d.dia === hoje ? (d.n || 0) : 0;
+    if (n >= IA_LIMITE_DIA) return -1;
+    t.set(usoRef, {dia: hoje, n: n + 1, total: (d.total || 0) + 1, ultimo: Date.now()}, {merge: true});
+    return n + 1;
+  });
+  if (uso < 0) throw new HttpsError('resource-exhausted', `Você já enviou ${IA_LIMITE_DIA} planos hoje. Tente de novo amanhã ou fale com o suporte.`);
+  conteudo.push({type: 'text', text: 'Transcreva este plano alimentar chamando a ferramenta salvar_plano.'});
+  let resp;
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'x-api-key': ANTHROPIC_API_KEY.value(), 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
+      body: JSON.stringify({model: IA_MODELO, max_tokens: 8000, system: IA_INSTRUCOES,
+        tools: [{name: 'salvar_plano', description: 'Salva o plano alimentar transcrito.', input_schema: IA_SCHEMA}],
+        tool_choice: {type: 'tool', name: 'salvar_plano'},
+        messages: [{role: 'user', content: conteudo}]})
+    });
+    resp = await r.json();
+    if (!r.ok) { console.error('IA erro', r.status, JSON.stringify(resp).slice(0, 500)); throw new Error('api ' + r.status); }
+  } catch (e) {
+    console.error('IA falhou', e && e.message);
+    await usoRef.set({n: admin.firestore.FieldValue.increment(-1)}, {merge: true}).catch(() => {});
+    throw new HttpsError('unavailable', 'Não consegui ler o plano agora. Tente de novo em alguns minutos.');
+  }
+  const uso_ = resp.usage || {};
+  await usoRef.set({tokensEntrada: admin.firestore.FieldValue.increment(uso_.input_tokens || 0), tokensSaida: admin.firestore.FieldValue.increment(uso_.output_tokens || 0)}, {merge: true}).catch(() => {});
+  const bloco = (resp.content || []).find((c) => c.type === 'tool_use' && c.name === 'salvar_plano');
+  const r = bloco && bloco.input;
+  if (!r) throw new HttpsError('internal', 'Não consegui entender o documento. Tente uma foto mais nítida.');
+  if (r.e_plano === false) return {ok: false, motivo: 'nao-plano', duvidas: r.duvidas || [], restantes: IA_LIMITE_DIA - uso};
+  const plano = iaParaPlano(r);
+  if (!plano.meals.length) return {ok: false, motivo: 'vazio', duvidas: r.duvidas || [], restantes: IA_LIMITE_DIA - uso};
+  return {ok: true, plano, duvidas: (r.duvidas || []).slice(0, 12).map((d) => String(d).slice(0, 200)), restantes: IA_LIMITE_DIA - uso};
 });
