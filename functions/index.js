@@ -161,12 +161,12 @@ Regras obrigatórias:
 - Não dê orientação nutricional, não altere quantidades e não sugira alimentos que não estejam no plano.
 - Cada refeição tem uma ou mais opções (ex.: "Opção 1", "Opção 2"). Se o plano não separa opções, use uma opção só chamada "Plano".
 - Dentro de cada opção, cada item é um grupo de alimentos. As substituições/equivalentes que o plano permite para aquele item ficam como escolhas do mesmo item, na ordem do documento (a principal primeiro).
-- Quantidades exatamente como escritas (ex.: "2 colheres de sopa", "150 g", "1 unidade média").
+- Quantidades exatamente como escritas (ex.: "2 colheres de sopa", "150 g", "1 unidade média"). Líquidos (água, leite, sucos) em ml.
 - kcal: estimativa aproximada para a quantidade indicada, com base em tabelas como a TACO. Se não der para estimar, use 0.
 - Horário no formato HH:MM quando o plano informar; se não informar, deixe vazio.
 - Orientações gerais da refeição (ex.: "beber 500 ml de água ao acordar") vão em "dica".
 - Água diária em ml, se o plano informar.
-- Tudo que estiver ilegível, ambíguo ou incompleto vai para "duvidas", em frases curtas e claras para o paciente.
+- "duvidas": no máximo 5 itens, só o que pode mudar o que a pessoa vai comer (quantidade ilegível, substituição confusa, página que parece faltar). Frases curtas e simples, falando com o paciente. Não comente datas nem detalhes de formatação.
 - Se o documento não for um plano alimentar, marque e_plano como false e não preencha refeições.
 - Responda SEMPRE chamando a ferramenta salvar_plano, uma única vez, sem texto antes ou depois.`;
 const IA_SCHEMA = {
@@ -204,7 +204,14 @@ function iaParaPlano(r) {
       label: corta(o.rotulo, 60) || 'Plano',
       items: (o.itens || []).map((it) => {
         const ch = (it.escolhas || []).filter((c) => c && c.alimento).map((c) => [corta(c.alimento, 80), corta(c.quantidade, 40), Math.max(0, Math.round(+c.kcal || 0))]);
-        return ch.length ? {k: slug(ch[0][0], ks), ch} : null;
+        if (!ch.length) return null;
+        if (/^[áa]gua\b/i.test(ch[0][0])) { // água entra no controle de água do app
+          const q = ch[0][1].toLowerCase().replace(',', '.'), n = parseFloat(q);
+          const ml = /\bl\b|litro/.test(q) && !/ml/.test(q) ? Math.round(n * 1000) : Math.round(n);
+          ch[0][1] = ch[0][1].replace(/\bg\b/, 'ml'); ch[0][2] = 0;
+          if (ml > 0 && ml <= 3000 && !ks.has('agua')) { ks.add('agua'); return {k: 'agua', ch: [ch[0]], w: ml}; }
+        }
+        return {k: slug(ch[0][0], ks), ch};
       }).filter(Boolean)
     })).filter((o) => o.items.length);
     const h = /^\d{1,2}:\d{2}$/.test(m.horario || '') ? m.horario.padStart(5, '0') : '';
@@ -270,5 +277,5 @@ exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, me
   if (r.e_plano === false) return {ok: false, motivo: 'nao-plano', duvidas: r.duvidas || [], restantes: IA_LIMITE_DIA - uso};
   const plano = iaParaPlano(r);
   if (!plano.meals.length) return {ok: false, motivo: 'vazio', duvidas: r.duvidas || [], restantes: IA_LIMITE_DIA - uso};
-  return {ok: true, plano, duvidas: (r.duvidas || []).slice(0, 12).map((d) => String(d).slice(0, 200)), restantes: IA_LIMITE_DIA - uso};
+  return {ok: true, plano, duvidas: (r.duvidas || []).slice(0, 6).map((d) => String(d).slice(0, 200)), restantes: IA_LIMITE_DIA - uso};
 });
