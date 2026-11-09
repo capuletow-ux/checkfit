@@ -555,8 +555,9 @@ html.pwa .wrap{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;over
 .lermeals{display:flex;flex-direction:column;gap:10px}
 .lermeal{border:1px solid var(--line);border-radius:14px;padding:10px 12px}
 .lermh{display:flex;gap:8px;align-items:center}.lermh input{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:8px 10px;min-height:44px;font-size:16px;font-family:inherit}.lermh input[type=time]{flex:0 0 108px}.lermh input:not([type]){flex:1;min-width:0;font-weight:800}
+.lerid{flex:0 0 44px;height:44px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:18px}
 .lermh input.falta{border-color:var(--warn);background:var(--warn-soft)}.lermh input.sug{border-style:dashed;border-color:var(--accent)}
-.lermlab{display:flex;gap:8px;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:4px}.lermlab span:first-child{flex:0 0 auto;min-width:108px}.lermlab em{font-style:normal;font-weight:600;color:var(--accent)}
+.lermlab{display:flex;gap:8px;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:4px}.lermlab span:first-child{flex:0 0 auto;min-width:108px}.lermlab em{font-style:normal;font-weight:600;color:var(--accent)}.lerf span:first-child{min-width:52px}
 .lerop{font-size:12.5px;font-weight:800;color:var(--accent);margin-top:8px;text-transform:uppercase;letter-spacing:.04em}
 .leritens{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.45}.lerou{color:var(--muted);font-size:12px}
 </style>
@@ -1832,7 +1833,7 @@ function planosView0(){
     <div class="lines" style="margin-top:8px">${PLAN.map(m => `<details class="pm"><summary><span class="num" style="font-weight:800">${esc(m.time || '')}</span> <b>${esc(m.name)}</b><span class="sub"> · ${m.options.length > 1 ? m.options.length + ' opções · ' : ''}${fmt(mealKcal(m))} kcal</span></summary>
       ${m.options.map(o => `<div class="pmo">${m.options.length > 1 ? `<div class="sub" style="font-weight:800">${esc(o.label)}${o.aj ? ' <span class="pill s-ok">seu ajuste</span>' : ''}</div>` : ''}<ul>${o.items.map(i => `<li>${esc((i.ch[0] || [])[0] || '')}${(i.ch[0] || [])[1] ? ' · ' + esc(i.ch[0][1]) : ''}${i.opt ? ' <span class="sub">(opcional)</span>' : ''}${i.ch.length > 1 ? `<div class="sub">ou: ${i.ch.slice(1).map(c => esc(c[0])).join(', ')}</div>` : ''}</li>`).join('')}</ul></div>`).join('')}
       ${m.tip ? `<p class="tip" style="margin:6px 0 0">${esc(m.tip)}</p>` : ''}</details>`).join('')}</div>
-    <div class="row" style="margin-top:10px">${pOrig === 'proprio' ? `<button class="primary" id="pl-edit" data-act="ced" data-k="plano">Editar meu plano</button>` : `<button class="primary" id="aj-plano" data-act="majustes" data-k="plano">Meus ajustes</button>` + `<button class="ghost" id="pl-ler" data-act="leropen">📄 Enviar plano atualizado</button>`}</div>
+    <div class="row" style="margin-top:10px">${(pOrig === 'proprio' || pOrig === 'ia') ? `<button class="primary" id="pl-edit" data-act="ced" data-k="plano">Editar meu plano</button><button class="ghost" id="pl-ler" data-act="leropen">📄 Enviar plano atualizado</button>` : `<button class="primary" id="aj-plano" data-act="majustes" data-k="plano">Meus ajustes</button>` + `<button class="ghost" id="pl-ler" data-act="leropen">📄 Enviar plano atualizado</button>`}</div>
     ${pOrig !== 'proprio' ? `<p class="tip" style="margin:8px 0 0">Este plano foi prescrito pela sua nutricionista. Em <b>Meus ajustes</b> você pode incluir trocas de alimentos, opções próprias (como um YoPro no dia corrido) e mudar horários, sem alterar o original. Quando a nutricionista mudar o plano, toque em <b>Enviar plano atualizado</b> e mande o plano novo (PDF ou foto) pelo WhatsApp do CheckFit. Nós atualizamos aqui no app para você.</p>` : `<p class="tip" style="margin:8px 0 0">Plano montado por você. O CheckFit não prescreve dieta: para um plano individual, procure um(a) nutricionista.</p>`}
   </section>`;
   // treino
@@ -1840,13 +1841,13 @@ function planosView0(){
     const t = S.treino;
     h += `<section class="card"><div class="thead"><div><h2>Ficha de treino</h2><div class="sub">${esc(t.prof || (tOrig === 'proprio' ? 'Montada por você' : ''))}${t.objetivo ? ' · ' + esc(t.objetivo) : ''}</div></div>${origemPill(tOrig)}</div>
       <div class="lines" style="margin-top:8px">${t.fichas.map(f => `<details class="pm"><summary><b>${esc(f.id)} · ${esc(f.nome || '')}</b><span class="sub"> · ${f.ex.length} exercício(s)</span></summary><ul>${f.ex.map(e => `<li>${esc(e.n)}${e.aj ? ' <span class="pill s-ok">seu ajuste</span>' : ''}${Array.isArray(e.s) ? ' <span class="sub">' + esc(specTxt(e.s)) + '</span>' : ''}</li>`).join('')}</ul></details>`).join('')}</div>
-      <div class="row" style="margin-top:10px">${tOrig === 'proprio' ? `<button class="primary" id="tr-edit" data-act="ced" data-k="treino">Editar minha ficha</button>` : `<button class="primary" id="aj-treino" data-act="majustes" data-k="treino">Meus ajustes</button>` + suporteBtn('Olá! Meu professor/personal atualizou minha ficha de treino. Segue a ficha nova para carregar no CheckFit. Sou ' + nome + '.', 'Enviar ficha atualizada')}</div>
+      <div class="row" style="margin-top:10px">${(tOrig === 'proprio' || tOrig === 'ia') ? `<button class="primary" id="tr-edit" data-act="ced" data-k="treino">Editar minha ficha</button><button class="ghost" id="tr-ler" data-act="leropen" data-tipo="ficha">📄 Enviar ficha atualizada</button>` : `<button class="primary" id="aj-treino" data-act="majustes" data-k="treino">Meus ajustes</button>` + `<button class="ghost" id="tr-ler" data-act="leropen" data-tipo="ficha">📄 Enviar ficha atualizada</button>`}</div>
       ${tOrig !== 'proprio' ? '<p class="tip" style="margin:8px 0 0">Esta ficha foi montada pelo seu professor ou personal. Em <b>Meus ajustes</b> você pode trocar um exercício por outro ou acrescentar exercícios, sem alterar o original. Quando o professor mudar a ficha, toque em <b>Enviar ficha atualizada</b> e mande a ficha nova pelo WhatsApp do CheckFit. Nós atualizamos aqui no app para você.</p>' : ''}</section>`;
   } else {
     h += `<section class="card"><h2>Ficha de treino</h2><p class="sub" style="margin:4px 0 10px">Você ainda não tem ficha de treino.</p>
       <div class="choice">
        <button class="ghost ch" data-act="ced" data-k="treino"><b>Montar minha ficha</b><small>Para quem treina por conta própria.</small></button>
-       <div class="ch2"><b>Tenho personal ou professor</b><small>Envie a ficha dele para o CheckFit, que nós carregamos para você.</small>${suporteBtn('Olá! Quero enviar minha ficha de treino para o CheckFit. Sou ' + nome + '.', 'Enviar minha ficha')}</div>
+       <div class="ch2"><b>Tenho personal ou professor</b><small>Tire foto da ficha dele e o app monta os treinos para você conferir.</small><button class="primary" id="tr-ler-novo" data-act="leropen" data-tipo="ficha">📄 Enviar minha ficha</button></div>
       </div></section>`;
   }
   return h;
@@ -3977,7 +3978,7 @@ function remAct(a, b){
 /* ---------- Enviar meu plano: leitura do plano alimentar por IA ---------- */
 const LER_MAX_IMG = 6, LER_MAX_PDF = 10 * 1024 * 1024;
 const lerSt = () => S.ler = S.ler || {fase:'escolher', arqs:[], aceite:false, plano:null, duvidas:[], msg:''};
-function lerAbrir(){ S.plus = false; S.ler = null; lerSt(); S.mode = 'ler'; render(); window.scrollTo(0, 0); }
+function lerAbrir(tipo){ S.plus = false; S.ler = null; lerSt().tipo = tipo === 'ficha' ? 'ficha' : 'plano'; S.mode = 'ler'; render(); window.scrollTo(0, 0); }
 function lerB64(file){ return new Promise((ok, er) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = () => er(r.error); r.readAsDataURL(file); }); }
 function lerReduz(file){
   return new Promise((ok, er) => {
@@ -4011,12 +4012,15 @@ async function lerArquivos(files){
 }
 async function lerEnviar(){
   const L = lerSt(); const ac = document.getElementById('ler-aceite'); if(ac) L.aceite = ac.checked;
-  if(!L.arqs.length){ L.msg = 'Escolha a foto ou o PDF do plano.'; render(); return; }
+  const F = L.tipo === 'ficha';
+  if(!L.arqs.length){ L.msg = F ? 'Escolha a foto ou o PDF da ficha.' : 'Escolha a foto ou o PDF do plano.'; render(); return; }
   if(!L.aceite){ L.msg = 'Para continuar, marque que concorda com a leitura por inteligência artificial.'; render(); return; }
   L.fase = 'lendo'; L.msg = ''; render(); window.scrollTo(0, 0);
   try{
-    const r = await pushFn('lerPlano')({arquivos:L.arqs.map(a => ({tipo:a.tipo, dados:a.dados}))});
+    const r = await pushFn('lerPlano')({tipo:F ? 'ficha' : 'plano', arquivos:L.arqs.map(a => ({tipo:a.tipo, dados:a.dados}))});
     const d = r.data || {}; L.restantes = d.restantes;
+    if(!d.ok && F){ L.fase = 'escolher'; L.msg = d.motivo === 'nao-ficha' ? 'Isso não parece uma ficha de treino. ' + ((d.duvidas || [])[0] || 'Confira o arquivo e tente de novo.') : 'Não encontrei exercícios nesse arquivo. Tente uma foto mais nítida, com a página inteira.'; render(); return; }
+    if(F){ L.treino = d.treino; L.duvidas = d.duvidas || []; L.fase = 'revisar'; render(); window.scrollTo(0, 0); return; }
     if(!d.ok){ L.fase = 'escolher'; L.msg = d.motivo === 'nao-plano' ? 'Isso não parece um plano alimentar. ' + ((d.duvidas || [])[0] || 'Confira o arquivo e tente de novo.') : 'Não encontrei refeições nesse arquivo. Tente uma foto mais nítida, com a página inteira.'; render(); return; }
     L.plano = d.plano; lerSugere(L.plano); L.duvidas = d.duvidas || []; L.fase = 'revisar'; render(); window.scrollTo(0, 0);
   }catch(e){ L.fase = 'escolher'; L.msg = (e && e.message) || 'Não consegui ler o plano agora.'; render(); }
@@ -4032,14 +4036,29 @@ function lerSugere(P){
     if(h){ m.time = h; m._sug = true; }
   });
 }
+/* aceita 90, 1:30 ou 1min30 */
+function lerSeg(v){ v = String(v || '').trim().toLowerCase(); if(!v) return 0; const m = v.match(/^(\d+)\s*(?::|min|m)\s*(\d{0,2})/); const n = m ? (+m[1]) * 60 + (+m[2] || 0) : parseInt(v, 10); return n > 0 && n <= 600 ? n : 0; }
+const lerMs = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 function lerLe(){
-  const P = lerSt().plano; if(!P) return;
+  const L = lerSt();
+  if(L.tipo === 'ficha'){ const T = L.treino; if(!T) return; T.fichas.forEach((f, i) => { const n = document.getElementById('ler-fn-' + i); if(n && n.value.trim()) f.nome = n.value.trim().slice(0, 50); }); const pr = document.getElementById('ler-prof'); if(pr) T.prof = pr.value.trim().slice(0, 60); ['multi', 'mono'].forEach(k => { const el = document.getElementById('ler-d-' + k); if(el){ const v = lerSeg(el.value); if(v) T.desc[k] = v; } }); return; }
+  const P = L.plano; if(!P) return;
   P.meals.forEach((m, i) => { const h = document.getElementById('ler-h-' + i), n = document.getElementById('ler-n-' + i); if(h){ if(h.value !== m.time) delete m._sug; m.time = h.value; } if(n && n.value.trim()) m.name = n.value.trim().slice(0, 40); });
   const nu = document.getElementById('ler-nutri'); if(nu) P.nutri = nu.value.trim().slice(0, 80);
   const ag = document.getElementById('ler-agua'); if(ag){ const v = parseInt(ag.value, 10); if(v > 0 && v < 10000) P.agua = v; else delete P.agua; }
 }
 async function lerSalvar(){
-  lerLe(); const L = lerSt(), P = L.plano;
+  lerLe(); const L = lerSt();
+  if(L.tipo === 'ficha'){
+    const T = {...L.treino, inicio:today()};
+    if(!T.fichas.length || !validTreino(T)){ L.msg = 'A ficha ficou incompleta. Envie outra foto ou fale com o suporte.'; render(); return; }
+    try{
+      await S.db.doc('config/treino').set({json:JSON.stringify(T), origem:'ia', atualizado:new Date().toISOString(), ia:{em:Date.now(), duvidas:L.duvidas.length}});
+      S.ler = null; S.mode = 'app'; S.tab = 'inicio'; S.date = today(); toast('Ficha carregada! Bom treino. 💪'); render(); window.scrollTo(0, 0);
+    }catch(e){ console.error(e); L.msg = 'Não consegui salvar agora. Verifique a internet e tente de novo.'; render(); }
+    return;
+  }
+  const P = L.plano;
   if(!P.meals.length){ L.msg = 'O plano ficou sem refeições.'; render(); return; }
   const sem = P.meals.filter(m => !/^\d{2}:\d{2}$/.test(m.time || ''));
   if(sem.length){ L.msg = 'Coloque o horário de: ' + sem.map(m => m.name).join(', ') + '.'; render(); return; }
@@ -4054,9 +4073,29 @@ async function lerSalvar(){
 function lerEscolha(ch){ return ch.map(c => esc(c[0]) + (c[1] ? ' <span class="sub">' + esc(c[1]) + '</span>' : '')).join(' <span class="lerou">ou</span> '); }
 function lerView(){
   const L = lerSt(), nome = (S.cli && S.cli.nome) || '', voltar = `<button class="ghost" data-act="lerback">${S.planReady ? 'Voltar' : 'Cancelar'}</button>`;
-  const zap = suporteBtn('Olá! Quero enviar meu plano alimentar para o CheckFit. Sou ' + nome + '.', 'Prefiro enviar pelo WhatsApp');
+  const F = L.tipo === 'ficha', doc = F ? 'ficha' : 'plano', voltarF = F ? `<button class="ghost" data-act="lerback">${S.treino ? 'Voltar' : 'Cancelar'}</button>` : voltar;
+  const zap = suporteBtn(F ? 'Olá! Quero enviar minha ficha de treino para o CheckFit. Sou ' + nome + '.' : 'Olá! Quero enviar meu plano alimentar para o CheckFit. Sou ' + nome + '.', 'Prefiro enviar pelo WhatsApp');
   const msg = L.msg ? `<p class="banner" role="alert" style="margin:0">${esc(L.msg)}</p>` : '';
-  if(L.fase === 'lendo') return `<section class="card" id="view-ler"><h2>Lendo seu plano…</h2><div class="lerspin" aria-hidden="true"></div><p class="sub" style="margin:0;text-align:center">Isso leva até 1 minuto. Não feche o app.</p></section>`;
+  if(L.fase === 'lendo') return `<section class="card" id="view-ler"><h2>Lendo sua ${doc}…</h2><div class="lerspin" aria-hidden="true"></div><p class="sub" style="margin:0;text-align:center">Isso leva até 1 minuto. Não feche o app.</p></section>`;
+  if(L.fase === 'revisar' && F){
+    const T = L.treino, DS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const ag = T.agenda ? Object.entries(T.agenda).sort().map(([d, id]) => DS[+d] + ': ' + id).join(' · ') : '';
+    return `<section class="card" id="view-ler"><div class="bhead"><h2>Confira sua ficha</h2>${voltarF}</div>
+      <p class="sub" style="margin:0">Compare com a ficha do seu professor. Ajuste os nomes dos treinos se precisar.</p>
+      ${L.duvidas.length ? `<div class="banner lerduv" role="note"><b>Pontos para conferir</b><ul>${L.duvidas.map(d => `<li>${esc(d)}</li>`).join('')}</ul></div>` : ''}
+      <label class="bf" for="ler-prof"><span>Professor</span><input id="ler-prof" value="${esc(T.prof || '')}" placeholder="Nome do professor ou personal"></label>
+      ${ag ? `<p class="tip" style="margin:0">Dias da semana: ${esc(ag)}</p>` : ''}
+      <div class="lermeals">${T.fichas.map((f, i) => `<div class="lermeal"><div class="lermlab lerf"><span>Treino</span><span>Nome</span></div><div class="lermh"><span class="lerid">${esc(f.id)}</span><input id="ler-fn-${i}" value="${esc(f.nome)}" aria-label="Nome do treino ${esc(f.id)}"><button class="ghost" data-act="lerdel" data-i="${i}" aria-label="Remover treino ${esc(f.id)}">✕</button></div>
+        <ul class="leritens">${f.ex.map(e => `<li>${esc(e.n)} <span class="sub">${esc(e.s.map(b => b[0] + '×' + b[1]).join(' + '))}${e.c ? ' · ' + String(e.c).replace('.', ',') + ' kg' : ''}${e.desc ? ' · descanso ' + lerMs(e.desc) : ''}</span>${e.obs ? `<br><span class="lerou">${esc(e.obs)}</span>` : ''}</li>`).join('')}</ul>
+        ${f.prep ? `<p class="tip" style="margin:6px 0 0">Antes: ${esc(f.prep)}</p>` : ''}</div>`).join('')}</div>
+      ${T.notas ? `<p class="tip" style="margin:0">${esc(T.notas)}</p>` : ''}
+      <div class="bf"><span>Descanso padrão entre as séries <small>use o que o professor passou</small></span><div class="bgrid"><label class="bf" for="ler-d-multi"><span>Multiarticulares</span><input id="ler-d-multi" inputmode="numeric" value="${lerMs(T.desc.multi)}" placeholder="1:30"></label><label class="bf" for="ler-d-mono"><span>Demais exercícios</span><input id="ler-d-mono" inputmode="numeric" value="${lerMs(T.desc.mono)}" placeholder="1:00"></label></div></div>
+      <p class="tip" style="margin:0">Exercícios com descanso próprio na ficha já aparecem com o tempo ao lado. Depois de salvar, em <b>Planos › Editar minha ficha</b>, dá para mudar o descanso, a carga e as séries de qualquer exercício.</p>
+      ${msg}
+      <button class="primary" id="ler-salvar" data-act="lersalvar" style="width:100%">Usar esta ficha</button>
+      <div class="row" style="justify-content:center"><button class="linkbtn" data-act="lerdenovo">Enviar outra foto</button></div>
+      <div class="row" style="justify-content:center">${zap}</div></section>`;
+  }
   if(L.fase === 'revisar'){
     const P = L.plano;
     return `<section class="card" id="view-ler"><div class="bhead"><h2>Confira seu plano</h2>${voltar}</div>
@@ -4073,26 +4112,26 @@ function lerView(){
       <div class="row" style="justify-content:center">${zap}</div></section>`;
   }
   const temPdf = L.arqs.some(a => a.tipo === 'application/pdf');
-  return `<section class="card" id="view-ler"><div class="bhead"><h2>Enviar meu plano</h2>${voltar}</div>
-    <p class="sub" style="margin:0">Tire uma foto de cada página do plano da sua nutricionista, ou escolha o PDF. O CheckFit monta o plano no app e você confere antes de usar.</p>
+  return `<section class="card" id="view-ler"><div class="bhead"><h2>${F ? 'Enviar minha ficha' : 'Enviar meu plano'}</h2>${voltarF}</div>
+    <p class="sub" style="margin:0">${F ? 'Tire uma foto de cada página da ficha do seu professor, ou escolha o PDF. O CheckFit monta os treinos no app e você confere antes de usar.' : 'Tire uma foto de cada página do plano da sua nutricionista, ou escolha o PDF. O CheckFit monta o plano no app e você confere antes de usar.'}</p>
     ${L.arqs.length ? `<div class="lerarqs">${L.arqs.map((a, i) => `<div class="lerarq">${a.prev ? `<img src="${a.prev}" alt="Página ${i + 1}">` : '<span class="lerpdf">PDF</span>'}<small>${a.tipo === 'application/pdf' ? esc(a.nome) : 'Página ' + (i + 1)}</small><button class="ghost" data-act="lerrm" data-i="${i}" aria-label="Remover">✕</button></div>`).join('')}</div>` : ''}
     <label class="ghost lerpick" for="ler-file">${L.arqs.length ? (temPdf ? 'Trocar arquivo' : '+ Adicionar página') : '📷 Tirar foto ou escolher arquivo'}<input id="ler-file" type="file" accept="image/*,application/pdf" multiple hidden></label>
     <p class="tip" style="margin:0">Dica: foto de cima, com boa luz e a página inteira aparecendo.</p>
-    <label class="lerok"><input type="checkbox" id="ler-aceite" ${L.aceite ? 'checked' : ''}> <span>Concordo que o documento seja lido por um serviço de inteligência artificial só para montar meu plano no CheckFit.</span></label>
+    <label class="lerok"><input type="checkbox" id="ler-aceite" ${L.aceite ? 'checked' : ''}> <span>Concordo que o documento seja lido por um serviço de inteligência artificial só para montar ${F ? 'minha ficha' : 'meu plano'} no CheckFit.</span></label>
     ${msg}
-    <button class="primary" id="ler-enviar" data-act="lerenviar" style="width:100%" ${L.arqs.length ? '' : 'disabled'}>Ler meu plano</button>
+    <button class="primary" id="ler-enviar" data-act="lerenviar" style="width:100%" ${L.arqs.length ? '' : 'disabled'}>${F ? 'Ler minha ficha' : 'Ler meu plano'}</button>
     ${L.restantes != null ? `<p class="tip" style="margin:0;text-align:center">Você ainda pode enviar ${L.restantes} ${L.restantes === 1 ? 'vez' : 'vezes'} hoje.</p>` : ''}
     <div class="row" style="justify-content:center">${zap}</div></section>`;
 }
 function lerAct(a, b){
   const L = lerSt();
-  if(a === 'leropen'){ lerAbrir(); return true; }
+  if(a === 'leropen'){ lerAbrir(b.dataset.tipo); return true; }
   if(a === 'lerback'){ S.ler = null; S.mode = 'app'; render(); window.scrollTo(0, 0); return true; }
   const ac = document.getElementById('ler-aceite'); if(ac) L.aceite = ac.checked;
   if(a === 'lerrm'){ L.arqs.splice(+b.dataset.i, 1); render(); return true; }
   if(a === 'lerenviar'){ lerEnviar(); return true; }
-  if(a === 'lerdel'){ lerLe(); L.plano.meals.splice(+b.dataset.i, 1); render(); return true; }
-  if(a === 'lerdenovo'){ L.fase = 'escolher'; L.plano = null; L.msg = ''; render(); window.scrollTo(0, 0); return true; }
+  if(a === 'lerdel'){ lerLe(); if(L.tipo === 'ficha') L.treino.fichas.splice(+b.dataset.i, 1); else L.plano.meals.splice(+b.dataset.i, 1); render(); return true; }
+  if(a === 'lerdenovo'){ L.fase = 'escolher'; L.plano = null; L.treino = null; L.msg = ''; render(); window.scrollTo(0, 0); return true; }
   if(a === 'lersalvar'){ lerSalvar(); return true; }
   return false;
 }
