@@ -1,0 +1,50 @@
+name: Instalar servidor do CheckFit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['functions/**', 'firebase.json', '.github/workflows/deploy-servidor.yml']
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      PROJETO: dieta-alexandre
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Entrar no Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Ativar serviços e permissões
+        run: |
+          gcloud config set project "$PROJETO"
+          gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com run.googleapis.com eventarc.googleapis.com pubsub.googleapis.com cloudtasks.googleapis.com cloudscheduler.googleapis.com fcm.googleapis.com firebase.googleapis.com compute.googleapis.com iam.googleapis.com secretmanager.googleapis.com --quiet
+          NUM=$(gcloud projects describe "$PROJETO" --format='value(projectNumber)')
+          SA="$NUM-compute@developer.gserviceaccount.com"
+          for i in 1 2 3 4 5 6; do gcloud iam service-accounts describe "$SA" >/dev/null 2>&1 && break; echo "aguardando conta padrão..."; sleep 20; done
+          for R in roles/cloudbuild.builds.builder roles/logging.logWriter roles/artifactregistry.writer roles/storage.objectViewer roles/cloudtasks.enqueuer roles/iam.serviceAccountUser roles/run.invoker roles/datastore.user roles/firebasecloudmessaging.admin; do
+            gcloud projects add-iam-policy-binding "$PROJETO" --member="serviceAccount:$SA" --role="$R" --condition=None --quiet >/dev/null && echo "ok $R" || echo "AVISO: não consegui dar $R"
+          done
+      - name: Guardar a chave da IA com segurança
+        env:
+          CHAVE: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$CHAVE" ]; then echo "ERRO: falta o secret ANTHROPIC_API_KEY no GitHub (Settings > Secrets and variables > Actions)."; exit 1; fi
+          NUM=$(gcloud projects describe "$PROJETO" --format='value(projectNumber)')
+          SA="$NUM-compute@developer.gserviceaccount.com"
+          if gcloud secrets describe ANTHROPIC_API_KEY >/dev/null 2>&1; then
+            ATUAL=$(gcloud secrets versions access latest --secret=ANTHROPIC_API_KEY 2>/dev/null || true)
+            if [ "$ATUAL" != "$CHAVE" ]; then printf %s "$CHAVE" | gcloud secrets versions add ANTHROPIC_API_KEY --data-file=- --quiet && echo "chave atualizada"; else echo "chave já estava guardada"; fi
+          else
+            printf %s "$CHAVE" | gcloud secrets create ANTHROPIC_API_KEY --replication-policy=automatic --data-file=- --quiet && echo "chave guardada"
+          fi
+          gcloud secrets add-iam-policy-binding ANTHROPIC_API_KEY --member="serviceAccount:$SA" --role=roles/secretmanager.secretAccessor --quiet >/dev/null && echo "permissão ok"
+      - name: Instalar dependências
+        working-directory: functions
+        run: npm install --omit=dev --no-audit --no-fund
+      - name: Instalar no Firebase
+        run: npx --yes firebase-tools@latest deploy --only functions --project "$PROJETO" --non-interactive --force
