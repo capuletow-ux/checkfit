@@ -227,10 +227,15 @@ Regras obrigatórias:
 - Não dê orientação de treino e não altere nada do que o professor escreveu.
 - Cada treino (A, B, C… ou Treino 1, 2…) vira um item de "treinos", com letra, nome (grupos musculares, ex.: "Costas e bíceps") e exercícios na ordem da ficha.
 - Séries como lista de blocos {qtd, reps}: "3x10-12" vira [{qtd:3, reps:"10–12"}]; "1x15 + 2x8" vira dois blocos. Use "–" em faixas. Tempo (ex.: prancha 1 min) vai em reps como "1 min".
-- Se um exercício não tiver séries escritas, use [{qtd:3, reps:"conforme o professor"}] e registre uma dúvida.
+- PERIODIZAÇÃO: se a ficha define as séries por SEMANA (ex.: "1ª semana: 3 séries de 11 a 13", "2ª semana: 3x13-15"…) valendo para todos os exercícios, preencha "semanas" (uma por semana, na ordem, com o texto original em txt e os blocos em series) e deixe "series" dos exercícios vazio.
+- Sem periodização, se um exercício não tiver séries escritas, use [{qtd:3, reps:"conforme o professor"}] e registre uma dúvida.
+- Data de início da ficha em data_inicio (AAAA-MM-DD), se aparecer.
+- Abdominais e panturrilhas feitos "dia sim, dia não" (ou outra frequência) vão em "extras", com frequencia_dias (2 = dia sim, dia não) e as séries de cada exercício (uma observação geral como "OBS: 4x15" vale para os exercícios daquele bloco sem série própria).
 - tipo: "multi" para multiarticulares (supinos, remadas, puxadas, agachamentos, leg press, desenvolvimentos, levantamentos), "mono" para os demais.
 - Carga em kg só se estiver escrita. Descanso em segundos só se estiver escrito.
-- Abdominais, panturrilhas ou alongamentos separados podem virar um treino próprio.
+- Técnicas e detalhes que não cabem em séries/repetições (bi-set, tri-set, drop-set, rest-pause, pirâmide, cadência, % de carga, isometria, "até a falha", observações do professor) vão em "obs" do exercício, com as palavras da ficha. Em bi-set/tri-set, escreva em obs de cada exercício com qual ele é combinado.
+- Cardio dentro da ficha (esteira, bike etc.) vira um exercício com a duração em reps (ex.: 1 x "20 min").
+- Fichas escritas à mão, em tabela, em planilha ou em print de aplicativo: leia do mesmo jeito.
 - "dias": só se a ficha disser em que dia da semana fazer cada treino.
 - "duvidas": no máximo 5, curtas, falando com o aluno, só sobre o que muda o treino (série ilegível, exercício confuso, página que parece faltar).
 - Se o documento não for uma ficha de treino, marque e_ficha como false.
@@ -243,6 +248,9 @@ const FICHA_SCHEMA = {
     objetivo: {type: 'string'},
     notas: {type: 'string', description: 'Orientações gerais da ficha'},
     aquecimento_series: {type: 'number'},
+    data_inicio: {type: 'string'},
+    semanas: {type: 'array', items: {type: 'object', properties: {txt: {type: 'string'}, series: {type: 'array', items: {type: 'object', properties: {qtd: {type: 'number'}, reps: {type: 'string'}}, required: ['qtd', 'reps']}}}, required: ['txt', 'series']}},
+    extras: {type: 'array', items: {type: 'object', properties: {nome: {type: 'string'}, frequencia_dias: {type: 'number'}, exercicios: {type: 'array', items: {type: 'object', properties: {nome: {type: 'string'}, series: {type: 'array', items: {type: 'object', properties: {qtd: {type: 'number'}, reps: {type: 'string'}}, required: ['qtd', 'reps']}}}, required: ['nome', 'series']}}}, required: ['nome', 'exercicios']}},
     descanso_multi_seg: {type: 'number'}, descanso_mono_seg: {type: 'number'},
     dias: {type: 'array', items: {type: 'object', properties: {dia_semana: {type: 'string'}, treino: {type: 'string'}}, required: ['dia_semana', 'treino']}},
     treinos: {type: 'array', items: {type: 'object', properties: {
@@ -251,7 +259,7 @@ const FICHA_SCHEMA = {
         nome: {type: 'string'}, tipo: {type: 'string', enum: ['multi', 'mono']},
         series: {type: 'array', items: {type: 'object', properties: {qtd: {type: 'number'}, reps: {type: 'string'}}, required: ['qtd', 'reps']}},
         carga_kg: {type: 'number'}, descanso_seg: {type: 'number'}, obs: {type: 'string'}
-      }, required: ['nome', 'tipo', 'series']}}
+      }, required: ['nome', 'tipo']}}
     }, required: ['letra', 'nome', 'exercicios']}},
     duvidas: {type: 'array', items: {type: 'string'}}
   },
@@ -260,13 +268,16 @@ const FICHA_SCHEMA = {
 const DIAS_SEM = {domingo: 0, segunda: 1, terca: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6};
 function iaParaFicha(r) {
   const corta = (s, n) => String(s || '').trim().slice(0, n), ids = new Set();
+  const blocos = (arr) => (arr || []).filter((b) => b && +b.qtd > 0).map((b) => [Math.min(20, Math.round(+b.qtd)), corta(b.reps, 30).replace(/(\d)\s*-\s*(\d)/g, '$1–$2') || '—']);
+  const semanas = (r.semanas || []).map((w) => ({txt: corta(w.txt, 140), s: blocos(w.series)})).filter((w) => w.s.length);
   const fichas = (r.treinos || []).map((t, i) => {
     let id = corta(t.letra, 3).toUpperCase().replace(/[^A-Z0-9]/g, '') || String.fromCharCode(65 + i);
     while (ids.has(id)) id += '2';
     ids.add(id);
     const ex = (t.exercicios || []).filter((e) => e && e.nome).map((e) => {
-      const s = (e.series || []).filter((b) => b && +b.qtd > 0).map((b) => [Math.min(20, Math.round(+b.qtd)), corta(b.reps, 30).replace(/(\d)\s*-\s*(\d)/g, '$1–$2') || '—']);
-      const o = {n: corta(e.nome, 70), t: e.tipo === 'multi' ? 'multi' : 'mono', s: s.length ? s : [[3, 'conforme o professor']]};
+      const s = blocos(e.series);
+      const o = {n: corta(e.nome, 70), t: e.tipo === 'multi' ? 'multi' : 'mono'};
+      if (s.length) o.s = s; else if (!semanas.length) o.s = [[3, 'conforme o professor']];
       if (+e.carga_kg > 0) o.c = Math.round(+e.carga_kg * 2) / 2;
       if (+e.descanso_seg > 0 && +e.descanso_seg <= 600) o.desc = Math.round(+e.descanso_seg);
       if (corta(e.obs, 140)) o.obs = corta(e.obs, 140);
@@ -276,6 +287,14 @@ function iaParaFicha(r) {
   }).filter(Boolean);
   const T = {prof: corta(r.prof, 60), objetivo: corta(r.objetivo, 40), notas: corta(r.notas, 500), aquec: Math.max(0, Math.min(3, Math.round(+r.aquecimento_series || 0))),
     desc: {multi: +r.descanso_multi_seg > 0 ? Math.round(+r.descanso_multi_seg) : 90, mono: +r.descanso_mono_seg > 0 ? Math.round(+r.descanso_mono_seg) : 60}, fichas, fonte: 'ia'};
+  if (semanas.length) T.semanas = semanas;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(r.data_inicio || '')) T.inicio = r.data_inicio;
+  const xids = new Set();
+  const extras = (r.extras || []).map((x) => {
+    const ex = (x.exercicios || []).filter((e) => e && e.nome).map((e) => { const b = blocos(e.series); return {n: corta(e.nome, 70), t: 'mono', s: b.length ? b : [[3, 'conforme o professor']]}; });
+    return ex.length ? {id: slug(x.nome, xids), nome: corta(x.nome, 40) || 'Extra', freq: Math.max(1, Math.min(7, Math.round(+x.frequencia_dias || 2))), ex} : null;
+  }).filter(Boolean);
+  if (extras.length) T.extras = extras;
   const ag = {};
   (r.dias || []).forEach((d) => { const k = String(d.dia_semana || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/-?feira/, '').trim(), n = DIAS_SEM[k], f = fichas.find((x) => x.id === String(d.treino || '').toUpperCase().replace(/[^A-Z0-9]/g, '')); if (n != null && f) ag[n] = f.id; });
   if (Object.keys(ag).length) T.agenda = ag;
