@@ -3808,6 +3808,13 @@ function pushAct(a, b){
   const W = () => document.querySelector('.wrap'), orig = window.scrollTo.bind(window);
   window.scrollTo = function(a, b){ const w = W(); if(!w) return orig(a, b); if(a && typeof a === 'object') w.scrollTo(a); else w.scrollTo(a || 0, b || 0); };
   try{ Object.defineProperty(window, 'scrollY', {configurable:true, get:() => { const w = W(); return w ? w.scrollTop : 0; }}); }catch(e){}
+  /* iPhone: ao abrir o teclado o sistema empurra a página inteira para cima e às vezes não devolve.
+     Sempre que o teclado fecha (ou a tela volta ao tamanho cheio), a página volta ao lugar. */
+  const reposiciona = () => { if(window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop){ orig(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } };
+  document.addEventListener('focusout', () => { setTimeout(reposiciona, 60); setTimeout(reposiciona, 350); });
+  window.addEventListener('scroll', () => { if(!document.activeElement || !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) reposiciona(); }, {passive:true});
+  if(window.visualViewport) window.visualViewport.addEventListener('resize', () => { if(window.visualViewport.height >= window.innerHeight - 40) setTimeout(reposiciona, 60); });
+  document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') setTimeout(reposiciona, 100); });
 })();
 /* ---------- Suplementos e remédios: cadastro, marcação diária, estoque, adesão ---------- */
 const REM_TIPOS = {remedio:['💊', 'Remédio'], suplemento:['🧴', 'Suplemento'], vitamina:['🍊', 'Vitamina']};
