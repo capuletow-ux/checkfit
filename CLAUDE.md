@@ -6,31 +6,28 @@ Atualizado em 10/11/2026, versão 49 do app.
 - **Quem:** Alexandre (pt-BR). Uso iPhone e não sou programador. Respostas em português, diretas, com passo a passo quando eu precisar mexer em algo.
 - **Como atualizo o app:** subo os arquivos pelo GitHub (site, pelo celular). Sempre me entregue os arquivos prontos (`index.html`, `teste.html`, `regras-firebase.txt`, `functions/index.js`), sem trechos para eu colar.
 - **Segurança:** nunca peça nem aceite a chave da Anthropic ou o JSON da conta de serviço do Firebase. Eu colo esses dados só nos Secrets do GitHub.
-- **Dados pessoais:** não repita nem guarde meu CPF ou minha data de nascimento.
 - **Prints:** antes de pedir, lembre de cobrir dados pessoais (CPF, endereço).
 
 ## O que é
 O CheckFit é um app (PWA) de checklist diário de saúde: plano alimentar, água, peso, treinos (musculação com ficha e cardio), suplementos e remédios, medidas e bioimpedância, diário "Minha Jornada", desafios em grupo e notificações.
 - **Público:** quem tem nutricionista/personal e quem quer montar o próprio plano. Também tem o modo "hábitos", para quem não tem dieta.
-- **Modelo de cobrança:** assinatura mensal (R$ 19,90 ou R$ 22,90, ainda em análise). Só o paciente paga. A nutricionista não paga e traz pacientes para o app.
+- **Modelo de cobrança:** assinatura mensal paga pelo usuário.
 - **Liberação de acesso:** por enquanto é manual (o cliente fala comigo). O pagamento automático foi adiado de propósito.
 
 ## Onde está tudo
-- **Site:** https://checkfitapp.com.br (domínio na Hostinger, conta administrada pelo Ricardinho).
+- **Site:** https://checkfitapp.com.br (publicado pelo GitHub Pages).
 - **Código:** repositório GitHub `checkfitapp/checkfit`.
   - `index.html`: o app inteiro em um arquivo só (HTML, CSS e JS, cerca de 5.500 linhas).
   - `teste.html`: cópia idêntica, usada para testes.
   - `sw.js` e `manifest.webmanifest`: PWA e notificações.
   - `functions/index.js` e `functions/package.json`: servidor (Cloud Functions).
   - `.github/workflows/deploy-servidor.yaml`: publica o servidor sozinho a cada alteração em `functions/`. Secrets usados: `FIREBASE_SERVICE_ACCOUNT` e `ANTHROPIC_API_KEY`. A chave fica no Secret Manager.
-- **Firebase:** projeto `dieta-alexandre`, plano Blaze no meu cartão.
+- **Firebase:** projeto `dieta-alexandre`, plano Blaze.
   - Usa o SDK compat 10.12.2 (app, auth, firestore, messaging).
   - Persistência offline ligada.
   - As regras do Firestore são coladas à mão no console (arquivo `regras-firebase.txt`).
-- **Contas:**
-  - Dono técnico: `appcheckfit@gmail.com` (conta Google no nome do meu filho Rian).
-  - Admin do app: meu e-mail pessoal, mais o do CheckFit com login Google.
-- **IA para ler planos e fichas:** conta da Anthropic no nome do Rian, com créditos pré-pagos.
+- **Contas e admins:** os e-mails de admin estão definidos nas regras do Firestore (`isAdmin()`).
+- **IA para ler planos e fichas:** conta da Anthropic com créditos pré-pagos.
 
 ## Como o app é organizado (index.html)
 - **Estado global:** `S` (`S.user`, `S.db` = `users/{uid}`, `S.days`, `S.prof`, `S.date`, `S.mode`, `S.tab`). Ação principal: `render()`.
@@ -76,11 +73,10 @@ Login e assinatura manual, plano da nutricionista (por texto ou leitura com IA),
 
 ## Pendências e próximos passos
 1. Apagar os 2 grupos órfãos "Desafio teste" (Editar › Encerrar).
-2. Registro da marca no INPI no nome do Rian, com pedido de isenção de PcD (GRU 389). Estou seguindo o passo a passo.
-3. Área da nutricionista, versão mínima: só leitura, resumo semanal e mensal do paciente.
-4. Depois: pagamento automático, grupos fase 2, lojas (App Store e Google Play).
-5. Ideia em aberto: juntar as alterações quando o app for usado em dois aparelhos ao mesmo tempo (hoje vale a última gravação).
-6. Ideia pequena: mostrar "500 ml 💧" em vez de "0 kcal" nas refeições só de água.
+2. Área da nutricionista, versão mínima: só leitura, resumo semanal e mensal do paciente.
+3. Depois: pagamento automático, grupos fase 2, lojas (App Store e Google Play).
+4. Ideia em aberto: juntar as alterações quando o app for usado em dois aparelhos ao mesmo tempo (hoje vale a última gravação).
+5. Ideia pequena: mostrar "500 ml 💧" em vez de "0 kcal" nas refeições só de água.
 
 ## Documentos já feitos (artefatos no Claude)
 - Manual do CheckFit: https://claude.ai/artifact/AmcE5kqVTQVz9BkU52cpYD
