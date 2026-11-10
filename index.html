@@ -596,6 +596,31 @@ html.pwa .wrap{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;over
 
 .syncpill{position:fixed;z-index:60;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 8px);max-width:calc(100% - 32px);background:var(--card,#fff);color:var(--ink,#111);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.15);border-radius:999px;padding:7px 14px;width:max-content;font-size:13px;line-height:1.3;text-align:center}
 .syncpill[hidden]{display:none}
+
+.mbarra{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:18px 4px 8px}
+.mbarra h2{margin:0;font-size:18px}.mbarra h2 small{font-size:13px;font-weight:600;color:var(--muted);margin-left:6px}
+.meal .mtog{width:100%;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.meal.maberta .mtog{padding:14px 14px 0}
+.meal.mfech{gap:0}
+.meal.mfech .mtog{padding:14px}
+.meal.mfech .mname small{display:none}
+.meal.mfech .mtime{font-size:16px;min-width:46px;color:var(--muted)}
+.meal.mfech .mname{font-size:16px;line-height:1.25}
+.meal.mfech .mk{font-size:14px;color:var(--muted)}
+.meal.mfech:has(.mst.ok) .mk{color:var(--ok)}
+.meal{scroll-margin-top:130px}
+.mtog .mtime,.mtog .mname,.mtog .mk{display:block}
+.mtog .mname{flex:1;min-width:0}
+.mst{flex:0 0 22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;background:var(--ok)}
+.mst.skip{background:var(--muted)}
+.mchev{flex:0 0 18px;height:18px;position:relative}
+.mchev::after{content:'';position:absolute;left:4px;top:3px;width:8px;height:8px;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:rotate(45deg);transition:transform .2s}
+.mtog[aria-expanded="true"] .mchev::after{transform:rotate(-135deg);top:7px}
+.mbar{height:4px;background:var(--line);margin:0 14px 12px;border-radius:2px;overflow:hidden}
+.mbar i{display:block;height:100%;background:var(--accent);border-radius:2px}
+.mbar.ok i{background:var(--ok)}.mbar.skip i{background:var(--muted)}.mbar.pend i{width:0!important}
+.meal.mfech:has(.mbar.ok){border-color:var(--ok-soft)}
+.mbody{display:flex;flex-direction:column;gap:10px}
 </style>
 </head>
 <body>
@@ -4652,6 +4677,66 @@ window.addEventListener('pagehide', cofreDescarregar);
 window.addEventListener('online', () => { cofreAcordar(); syncUI(); });
 window.addEventListener('offline', syncUI);
 
+
+/* ---------- Refeições encolhidas: só a refeição da vez aberta ---------- */
+S.mOpen = S.mOpen || {};
+const hm2min = t => { const m = /^(\d{1,2}):(\d{2})/.exec(t || ''); return m ? +m[1] * 60 + +m[2] : null; };
+function mealProg(m, r){
+  const oi = (r && r.opt) || 0, opt = m.options[oi] || m.options[0], its = opt.items.filter(it => !it.opt);
+  const on = r ? its.filter(it => itemRec(r, oi, it.k).on).length : 0;
+  return {on, tot:its.length};
+}
+function mealFeita(m, r){ if(!r) return false; if(r.skip) return true; const p = mealProg(m, r); return p.tot > 0 && p.on >= p.tot; }
+/* qual refeição abre sozinha: a da hora (ou a próxima que falta) — só hoje */
+function mealDaVez(date){
+  if(date !== today()) return null;
+  const pend = PLAN.filter(m => !mealFeita(m, rec(date, m.id, false)));
+  if(!pend.length) return null;
+  const agora = new Date().getHours() * 60 + new Date().getMinutes();
+  let esc = null;
+  pend.forEach(m => { const t = hm2min(m.time); if(t != null && t <= agora + 30) esc = m; });
+  return (esc || pend[0]).id;
+}
+const mealsAll = date => S.mOpen['*' + date] === true;
+function mealAberta(date, mid){
+  if(ehHabitos()) return true;
+  if(mealsAll(date)) return true;
+  const v = S.mOpen[date];
+  return (v === undefined ? mealDaVez(date) : v) === mid;
+}
+function mealHead(date, m, calc, aberta){
+  const r = rec(date, m.id, false), p = mealProg(m, r), feita = mealFeita(m, r), skip = !!(r && r.skip);
+  const st = skip ? 'skip' : feita ? 'ok' : p.on ? 'meio' : 'pend';
+  const pct = p.tot ? Math.round(p.on / p.tot * 100) : 0;
+  const marca = skip ? '<span class="mst skip" aria-hidden="true">–</span>' : feita ? '<span class="mst ok" aria-hidden="true">✓</span>' : '';
+  return `<button class="mhead mtog" id="mtog-${m.id}" data-act="mtog" data-m="${m.id}" aria-expanded="${aberta}" aria-controls="mbody-${m.id}">
+    <span class="mtime num">${m.time || ''}</span>
+    <span class="mname">${esc(m.name)}<small>${pill(MEAL_STATUS, calc.status)}</small></span>
+    <span class="mk num">${fmt(calc.kcal)} kcal</span>${marca}
+    <span class="mchev" aria-hidden="true"></span>
+  </button>${aberta ? '' : `<div class="mbar ${st}" aria-hidden="true"><i style="width:${skip ? 100 : pct}%"></i></div>`}`;
+}
+function mealBarra(date){
+  if(ehHabitos() || PLAN.length < 2) return '';
+  const all = mealsAll(date), feitas = PLAN.filter(m => mealFeita(m, rec(date, m.id, false))).length;
+  return `<div class="mbarra"><h2>🍽️ Refeições <small>${feitas} de ${PLAN.length} feitas</small></h2><button class="linkbtn" id="mtodas" data-act="mtodas">${all ? 'Fechar todas' : 'Abrir todas'}</button></div>`;
+}
+/* depois de "Marcar tudo" ou "Pulei": fecha e abre a próxima que falta */
+function mealAvanca(date){ if(!mealsAll(date)) delete S.mOpen[date]; }
+function mealAct(a, b){
+  const date = S.date;
+  if(a === 'mtog'){
+    const mid = b.dataset.m;
+    if(mealsAll(date)){ delete S.mOpen['*' + date]; S.mOpen[date] = mid; }
+    else S.mOpen[date] = mealAberta(date, mid) ? null : mid;
+    render();
+    if(S.mOpen[date] === mid) setTimeout(() => { const el = document.getElementById('meal-' + mid); if(el) el.scrollIntoView({block:'start', behavior:'smooth'}); }, 30);
+    return true;
+  }
+  if(a === 'mtodas'){ if(mealsAll(date)) delete S.mOpen['*' + date]; else S.mOpen['*' + date] = true; render(); return true; }
+  return false;
+}
+
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
 const WD_LONG = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 const slug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'ex';
@@ -5054,6 +5139,7 @@ function viewDay(){
   let h=heroInicio(date,c);
   h+=waterCard(date,c);
   h+=treinoCard(date);
+  h+=mealBarra(date);
   PLAN.forEach(m=>{h+=mealCard(date,m)});
   h+=trainCard(date,c);
   h+=weightCard(date);
@@ -5155,8 +5241,10 @@ function waterCard(date,c){
 }
 function mealCard(date,m){
   const r=rec(date,m.id,false), calc=mealCalc(m,r), oi=(r&&r.opt)||0, opt=m.options[oi];
-  let h=`<section class="card meal" id="meal-${m.id}" aria-label="${m.name}">
-   <div class="mhead"><div class="mtime num">${m.time}</div><div class="mname">${m.name}<small>${pill(MEAL_STATUS,calc.status)}</small></div><div class="mk num">${fmt(calc.kcal)} kcal</div></div>`;
+  const aberta=mealAberta(date,m.id);
+  if(!aberta) return `<section class="card meal mfech" id="meal-${m.id}" aria-label="${esc(m.name)}">${mealHead(date,m,calc,false)}</section>`;
+  let h=`<section class="card meal${ehHabitos()?'':' maberta'}" id="meal-${m.id}" aria-label="${esc(m.name)}">
+   ${ehHabitos()?`<div class="mhead"><div class="mtime num">${m.time}</div><div class="mname">${m.name}<small>${pill(MEAL_STATUS,calc.status)}</small></div><div class="mk num">${fmt(calc.kcal)} kcal</div></div>`:mealHead(date,m,calc,true)}<div id="mbody-${m.id}" class="mbody">`;
   if(m.options.length>1) h+=`<div class="opts" role="group" aria-label="Opções">${m.options.map((o,i)=>`<button class="chip${o.aj?' mine':''}" id="opt-${m.id}-${i}" data-act="opt" data-m="${m.id}" data-o="${i}" aria-pressed="${i===oi}">${o.label}</button>`).join('')}</div>`;
   h+=`<div class="items">`;
   opt.items.forEach(it=>{
@@ -5174,7 +5262,7 @@ function mealCard(date,m){
   if(ex.length) h+=`<div class="extras">${ex.map((e,i)=>`<div class="extra"><b>${esc(e.n)}</b><span class="num">${fmt(e.kcal)} kcal</span><button class="x" id="rx-${m.id}-${i}" data-act="rmextra" data-m="${m.id}" data-i="${i}" aria-label="Remover ${esc(e.n)}">✕</button></div>`).join('')}</div>`;
   h+=`<button class="ghost fbtn" id="fb-${m.id}" data-act="foodopen" data-m="${m.id}">🔍 Buscar alimento na tabela TACO</button><form class="addx" data-m="${m.id}"><input id="xn-${m.id}" list="foods" placeholder="Comi algo fora do plano?" aria-label="Alimento extra" autocomplete="off"><input id="xk-${m.id}" inputmode="numeric" placeholder="kcal" aria-label="Calorias"><button type="submit">Somar</button></form>
    <div class="mactions"><button class="ghost" id="all-${m.id}" data-act="mealall" data-m="${m.id}">Marcar tudo</button><button class="ghost ${r&&r.skip?'on':''}" id="skip-${m.id}" data-act="skip" data-m="${m.id}" aria-pressed="${!!(r&&r.skip)}">${r&&r.skip?'Pulei esta refeição':'Pulei'}</button>${r?`<button class="ghost" id="clr-${m.id}" data-act="clear" data-m="${m.id}">Limpar</button>`:''}</div>
-  </div></section>`;
+  </div></div></section>`;
   return h;
 }
 function daySummary(date,c){
@@ -5342,6 +5430,7 @@ document.addEventListener('click',e=>{
   if(/^grp/.test(a) && grpAct(a,b)) return;
   if(a==='posttreinox'){ postAbrir(b.dataset.k, String(b.dataset.ini)); return; }
   if(/^post(dia|treino|close|m|share|modo|copy|pos)$/.test(a)){ postAct(a,b); return; }
+  if(/^mto(g|das)$/.test(a) && mealAct(a,b)) return;
   if(a==='btab'){setTab(b.dataset.v); return;}
   if(a==='celeok'){(S.cele||[]).shift(); render(); return;}
   if(a==='recok'){S.prof.eng=S.prof.eng||{}; S.prof.eng.dispensa=today(); saveProf(); render(); return;}
@@ -5373,9 +5462,9 @@ document.addEventListener('click',e=>{
   else if(a==='check'){setItem(date,mid,b.dataset.k,ir=>({...ir,on:!ir.on}));}
   else if(a==='choice'){setItem(date,mid,b.dataset.k,ir=>({...ir,c:+b.dataset.c,on:true}));}
   else if(a==='mult'){setItem(date,mid,b.dataset.k,ir=>({...ir,m:Math.min(4,Math.max(0.5,(ir.m||1)+(+b.dataset.d))),on:true}));}
-  else if(a==='mealall'){markMeal(date,meal);save(date);render();}
+  else if(a==='mealall'){markMeal(date,meal);save(date);mealAvanca(date);render();}
   else if(a==='allplan'){PLAN.forEach(m=>markMeal(date,m));save(date);render();}
-  else if(a==='skip'){const r=rec(date,mid,true);r.skip=!r.skip;save(date);render();}
+  else if(a==='skip'){const r=rec(date,mid,true);r.skip=!r.skip;save(date);if(r.skip)mealAvanca(date);render();}
   else if(a==='clear'){const d=S.days[date]; if(d&&d.meals){delete d.meals[mid];} save(date);render();}
   else if(a==='rmextra'){const r=rec(date,mid,true);r.extras.splice(+b.dataset.i,1);save(date);render();}
   else if(a==='water'){addWater(date,+b.dataset.ml);}
