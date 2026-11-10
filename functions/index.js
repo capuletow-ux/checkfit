@@ -160,6 +160,9 @@ Regras obrigatórias:
 - Transcreva fielmente o que está no documento. Não invente refeições, alimentos, quantidades nem horários.
 - Não dê orientação nutricional, não altere quantidades e não sugira alimentos que não estejam no plano.
 - Cada refeição tem uma ou mais opções (ex.: "Opção 1", "Opção 2"). Se o plano não separa opções, use uma opção só chamada "Plano".
+- CARDÁPIO SEMANAL (tabela com um cardápio diferente para cada dia da semana): cada refeição (café, almoço, lanche, jantar…) vira UMA refeição, e cada dia vira uma opção dessa refeição, com o rótulo do dia ("Segunda", "Terça"…). Não crie uma refeição por dia.
+- Itens combinados com "+" são itens separados (ex.: "180 g frango + 200 g arroz" = dois itens).
+- Listas de substituições gerais (ex.: "proteínas: troque frango por peixe 1:1") viram escolhas extras dos itens correspondentes, quando der para associar; se não der, resuma em "dica" da refeição.
 - Dentro de cada opção, cada item é um grupo de alimentos. As substituições/equivalentes que o plano permite para aquele item ficam como escolhas do mesmo item, na ordem do documento (a principal primeiro).
 - Quantidades exatamente como escritas (ex.: "2 colheres de sopa", "150 g", "1 unidade média"). Líquidos (água, leite, sucos) em ml.
 - kcal: estimativa aproximada para a quantidade indicada, com base em tabelas como a TACO. Se não der para estimar, use 0.
@@ -300,7 +303,7 @@ function iaParaFicha(r) {
   if (Object.keys(ag).length) T.agenda = ag;
   return T;
 }
-exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, memory: '512MiB'}, async (req) => {
+exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 540, memory: '512MiB'}, async (req) => {
   const uid = req.auth && req.auth.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Entre no app primeiro.');
   const arqs = (req.data && req.data.arquivos) || [];
@@ -331,7 +334,7 @@ exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, me
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {'x-api-key': String(ANTHROPIC_API_KEY.value() || '').trim(), 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-      body: JSON.stringify({model: IA_MODELO, max_tokens: 8000, system: ficha ? FICHA_INSTRUCOES : IA_INSTRUCOES,
+      body: JSON.stringify({model: IA_MODELO, max_tokens: 32000, system: ficha ? FICHA_INSTRUCOES : IA_INSTRUCOES,
         tools: [ficha ? {name: 'salvar_ficha', description: 'Salva a ficha de treino transcrita.', input_schema: FICHA_SCHEMA} : {name: 'salvar_plano', description: 'Salva o plano alimentar transcrito.', input_schema: IA_SCHEMA}],
         tool_choice: {type: 'auto'},
         messages: [{role: 'user', content: conteudo}]})
@@ -346,6 +349,7 @@ exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, me
   }
   const uso_ = resp.usage || {};
   await usoRef.set({tokensEntrada: admin.firestore.FieldValue.increment(uso_.input_tokens || 0), tokensSaida: admin.firestore.FieldValue.increment(uso_.output_tokens || 0)}, {merge: true}).catch(() => {});
+  if (resp.stop_reason === 'max_tokens') { console.error('IA max_tokens', JSON.stringify(uso_)); return {ok: false, motivo: 'grande', duvidas: [], restantes: IA_LIMITE_DIA - uso}; }
   const bloco = (resp.content || []).find((c) => c.type === 'tool_use' && c.name === ferramenta);
   let r = bloco && bloco.input;
   if (!r) { // o modelo respondeu em texto: tenta achar o JSON
