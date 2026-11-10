@@ -588,15 +588,19 @@ html.pwa .wrap{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;over
 .gpost small{color:var(--muted);font-size:12px}
 .greac{display:flex;gap:6px;margin-top:6px}.greac button{border:1px solid var(--line);background:none;border-radius:99px;padding:4px 10px;min-height:34px;font:inherit;font-size:14px;cursor:pointer;color:inherit}
 .greac button.on{background:var(--accent-soft);border-color:var(--accent)}
-.gdel{min-height:32px;min-width:32px;padding:0}
+.gdel{min-height:32px;min-width:32px;padding:0}.gperigo{color:var(--danger,#c0392b)!important;align-self:flex-start}
 .gmini{display:flex;flex-direction:column;gap:2px;margin-top:6px}
 .gminirow{display:flex;align-items:center;gap:8px}.gminibtn{flex:1;min-width:0;display:flex;align-items:center;gap:10px;text-align:left;background:none;border:0;padding:8px 0;color:inherit;font:inherit;cursor:pointer}
 .gfiz{flex:0 0 auto;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:99px;padding:6px 12px;min-height:38px;font:inherit;font-weight:800;font-size:13px;cursor:pointer}.gfiz.on{background:var(--accent);color:#fff}
 .gminirow b{display:block;font-size:14.5px}.gminirow small{display:block;color:var(--muted);font-size:12px}
+
+.syncpill{position:fixed;z-index:60;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 8px);max-width:calc(100% - 32px);background:var(--card,#fff);color:var(--ink,#111);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.15);border-radius:999px;padding:7px 14px;width:max-content;font-size:13px;line-height:1.3;text-align:center}
+.syncpill[hidden]{display:none}
 </style>
 </head>
 <body>
 
+<div id="syncpill" class="syncpill" role="status" aria-live="polite" hidden></div>
 <div class="wrap">
   <header class="top">
     <div class="brand"><div><h1 class="logo" aria-label="CheckFit"><svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lgck" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#22C55E"/><stop offset="1" stop-color="#A3E635"/></linearGradient></defs><rect x="6" y="14" width="34" height="34" rx="9" fill="none" stroke="var(--brand)" stroke-width="5"/><path d="M15 30 L24 39 L47 13" fill="none" stroke="var(--bg)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 30 L24 39 L47 13" fill="none" stroke="url(#lgck)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Check<b>Fit</b></span></h1><small id="nutri">Checklist diário de saúde</small></div><div class="who" id="who" hidden><button class="todaybtn" id="adminbtn" data-act="admin" hidden>Painel</button><button class="todaybtn" id="logout" data-act="logout">Sair</button></div></div>
@@ -719,13 +723,8 @@ function waterMl(date){
 function save(date){
   try{ grpAgenda(); }catch(e){}
   clearTimeout(S.timers[date]);
-  S.timers[date]=setTimeout(async()=>{
-    delete S.timers[date];
-    if(S.db && S.days[date] && S.days[date]._h){ saveParcial(date); return; }
-    const body=JSON.parse(JSON.stringify(S.days[date]||{meals:{}}));
-    if(S.db){ try{ await S.db.doc('dias/'+date).set(body);}catch(e){ banner('Não consegui salvar agora. Vou tentar de novo na próxima alteração.'); } }
-    else { try{ localStorage.setItem('diario-dias',JSON.stringify(S.days)); }catch(e){} }
-  },450);
+  if(S.days[date] && !S.days[date]._h){ S.days[date]._t=Date.now(); try{ cofreGuardar(date); }catch(e){} }
+  S.timers[date]=setTimeout(()=>{ delete S.timers[date]; cofreEnviar(date); },450);
 }
 async function saveCustom(){
   if(S.db){ try{ await S.db.doc('config/alimentos').set({lista:S.custom}); }catch(e){} }
@@ -746,7 +745,7 @@ const FB_CONFIG = {
 let AUTH=null, FS=null;
 function bindUser(user){
   (S.unsubs||[]).forEach(u=>{try{u()}catch(e){}}); S.unsubs=[];
-  S.user=user||null; S.jor=null; S.treino=null; S.sessIni=null; S.rest=null; S.days={}; S.custom=[]; S.prof={...PROF_DEF}; S.ready=false; S.planReady=false; S.db=null; bannerMsg=''; S.imsg=''; setPlan(null);
+  S.user=user||null; S.pend={}; S.jor=null; S.treino=null; S.sessIni=null; S.rest=null; S.days={}; S.custom=[]; S.prof={...PROF_DEF}; S.ready=false; S.planReady=false; S.db=null; bannerMsg=''; S.imsg=''; setPlan(null);
   document.getElementById('who').hidden=!user; S.confirmDel=false; S.delMsg='';
   bindCheckfit(user);
   if(!user){ render(); return; }
@@ -2736,6 +2735,7 @@ function diasOuvir(q, user){
     if(S.user !== user) return;
     snap.docs.forEach(doc => { if(!S.timers[doc.id]) S.days[doc.id] = JSON.parse(JSON.stringify(doc.data() || {meals:{}})); });
     snap.docChanges().forEach(ch => { if(ch.type === 'removed' && !S.timers[ch.doc.id]) delete S.days[ch.doc.id]; });
+    try{ cofreConferir(new Set(snap.docs.filter(d => d.metadata && d.metadata.hasPendingWrites).map(d => d.id))); }catch(e){}
     histParciais(); S.ready = true; render(); histSync(S.histMig);
   }, () => { banner('Não consegui ler seus dados. Verifique a internet e recarregue.'); }));
 }
@@ -4304,6 +4304,17 @@ async function grpRemover(uid){
   try{ const ref = grpCol('grupos').doc(g.id); await ref.collection('membros').doc(uid).delete().catch(() => {}); await ref.update({membros:firebase.firestore.FieldValue.arrayRemove(uid)}); G.conf = null; toast('Pessoa removida do grupo.'); grpAbrir(g.id); }
   catch(e){ console.error(e); toast('Não consegui remover agora.'); }
 }
+async function grpRenomear(){
+  const G = grpSt(), g = G.d && G.d.g; if(!g || g.admin !== grpEu()) return;
+  const nome = String((document.getElementById('grp-renome') || {}).value || '').trim().slice(0, 40);
+  if(!nome){ G.msg = 'Dê um nome ao grupo.'; render(); return; }
+  try{
+    await grpCol('grupos').doc(g.id).update({nome});
+    await grpCol('codigos').doc(g.codigo).update({nome}).catch(() => {});
+    g.nome = nome; const l = (G.lista || []).find(x => x.id === g.id); if(l) l.nome = nome;
+    G.conf = null; G.msg = ''; toast('Nome do grupo atualizado.'); render();
+  }catch(e){ console.error(e); G.msg = 'Não consegui renomear agora.'; render(); }
+}
 async function grpSalvaShare(k){
   const G = grpSt(), g = G.d && G.d.g; if(!g) return;
   const sh = {...grpShare(g.id), [k]:!grpShare(g.id)[k]};
@@ -4501,10 +4512,13 @@ function grpGrupoView(){
     corpo = `<div class="glista">${D.membros.map(m => `<div class="gitem"><span class="gav">${esc((m.nome || '?').slice(0, 1).toUpperCase())}</span><span style="flex:1;min-width:0"><b>${esc(m.nome || 'Alguém')}${m.uid === grpEu() ? ' (você)' : ''}</b><small>${m.uid === g.admin ? 'administra o grupo' : 'entrou há ' + grpQuando(m.entrou || Date.now())}</small></span>${adm && m.uid !== grpEu() ? (G.conf === 'r:' + m.uid ? `<button class="primary" data-act="grpremok" data-u="${esc(m.uid)}">Remover</button>` : `<button class="ghost" data-act="grpconf" data-v="r:${esc(m.uid)}">Remover</button>`) : ''}</div>`).join('')}</div>
       <h3 style="margin:12px 0 0">O que o grupo vê de você</h3>
       ${[['treinos', '💪', 'Meus treinos concluídos'], ['seq', '🔥', 'Minha sequência de presença'], ['conq', '🏆', 'Desafios que eu completar']].map(([k, ic, l]) => `<button class="pusho${sh[k] ? ' on' : ''}" data-act="grpshare" data-k="${k}" aria-pressed="${sh[k]}"><span class="pic">${ic}</span><span><b>${l}</b></span><span class="psw" aria-hidden="true"></span></button>`).join('')}
-      ${adm ? (G.conf === 'enc' ? `<div class="banner" style="margin:10px 0 0">Encerrar o grupo apaga desafios e mural para todos. <div class="row" style="margin-top:6px"><button class="primary" data-act="grpencok">Encerrar grupo</button><button class="ghost" data-act="grpconfno">Cancelar</button></div></div>` : `<button class="linkbtn" data-act="grpconf" data-v="enc" style="margin-top:10px">Encerrar grupo</button>`)
+      ${adm ? `<button class="linkbtn" data-act="grpconf" data-v="edit" style="margin-top:10px">Renomear ou encerrar o grupo</button>`
         : (G.conf === 'sair' ? `<div class="banner" style="margin:10px 0 0">Sair do grupo? <div class="row" style="margin-top:6px"><button class="primary" data-act="grpsairok">Sair</button><button class="ghost" data-act="grpconfno">Ficar</button></div></div>` : `<button class="linkbtn" data-act="grpconf" data-v="sair" style="margin-top:10px">Sair do grupo</button>`)}`;
   }
-  return `<section class="card" id="view-grp"><div class="bhead"><h2>${esc(g.nome)}</h2><button class="ghost" data-act="grpvoltalista">Voltar</button></div>
+  const editar = adm && G.conf && /^(edit|enc)$/.test(G.conf) ? `<div class="gform"><label class="bf" for="grp-renome"><span>Nome do grupo</span><input id="grp-renome" maxlength="40" value="${esc(g.nome)}" autocomplete="off"></label>${msg}<div class="row"><button class="primary" id="grp-renomear" data-act="grprenome">Salvar nome</button><button class="ghost" data-act="grpconfno">Fechar</button></div>
+      ${G.conf === 'enc' ? `<div class="banner" style="margin:0">Encerrar o grupo apaga desafios e mural para todos e não dá para desfazer. <div class="row" style="margin-top:6px"><button class="primary" id="grp-encok" data-act="grpencok">Encerrar grupo</button><button class="ghost" data-act="grpconf" data-v="edit">Cancelar</button></div></div>` : `<button class="linkbtn gperigo" data-act="grpconf" data-v="enc">Encerrar (excluir) este grupo</button>`}</div>` : '';
+  return `<section class="card" id="view-grp"><div class="bhead"><h2>${esc(g.nome)}</h2><div class="row" style="gap:6px">${adm ? `<button class="ghost" id="grp-editar" data-act="grpconf" data-v="edit" aria-label="Editar ou excluir o grupo">Editar</button>` : ''}<button class="ghost" data-act="grpvoltalista">Voltar</button></div></div>
+    ${editar}
     <div class="gcod"><div><small>Código do convite</small><b class="num">${grpFmtCod(g.codigo)}</b></div><div class="row" style="gap:6px"><button class="primary" id="grp-conv" data-act="grpconv">Convidar</button><button class="ghost" data-act="grpqr" aria-pressed="${!!G.qr}">QR Code</button></div></div>
     ${G.qr ? `<div class="gqr"><div id="grp-qr"></div><small>Aponte a câmera do celular para entrar no grupo</small>${adm ? (G.conf === 'cod' ? `<div class="row"><button class="primary" data-act="grpcodok">Gerar código novo</button><button class="ghost" data-act="grpconfno">Cancelar</button></div>` : '<button class="linkbtn" data-act="grpconf" data-v="cod">Trocar código (o atual para de funcionar)</button>') : ''}</div>` : ''}
     <div class="gtabs" role="tablist">${abas.map(([k, l]) => `<button role="tab" aria-selected="${G.aba === k}" data-act="grpaba" data-v="${k}">${l}</button>`).join('')}</div>
@@ -4543,6 +4557,7 @@ function grpAct(a, b){
   if(a === 'grpconfno'){ G.conf = null; render(); return true; }
   if(a === 'grpcodok'){ grpTrocaCod(); return true; }
   if(a === 'grpencok'){ grpEncerrar(); return true; }
+  if(a === 'grprenome'){ grpRenomear(); return true; }
   if(a === 'grpsairok'){ grpSair(); return true; }
   if(a === 'grpremok'){ grpRemover(b.dataset.u); return true; }
   if(a === 'grpshare'){ grpSalvaShare(b.dataset.k); return true; }
@@ -4557,6 +4572,85 @@ function grpAct(a, b){
   if(a === 'grpmdel'){ const g = G.d && G.d.g; if(g){ grpCol('grupos').doc(g.id).collection('mural').doc(b.dataset.m).delete().then(() => { G.d.mural = G.d.mural.filter(x => x.id !== b.dataset.m); render(); }).catch(() => toast('Não consegui apagar agora.')); } return true; }
   return false;
 }
+
+/* ---------- Virada do dia: app aberto de ontem passa para hoje ao voltar ---------- */
+S.hojeVisto = today();
+function viraDia(){
+  const t = today(); if(!S.hojeVisto || t === S.hojeVisto) return;
+  const estavaHoje = S.date === S.hojeVisto; S.hojeVisto = t;
+  if(estavaHoje && S.mode !== 'treino' && !(typeof cardioAtivo === 'function' && cardioAtivo())){ S.date = t; try{ render(); }catch(e){} toast('Bom dia! O app passou para hoje. ☀️'); }
+}
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') viraDia(); });
+window.addEventListener('focus', viraDia); window.addEventListener('pageshow', viraDia);
+setInterval(viraDia, 60000);
+/* ---------- Cofre local: cópia de segurança do dia até o servidor confirmar ---------- */
+const COFRE_DIAS = 4;
+const cofreChave = () => 'cf-cofre-' + ((S.user && S.user.uid) || 'x');
+function cofreLer(){ try{ return JSON.parse(localStorage.getItem(cofreChave()) || '{}') || {}; }catch(e){ return {}; } }
+function cofreGravar(c){ try{ localStorage.setItem(cofreChave(), JSON.stringify(c)); }catch(e){} }
+/* guarda o dia na hora (síncrono: sobrevive mesmo se o iPhone fechar o app logo depois) */
+function cofreGuardar(date){
+  if(!S.user || !S.days[date] || S.days[date]._h) return;
+  const c = cofreLer(), lim = addDays(today(), -COFRE_DIAS);
+  Object.keys(c).forEach(k => { if(k < lim) delete c[k]; });
+  c[date] = {t:S.days[date]._t || Date.now(), b:S.days[date]};
+  cofreGravar(c);
+}
+/* servidor confirmou esta versão: pode apagar a cópia */
+function cofreOk(date, t){ const c = cofreLer(); if(c[date] && c[date].t <= t){ delete c[date]; cofreGravar(c); } }
+/* ao ler do servidor: se a cópia do aparelho for mais nova, ela volta e é reenviada */
+function cofreConferir(pendFS){
+  if(!S.user || !S.db) return false;
+  const c = cofreLer(); let volta = 0;
+  Object.entries(c).forEach(([date, x]) => {
+    if(!x || !x.b || S.timers[date]) return;
+    const srv = S.days[date], ts = (srv && srv._t) || 0;
+    if(x.t > ts){ S.days[date] = JSON.parse(JSON.stringify(x.b)); S.days[date]._t = x.t; cofreEnviar(date); volta++; }
+    else if(!S.pend[date] && !(pendFS && pendFS.has(date))) delete c[date];
+  });
+  if(!volta) cofreGravar(c);
+  else toast(volta === 1 ? 'Recuperei registros que ainda não tinham chegado ao servidor. ✅' : 'Recuperei ' + volta + ' dias que ainda não tinham chegado ao servidor. ✅');
+  return volta > 0;
+}
+/* envio de fato (antes ficava dentro do save) */
+S.pend = S.pend || {};
+async function cofreEnviar(date){
+  if(S.db && S.days[date] && S.days[date]._h){ saveParcial(date); return; }
+  const body = JSON.parse(JSON.stringify(S.days[date] || {meals:{}}));
+  if(!body._t) body._t = Date.now();
+  if(!S.db){ try{ localStorage.setItem('diario-dias', JSON.stringify(S.days)); }catch(e){} return; }
+  const t = body._t, db = S.db; S.pend[date] = t; syncUI();
+  try{ await db.doc('dias/' + date).set(body); if(S.db === db){ cofreOk(date, t); if(S.pend[date] === t) delete S.pend[date]; } }
+  catch(e){ if(S.pend[date] === t) delete S.pend[date]; banner('Não consegui salvar agora. Seus registros ficaram guardados no aparelho e vou tentar de novo.'); }
+  syncUI();
+}
+/* manda já o que estiver esperando (o iPhone pode fechar o app ao trocar para o Instagram) */
+function cofreDescarregar(){
+  Object.keys(S.timers || {}).forEach(date => { clearTimeout(S.timers[date]); delete S.timers[date]; cofreEnviar(date); });
+}
+/* aviso discreto quando algo ainda não chegou ao servidor */
+let SYNC_T = null;
+function syncUI(){
+  clearTimeout(SYNC_T);
+  const el = document.getElementById('syncpill'); if(!el) return;
+  const n = Object.keys(S.pend || {}).length;
+  if(!n){ el.hidden = true; return; }
+  SYNC_T = setTimeout(() => {
+    if(!Object.keys(S.pend || {}).length){ el.hidden = true; return; }
+    el.textContent = navigator.onLine === false ? '📵 Sem internet · seus registros estão guardados no aparelho' : '☁️ Enviando seus registros…';
+    el.hidden = false;
+  }, 2500);
+}
+function cofreAcordar(){
+  if(!S.db || !Object.keys(S.pend || {}).length) return;
+  /* conexão "morta" depois do app ficar em segundo plano: reabre */
+  try{ FS.disableNetwork().then(() => FS.enableNetwork()).catch(() => {}); }catch(e){}
+  Object.keys(S.pend).forEach(date => { if(!S.timers[date]) cofreEnviar(date); });
+}
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') cofreDescarregar(); else setTimeout(cofreAcordar, 300); });
+window.addEventListener('pagehide', cofreDescarregar);
+window.addEventListener('online', () => { cofreAcordar(); syncUI(); });
+window.addEventListener('offline', syncUI);
 
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
 const WD_LONG = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
@@ -4686,7 +4780,7 @@ function finishSessao(){
   const d = S.days[S.date]; d.treinos = Array.isArray(d.treinos) ? d.treinos.filter(t => t.sess !== sess.ini) : [];
   d.treinos.push({t:'musculacao', min:r.min, i:1, sess:sess.ini, f:sess.f});
   stopRest(); wakeOff(); S.mode = 'app'; S.sessIni = null; S.confirmDiscard = false;
-  save(S.date); render(); window.scrollTo(0, 0); setTimeout(() => postAbrir('treino', sess.ini), 400); try{ grpPostTreino(r.min); }catch(e){}
+  save(S.date); cofreDescarregar(); render(); window.scrollTo(0, 0); setTimeout(() => postAbrir('treino', sess.ini), 400); try{ grpPostTreino(r.min); }catch(e){}
   toast(`${lbl(sess.f)} concluído: ${r.min} min, ${r.series} séries${r.prs ? ', ' + r.prs + ' recorde(s)' : ''}.`);
 }
 function discardSessao(){
