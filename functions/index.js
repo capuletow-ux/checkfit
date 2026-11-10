@@ -366,3 +366,25 @@ exports.lerPlano = onCall({secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 180, me
   if (!plano.meals.length) return {ok: false, motivo: 'vazio', duvidas: r.duvidas || [], restantes: IA_LIMITE_DIA - uso};
   return {ok: true, plano, duvidas: (r.duvidas || []).slice(0, 6).map((d) => String(d).slice(0, 200)), restantes: IA_LIMITE_DIA - uso};
 });
+
+/* ---------- Grupos: avisa os participantes quando sai um desafio novo ---------- */
+exports.avisarDesafio = onCall(async (req) => {
+  const uid = req.auth && req.auth.uid, gid = String((req.data && req.data.gid) || ''), did = String((req.data && req.data.did) || '');
+  if (!uid || !gid || !did) throw new HttpsError('invalid-argument', 'Dados incompletos.');
+  const g = await db.doc(`grupos/${gid}`).get();
+  if (!g.exists || g.data().admin !== uid) throw new HttpsError('permission-denied', 'Só quem administra o grupo pode avisar.');
+  const d = await db.doc(`grupos/${gid}/desafios/${did}`).get();
+  if (!d.exists) throw new HttpsError('not-found', 'Desafio não encontrado.');
+  if (d.data().avisado) return {enviados: 0};
+  await d.ref.update({avisado: Date.now()});
+  const G = g.data(), D = d.data();
+  let enviados = 0;
+  for (const m of (G.membros || []).filter((x) => x !== uid).slice(0, 100)) {
+    const s = await db.doc(`lembretes/${m}`).get();
+    if (!s.exists) continue;
+    const L = s.data();
+    if (!L.ativo || !(L.tokens || []).length) continue;
+    enviados += await enviar(m, L, {titulo: '🏆 Novo desafio em ' + String(G.nome || 'seu grupo').slice(0, 40), corpo: String(D.titulo || 'Desafio').slice(0, 60) + ' · toque para participar', tag: 'grp-' + did, url: SITE + '?g=' + (G.codigo || '')}) || 0;
+  }
+  return {enviados};
+});
