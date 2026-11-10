@@ -560,6 +560,39 @@ html.pwa .wrap{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;over
 .lermlab{display:flex;gap:8px;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:4px}.lermlab span:first-child{flex:0 0 auto;min-width:108px}.lermlab em{font-style:normal;font-weight:600;color:var(--accent)}.lerf span:first-child{min-width:52px}
 .lerop{font-size:12.5px;font-weight:800;color:var(--accent);margin-top:8px;text-transform:uppercase;letter-spacing:.04em}
 .leritens{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.45}.lerou{color:var(--muted);font-size:12px}
+
+#view-grp{display:flex;flex-direction:column;gap:12px}
+.gform{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:14px;padding:12px}
+.glista{display:flex;flex-direction:column}
+.gitem{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:11px 0;color:inherit;font:inherit;cursor:pointer;min-height:56px}
+.gitem:first-child{border-top:0}.gitem b{display:block}.gitem small{display:block;color:var(--muted);font-size:12.5px}
+.gav{flex:0 0 40px;height:40px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:17px}
+.gvazio{text-align:center;padding:10px 6px}.gvazio>span{font-size:38px;display:block}.gvazio b{display:block;margin-top:4px}
+.gcod{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--accent-soft);border-radius:14px;padding:12px}
+.gcod small{display:block;font-size:12px;font-weight:700;color:var(--muted)}.gcod b{font-size:22px;letter-spacing:.06em;color:var(--accent)}
+.gqr{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}.gqr #grp-qr{background:#fff;padding:10px;border-radius:12px;min-height:220px;min-width:220px}.gqr small{color:var(--muted)}
+.gtabs{display:flex;gap:4px;background:var(--surface2);border-radius:12px;padding:4px}
+.gtabs button{flex:1;border:0;background:none;border-radius:9px;padding:9px 4px;font:inherit;font-weight:800;font-size:14px;color:var(--muted);cursor:pointer;min-height:40px}
+.gtabs button[aria-selected=true]{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.gdes{border:1px solid var(--line);border-radius:14px;padding:12px}
+.gdesh{display:flex;gap:10px;align-items:flex-start}.gdesh b{display:block}.gdesh small{display:block;color:var(--muted);font-size:12.5px}
+.gic{flex:0 0 36px;height:36px;border-radius:10px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:18px}
+.gst{font-size:11.5px;font-weight:800;padding:3px 8px;border-radius:99px;background:var(--surface2);color:var(--muted);white-space:nowrap}.gst.ativo{background:var(--accent-soft);color:var(--accent)}
+.grank{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.grank li{display:flex;align-items:center;gap:10px}.grank li.eu b{color:var(--accent)}.grank b{display:block;font-size:14px}
+.gpos{flex:0 0 30px;font-weight:900;color:var(--muted);text-align:center}
+.gbar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:4px}.gbar span{display:block;height:100%;background:var(--accent);border-radius:99px}
+.gnum{font-weight:800;font-size:13px;color:var(--muted);white-space:nowrap}
+.gmural{display:flex;flex-direction:column}
+.gpost{display:flex;gap:10px;align-items:flex-start;border-top:1px solid var(--line);padding:10px 0}.gpost:first-child{border-top:0}
+.gpost small{color:var(--muted);font-size:12px}
+.greac{display:flex;gap:6px;margin-top:6px}.greac button{border:1px solid var(--line);background:none;border-radius:99px;padding:4px 10px;min-height:34px;font:inherit;font-size:14px;cursor:pointer;color:inherit}
+.greac button.on{background:var(--accent-soft);border-color:var(--accent)}
+.gdel{min-height:32px;min-width:32px;padding:0}
+.gmini{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.gminirow{display:flex;align-items:center;gap:8px}.gminibtn{flex:1;min-width:0;display:flex;align-items:center;gap:10px;text-align:left;background:none;border:0;padding:8px 0;color:inherit;font:inherit;cursor:pointer}
+.gfiz{flex:0 0 auto;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:99px;padding:6px 12px;min-height:38px;font:inherit;font-weight:800;font-size:13px;cursor:pointer}.gfiz.on{background:var(--accent);color:#fff}
+.gminirow b{display:block;font-size:14.5px}.gminirow small{display:block;color:var(--muted);font-size:12px}
 </style>
 </head>
 <body>
@@ -684,6 +717,7 @@ function waterMl(date){
 
 /* ---------- Persistência ---------- */
 function save(date){
+  try{ grpAgenda(); }catch(e){}
   clearTimeout(S.timers[date]);
   S.timers[date]=setTimeout(async()=>{
     delete S.timers[date];
@@ -720,6 +754,7 @@ function bindUser(user){
   S.db={ doc:p=>{const [c,d]=p.split('/'); return base.collection(c).doc(d);}, collection:p=>base.collection(p) };
   diasBind(user);
   S.push=null; S.pushLoaded=null; pushCarregar();
+  S.grp=null; grpCarregar().then(()=>{ try{ render(); }catch(e){} grpAgenda(); });
   S.unsubs.push(S.db.doc('config/alimentos').onSnapshot(s=>{ S.custom=(s.exists && s.data().lista)||[]; fillFoods(); },()=>{}));
   S.unsubs.push(S.db.doc('config/treino').onSnapshot(s=>{ S.trnOrig = s.exists ? (s.data().origem||'prof') : null; let t=null; if(s.exists){ try{ t=JSON.parse(s.data().json||'null'); }catch(e){} } S.treinoBase=validTreino(t)?t:null; aplicaAjustes(); if(S.ready) render(); },()=>{}));
   S.unsubs.push(S.db.doc('config/plano').onSnapshot(s=>{ S.planOrig = s.exists ? (s.data().origem||'prof') : null; let p=null; if(s.exists){ try{ p=JSON.parse(s.data().json||'null'); }catch(e){} } S.planBase=validPlan(p)?p:null; aplicaAjustes(); S.planReady=true; try{ pushSync(); }catch(e){} if(PLAN.length){ const pi=document.getElementById('planimport'); if(pi) pi.remove(); } render(); },()=>{ S.planReady=true; render(); }));
@@ -1764,7 +1799,7 @@ function heroInicio(date, c){
     <div class="row1" style="margin-top:4px">${pill(DAY_STATUS, c.status)}<span class="sub num">${c.extraK ? `extras ${fmt(c.extraK)} kcal` : ''}${c.extraK && c.tr.kcal ? ' · ' : ''}${c.tr.kcal ? `treinos −${fmt(c.tr.kcal)} kcal` : ''}</span></div>
     <div class="bar"><i class="${over ? 'over' : ''}" style="width:${pct}%"></i></div>
     <button class="primary" id="allplan" data-act="allplan">${ehHabitos() ? 'Cumpri todos os hábitos de hoje' : 'Segui o plano em todas as refeições'}</button>
-  </section>${proximaRefeicao(date)}${remCard(date)}${bemCard(date)}${jorCard(date)}${desafioCard(date)}${diaPostCard(date)}`;
+  </section>${proximaRefeicao(date)}${remCard(date)}${grpCard(date)}${bemCard(date)}${jorCard(date)}${desafioCard(date)}${diaPostCard(date)}`;
 }
 function proximaRefeicao(date){
   if(date !== today() || !PLAN.length) return '';
@@ -1789,6 +1824,7 @@ function plusSheet(){
     ${S.treino ? b('plusgo', '🏋️', 'Treino de musculação', 'abrir o treino do dia', 'data-v="musc"') : ''}
     ${b('plusgo', '🏃', 'Outra atividade', 'corrida, beach tennis, caminhada…', 'data-v="ativ"')}
     ${b('plusgo', '⚖️', 'Peso', 'registrar o peso de hoje', 'data-v="peso"')}
+    ${b('grpopen', '🏆', 'Desafios e grupos', 'competir com amigos', '')}
     ${b('remopen', '💊', 'Suplementos e remédios', remLista().length ? 'marcar o que tomou hoje' : 'cadastrar e receber lembretes', '')}
     ${b('plusgo', '📏', 'Medidas', 'cintura, braço, coxa…', 'data-v="med"')}
     ${b('foodopen', '🔍', 'Buscar alimento', 'calorias pela tabela TACO', '')}
@@ -4144,6 +4180,384 @@ function lerPlanos(){
   return `<section class="card" aria-label="Plano novo"><h2>Plano novo da nutricionista?</h2><p class="sub" style="margin:4px 0 10px">Envie foto ou PDF e o app troca o plano${ia ? '' : ' atual'} em menos de 1 minuto. Seus registros continuam salvos.</p><button class="primary" id="plan-ler" data-act="leropen">📄 Enviar plano novo</button></section>`;
 }
 
+/* ---------- Grupos e desafios (fase 1): convite por código/link/QR, desafios automáticos, ranking, mural ---------- */
+const GRP_ALFA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789', GRP_MAX = 10, GRP_MAX_ADMIN = 5, GRP_MAX_MEMB = 100;
+const GRP_MODELOS = [
+  {tipo:'plano', titulo:'21 dias seguindo o plano', meta:21, dias:21, un:'dias com o plano completo', ic:'🥗'},
+  {tipo:'treinos', titulo:'20 treinos no mês', meta:20, dias:30, un:'treinos', ic:'💪'},
+  {tipo:'agua', titulo:'Meta de água por 14 dias', meta:14, dias:14, un:'dias com a meta de água', ic:'💧'},
+  {tipo:'presenca', titulo:'Sequência de 30 dias', meta:30, dias:30, un:'dias de presença', ic:'🔥'},
+  {tipo:'peso', titulo:'Perder 3% do peso em 30 dias', meta:3, dias:30, un:'% do peso perdido', ic:'⚖️'},
+  {tipo:'custom', titulo:'', meta:21, dias:21, un:'dias cumpridos', ic:'✨', rotulo:'Personalizado'}
+];
+const GRP_REAC = ['👏', '🔥', '💪'];
+const GRP_MARCOS = [7, 14, 21, 30, 60, 90, 100, 150, 200, 365];
+const grpSt = () => S.grp = S.grp || {lista:null, atual:null, aba:'desafios', d:null, form:null, conf:null, msg:'', busy:false};
+const grpMod = t => GRP_MODELOS.find(m => m.tipo === t) || GRP_MODELOS[0];
+const grpFmtCod = c => 'CF-' + c;
+const grpLimpaCod = v => String(v || '').toUpperCase().replace(/^CF-?/, '').replace(/[^A-Z0-9]/g, '').slice(0, 6);
+const grpLink = c => location.origin + location.pathname.replace(/[^/]*$/, '') + '?g=' + c;
+const grpEu = () => S.user && S.user.uid;
+const grpNome = () => nomeCurto() || 'Alguém';
+const grpCol = p => FS.collection(p);
+function grpNovoCod(){ let s = ''; const r = new Uint32Array(6); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(r) : r.forEach((_, i) => r[i] = Math.random() * 1e9); r.forEach(x => s += GRP_ALFA[x % GRP_ALFA.length]); return s; }
+function grpQuando(ts){ const m = Math.round((Date.now() - ts) / 60000); if(m < 1) return 'agora'; if(m < 60) return m + ' min'; const h = Math.round(m / 60); if(h < 24) return h + ' h'; const d = Math.round(h / 24); return d === 1 ? 'ontem' : d + ' dias'; }
+const grpDataBR = d => d ? d.split('-').reverse().slice(0, 2).join('/') : '';
+const grpStatus = x => { const t = today(); return t < x.ini ? 'futuro' : t > x.fim ? 'fim' : 'ativo'; };
+
+/* ----- dados ----- */
+async function grpCarregar(){
+  const G = grpSt(); if(!grpEu() || !FS) return;
+  try{ const q = await grpCol('grupos').where('membros', 'array-contains', grpEu()).get(); G.lista = q.docs.map(d => ({id:d.id, ...d.data()})).sort((a, b) => (b.criado || 0) - (a.criado || 0)); }
+  catch(e){ console.error(e); G.lista = G.lista || []; }
+}
+async function grpAbrir(gid){
+  const G = grpSt(); G.atual = gid; G.form = null; G.conf = null; G.msg = ''; G.d = null; render();
+  try{
+    const ref = grpCol('grupos').doc(gid), [g, mb, ds, mu] = await Promise.all([ref.get(), ref.collection('membros').get(), ref.collection('desafios').get(), ref.collection('mural').get()]);
+    if(!g.exists){ toast('Esse grupo foi encerrado.'); G.atual = null; await grpCarregar(); render(); return; }
+    const d = {g:{id:gid, ...g.data()}, membros:mb.docs.map(x => ({uid:x.id, ...x.data()})), desafios:ds.docs.map(x => ({id:x.id, ...x.data()})), mural:mu.docs.map(x => ({id:x.id, ...x.data()})).sort((a, b) => (b.em || 0) - (a.em || 0)).slice(0, 60), part:{}};
+    d.desafios.sort((a, b) => ({ativo:0, futuro:1, fim:2}[grpStatus(a)] - {ativo:0, futuro:1, fim:2}[grpStatus(b)]) || (a.fim < b.fim ? -1 : 1));
+    await Promise.all(d.desafios.map(async x => { try{ const p = await ref.collection('desafios').doc(x.id).collection('part').get(); d.part[x.id] = p.docs.map(y => ({uid:y.id, ...y.data()})).sort((a, b) => (b.prog || 0) - (a.prog || 0)); }catch(e){ d.part[x.id] = []; } }));
+    if(G.atual === gid){ G.d = d; render(); }
+  }catch(e){ console.error(e); toast('Não consegui abrir o grupo agora.'); G.atual = null; render(); }
+}
+async function grpPost(gid, ic, txt){
+  try{ await grpCol('grupos').doc(gid).collection('mural').add({uid:grpEu(), nome:grpNome(), ic, txt:String(txt).slice(0, 140), em:Date.now(), reac:{}}); }catch(e){}
+}
+function grpShare(gid){ return {treinos:true, seq:true, conq:true, ...(((S.prof.grpShare || {})[gid]) || {})}; }
+
+/* ----- criar, entrar, sair ----- */
+async function grpCriar(nome){
+  const G = grpSt(); nome = String(nome || '').trim().slice(0, 40);
+  if(!nome){ G.msg = 'Dê um nome ao grupo.'; render(); return; }
+  const lista = G.lista || [];
+  if(lista.length >= GRP_MAX){ G.msg = `Você pode participar de até ${GRP_MAX} grupos.`; render(); return; }
+  if(lista.filter(g => g.admin === grpEu()).length >= GRP_MAX_ADMIN){ G.msg = `Você pode criar até ${GRP_MAX_ADMIN} grupos.`; render(); return; }
+  G.busy = true; render();
+  try{
+    let cod = null;
+    for(let i = 0; i < 6 && !cod; i++){ const c = grpNovoCod(), s = await grpCol('codigos').doc(c).get(); if(!s.exists) cod = c; }
+    if(!cod) throw new Error('sem código');
+    const ref = grpCol('grupos').doc();
+    await ref.set({nome, codigo:cod, admin:grpEu(), adminNome:grpNome(), membros:[grpEu()], criado:Date.now()});
+    await grpCol('codigos').doc(cod).set({gid:ref.id, admin:grpEu(), nome});
+    await ref.collection('membros').doc(grpEu()).set({nome:grpNome(), entrou:Date.now(), share:grpShare(ref.id)});
+    await grpPost(ref.id, '🎉', 'criou o grupo');
+    G.form = null; G.msg = ''; G.busy = false; await grpCarregar(); toast('Grupo criado! Agora é só convidar. 🎉'); grpAbrir(ref.id);
+  }catch(e){ console.error(e); G.busy = false; G.msg = 'Não consegui criar o grupo agora. Tente de novo.'; render(); }
+}
+async function grpBuscar(v){
+  const G = grpSt(), c = grpLimpaCod(v);
+  if(c.length !== 6){ G.msg = 'O código tem 6 letras e números, como CF-7K2M9P.'; render(); return; }
+  G.busy = true; render();
+  try{
+    const s = await grpCol('codigos').doc(c).get();
+    G.busy = false;
+    if(!s.exists){ G.msg = 'Código não encontrado. Confira com quem te convidou.'; render(); return; }
+    const x = s.data();
+    if((G.lista || []).some(g => g.id === x.gid)){ G.form = null; G.msg = ''; toast('Você já está nesse grupo.'); grpAbrir(x.gid); return; }
+    G.form = {tipo:'confirmar', cod:c, gid:x.gid, nome:x.nome || 'Grupo', share:{treinos:true, seq:true, conq:true}}; G.msg = ''; render();
+  }catch(e){ console.error(e); G.busy = false; G.msg = 'Não consegui buscar o código agora.'; render(); }
+}
+async function grpEntrar(){
+  const G = grpSt(), F = G.form; if(!F || F.tipo !== 'confirmar') return;
+  if((G.lista || []).length >= GRP_MAX){ G.msg = `Você pode participar de até ${GRP_MAX} grupos.`; render(); return; }
+  G.busy = true; render();
+  try{
+    const ref = grpCol('grupos').doc(F.gid);
+    await ref.update({membros:firebase.firestore.FieldValue.arrayUnion(grpEu())});
+    await ref.collection('membros').doc(grpEu()).set({nome:grpNome(), entrou:Date.now(), share:F.share});
+    S.prof.grpShare = {...(S.prof.grpShare || {}), [F.gid]:F.share}; saveProf();
+    await grpPost(F.gid, '👋', 'entrou no grupo');
+    try{ localStorage.removeItem('cf-grp-conv'); }catch(e){}
+    G.form = null; G.busy = false; await grpCarregar(); toast('Você entrou no grupo ' + F.nome + '! 👋'); grpAbrir(F.gid);
+  }catch(e){ console.error(e); G.busy = false; G.msg = 'Não consegui entrar agora. O grupo pode ter sido encerrado ou estar cheio.'; render(); }
+}
+async function grpSair(){
+  const G = grpSt(), g = G.d && G.d.g; if(!g) return;
+  try{
+    const ref = grpCol('grupos').doc(g.id);
+    await ref.collection('membros').doc(grpEu()).delete().catch(() => {});
+    await ref.update({membros:firebase.firestore.FieldValue.arrayRemove(grpEu())});
+    grpLimpaPart(g.id); G.atual = null; G.d = null; G.conf = null; await grpCarregar(); toast('Você saiu do grupo.'); render();
+  }catch(e){ console.error(e); toast('Não consegui sair agora.'); }
+}
+async function grpEncerrar(){
+  const G = grpSt(), g = G.d && G.d.g; if(!g || g.admin !== grpEu()) return;
+  try{ await grpCol('codigos').doc(g.codigo).delete().catch(() => {}); await grpCol('grupos').doc(g.id).delete(); grpLimpaPart(g.id); G.atual = null; G.d = null; G.conf = null; await grpCarregar(); toast('Grupo encerrado.'); render(); }
+  catch(e){ console.error(e); toast('Não consegui encerrar agora.'); }
+}
+async function grpTrocaCod(){
+  const G = grpSt(), g = G.d && G.d.g; if(!g || g.admin !== grpEu()) return;
+  try{
+    let cod = null;
+    for(let i = 0; i < 6 && !cod; i++){ const c = grpNovoCod(), s = await grpCol('codigos').doc(c).get(); if(!s.exists) cod = c; }
+    await grpCol('codigos').doc(cod).set({gid:g.id, admin:grpEu(), nome:g.nome});
+    await grpCol('grupos').doc(g.id).update({codigo:cod});
+    await grpCol('codigos').doc(g.codigo).delete().catch(() => {});
+    g.codigo = cod; G.conf = null; G.qr = false; toast('Código novo: ' + grpFmtCod(cod) + '. O antigo parou de funcionar.'); render();
+  }catch(e){ console.error(e); toast('Não consegui trocar o código agora.'); }
+}
+async function grpRemover(uid){
+  const G = grpSt(), g = G.d && G.d.g; if(!g || g.admin !== grpEu() || uid === grpEu()) return;
+  try{ const ref = grpCol('grupos').doc(g.id); await ref.collection('membros').doc(uid).delete().catch(() => {}); await ref.update({membros:firebase.firestore.FieldValue.arrayRemove(uid)}); G.conf = null; toast('Pessoa removida do grupo.'); grpAbrir(g.id); }
+  catch(e){ console.error(e); toast('Não consegui remover agora.'); }
+}
+async function grpSalvaShare(k){
+  const G = grpSt(), g = G.d && G.d.g; if(!g) return;
+  const sh = {...grpShare(g.id), [k]:!grpShare(g.id)[k]};
+  S.prof.grpShare = {...(S.prof.grpShare || {}), [g.id]:sh}; saveProf(); render();
+  try{ await grpCol('grupos').doc(g.id).collection('membros').doc(grpEu()).set({share:sh}, {merge:true}); }catch(e){}
+}
+
+/* ----- desafios ----- */
+/* peso: % perdido desde a pesagem de partida (a mais recente até 7 dias antes do início, ou a primeira dentro do desafio) */
+function grpPeso(x){
+  const L = weightList(), fim = x.fim < today() ? x.fim : today();
+  const antes = L.filter(p => p.d <= x.ini && p.d >= addDays(x.ini, -7)).pop(), dentro = L.filter(p => p.d >= x.ini && p.d <= fim);
+  const base = antes || dentro[0], atual = dentro.length ? dentro[dentro.length - 1] : null;
+  if(!base || !atual || atual.d === base.d && !antes) return {pct:0, base:!!base, pesagens:dentro.length};
+  return {pct:Math.round((base.w - atual.w) / base.w * 1000) / 10, base:true, pesagens:dentro.length};
+}
+const grpFmtProg = (x, v) => x.tipo === 'peso' ? (v > 0 ? '−' : v < 0 ? '+' : '') + String(Math.abs(v || 0)).replace('.', ',') + '%' : (v || 0) + '/' + x.meta;
+function grpProg(x, entrada){
+  if(x.tipo === 'peso') return grpPeso(x).pct;
+  if(x.tipo === 'custom') return ((entrada && entrada.dias) || []).filter(d => d >= x.ini && d <= x.fim).length;
+  let n = 0; const fim = x.fim < today() ? x.fim : today();
+  for(let d = x.ini; d <= fim; d = addDays(d, 1)){
+    const f = flagsDia(d); if(!f) continue;
+    n += x.tipo === 'plano' ? (f.o ? 1 : 0) : x.tipo === 'agua' ? (f.a ? 1 : 0) : x.tipo === 'treinos' ? (+f.t || 0) : (f.p ? 1 : 0);
+  }
+  return n;
+}
+async function grpCriarDesafio(){
+  const G = grpSt(), g = G.d && G.d.g, F = G.form; if(!g || !F) return;
+  const v = id => (document.getElementById(id + '-' + F.modelo) || {}).value;
+  const tipo = F.modelo, titulo = String(v('gd-tit') || '').trim().slice(0, 50) || grpMod(tipo).titulo || 'Desafio', meta = Math.round(+v('gd-meta')), ini = v('gd-ini') || today(), fim = v('gd-fim');
+  if(tipo === 'custom' && !String(v('gd-tit') || '').trim()){ G.msg = 'Escreva qual é o desafio. Ex.: 30 dias sem refrigerante.'; render(); return; }
+  const metaP = tipo === 'peso' ? Math.round(parseFloat(String(v('gd-meta') || '').replace(',', '.')) * 10) / 10 : meta;
+  if(tipo === 'peso'){
+    if(!fim || fim < ini){ G.msg = 'A data final precisa ser depois do início.'; render(); return; }
+    let dias = 0; for(let d = ini; d <= fim; d = addDays(d, 1)) dias++;
+    const max = Math.max(1, Math.floor(dias / 7 * 10) / 10);
+    if(!(metaP >= 0.5)){ G.msg = 'Coloque uma meta de pelo menos 0,5%.'; render(); return; }
+    if(metaP > max){ G.msg = `Para ${dias} dias, a meta saudável é de no máximo ${String(max).replace('.', ',')}% (cerca de 1% por semana).`; render(); return; }
+  }
+  if(tipo !== 'peso' && !(meta > 0 && meta <= 400)){ G.msg = 'Coloque uma meta entre 1 e 400.'; render(); return; }
+  if(!fim || fim < ini){ G.msg = 'A data final precisa ser depois do início.'; render(); return; }
+  if(addDays(ini, 120) < fim){ G.msg = 'Um desafio pode durar até 4 meses.'; render(); return; }
+  if(tipo !== 'treinos' && tipo !== 'peso'){ let dias = 0; for(let d = ini; d <= fim; d = addDays(d, 1)) dias++; if(meta > dias){ G.msg = `O desafio tem ${dias} dias, então a meta pode ser no máximo ${dias}.`; render(); return; } }
+  G.busy = true; render();
+  try{
+    const ref = await grpCol('grupos').doc(g.id).collection('desafios').add({tipo, titulo:tipo === 'peso' && titulo === grpMod('peso').titulo ? 'Perder ' + String(metaP).replace('.', ',') + '% do peso' : titulo, meta:tipo === 'peso' ? metaP : meta, ini, fim, criado:Date.now(), por:grpEu()});
+    await grpPost(g.id, grpMod(tipo).ic, 'criou o desafio "' + titulo + '"');
+    try{ pushFn('avisarDesafio')({gid:g.id, did:ref.id}).catch(() => {}); }catch(e){}
+    G.form = null; G.busy = false; G.msg = ''; toast('Desafio criado! O grupo foi avisado. 🏆'); grpAbrir(g.id);
+  }catch(e){ console.error(e); G.busy = false; G.msg = 'Não consegui criar o desafio agora.'; render(); }
+}
+async function grpExcluirDesafio(did){
+  const G = grpSt(), g = G.d && G.d.g; if(!g || g.admin !== grpEu()) return;
+  try{ await grpCol('grupos').doc(g.id).collection('desafios').doc(did).delete(); G.conf = null; toast('Desafio excluído.'); grpAbrir(g.id); }catch(e){ toast('Não consegui excluir agora.'); }
+}
+async function grpParticipar(did){
+  const G = grpSt(), g = G.d && G.d.g, x = G.d && G.d.desafios.find(y => y.id === did); if(!x) return;
+  const prog = grpProg(x, {dias:[]}), ok = prog >= x.meta;
+  try{
+    await grpCol('grupos').doc(g.id).collection('desafios').doc(did).collection('part').doc(grpEu()).set({nome:grpNome(), prog, ok, entrou:Date.now(), atual:Date.now(), ...(x.tipo === 'custom' ? {dias:[]} : {})});
+    S.prof.grpPart = {...(S.prof.grpPart || {}), [g.id + '/' + did]:{tipo:x.tipo, ini:x.ini, fim:x.fim, meta:x.meta, titulo:x.titulo, gnome:g.nome, last:prog, ok, ...(x.tipo === 'custom' ? {dias:[]} : {})}}; saveProf();
+    toast(x.tipo === 'custom' ? 'Você está no desafio! Marque "Fiz hoje" a cada dia cumprido. ✨' : x.tipo === 'peso' ? 'Você está no desafio! O grupo vê só a porcentagem, nunca o seu peso. ⚖️' : 'Você está no desafio! O progresso conta sozinho com o que você marca no app. 💪'); grpAbrir(g.id);
+  }catch(e){ console.error(e); toast('Não consegui entrar no desafio agora.'); }
+}
+function grpLimpaPart(gid){ const P = {...(S.prof.grpPart || {})}; Object.keys(P).forEach(k => { if(k.startsWith(gid + '/')) delete P[k]; }); S.prof.grpPart = P; saveProf(); }
+/* atualiza o progresso dos desafios em que a pessoa participa (roda depois de cada registro) */
+async function grpSync(){
+  if(!grpEu() || !FS || !S.prof) return;
+  const P = {...(S.prof.grpPart || {})}; let mudou = false;
+  for(const [k, x] of Object.entries(P)){
+    if(addDays(x.fim, 7) < today()){ delete P[k]; mudou = true; continue; }
+    if(x.ini > today()) continue;
+    if(x.tipo === 'custom') continue;
+    const prog = grpProg(x), ok = prog >= x.meta;
+    if(prog === x.last && ok === !!x.ok) continue;
+    const [gid, did] = k.split('/');
+    try{
+      await grpCol('grupos').doc(gid).collection('desafios').doc(did).collection('part').doc(grpEu()).set({nome:grpNome(), prog, ok, atual:Date.now()}, {merge:true});
+      if(ok && !x.ok){ if(grpShare(gid).conq) grpPost(gid, '🏆', 'completou o desafio "' + x.titulo + '"'); toast('Desafio "' + x.titulo + '" completo! 🏆'); }
+      P[k] = {...x, last:prog, ok}; mudou = true;
+    }catch(e){ if(e && /permission/i.test(e.code || e.message || '')){ delete P[k]; mudou = true; } }
+  }
+  /* marcos de sequência no mural */
+  try{
+    const n = sequencia().n;
+    if(GRP_MARCOS.includes(n) && S.prof.grpMarco !== n && (S.grp && S.grp.lista || []).length){
+      S.prof.grpMarco = n; mudou = true;
+      S.grp.lista.forEach(g => { if(grpShare(g.id).seq) grpPost(g.id, '🔥', 'chegou a ' + n + ' dias de presença'); });
+    }
+  }catch(e){}
+  if(mudou){ S.prof.grpPart = P; saveProf(); }
+}
+function grpAgenda(){ clearTimeout(grpAgenda.t); grpAgenda.t = setTimeout(() => grpSync(), 3000); }
+async function grpFizHoje(k){
+  const P = {...(S.prof.grpPart || {})}, x = P[k]; if(!x) return;
+  const t = today(); if(t < x.ini || t > x.fim){ toast('Esse desafio não está valendo hoje.'); return; }
+  const dias = new Set(x.dias || []), marcou = !dias.has(t); if(marcou) dias.add(t); else dias.delete(t);
+  const lista = [...dias].sort(), prog = grpProg(x, {dias:lista}), ok = prog >= x.meta, [gid, did] = k.split('/');
+  P[k] = {...x, dias:lista, last:prog, ok}; S.prof.grpPart = P; saveProf();
+  const G = grpSt(); if(G.d && G.d.part && G.d.part[did]){ const me = G.d.part[did].find(p => p.uid === grpEu()); if(me){ me.prog = prog; me.ok = ok; me.dias = lista; } G.d.part[did].sort((a, b) => (b.prog || 0) - (a.prog || 0)); }
+  render();
+  try{
+    await grpCol('grupos').doc(gid).collection('desafios').doc(did).collection('part').doc(grpEu()).set({nome:grpNome(), dias:lista, prog, ok, atual:Date.now()}, {merge:true});
+    if(ok && !x.ok){ if(grpShare(gid).conq) grpPost(gid, '🏆', 'completou o desafio "' + x.titulo + '"'); toast('Desafio "' + x.titulo + '" completo! 🏆'); }
+    else if(marcou) toast('Marcado! ' + prog + ' de ' + x.meta + ' dias. ✨');
+  }catch(e){ toast('Não consegui salvar agora.'); }
+}
+function grpPostTreino(min){ (S.grp && S.grp.lista || []).forEach(g => { if(grpShare(g.id).treinos) grpPost(g.id, '💪', 'concluiu um treino' + (min ? ' de ' + min + ' min' : '')); }); }
+async function grpReagir(mid, emo){
+  const G = grpSt(), g = G.d && G.d.g, p = G.d && G.d.mural.find(x => x.id === mid); if(!p) return;
+  const reac = {...(p.reac || {})}; if(reac[grpEu()] === emo) delete reac[grpEu()]; else reac[grpEu()] = emo;
+  p.reac = reac; render();
+  try{ await grpCol('grupos').doc(g.id).collection('mural').doc(mid).update({reac}); }catch(e){ toast('Não consegui reagir agora.'); }
+}
+async function grpConvidar(){
+  const G = grpSt(), g = G.d && G.d.g; if(!g) return;
+  const url = grpLink(g.codigo), txt = `Entra no meu grupo "${g.nome}" no CheckFit e vamos fazer os desafios juntos! Código: ${grpFmtCod(g.codigo)}`;
+  try{ if(navigator.share){ await navigator.share({title:'CheckFit · ' + g.nome, text:txt, url}); return; } }catch(e){ if(e && e.name === 'AbortError') return; }
+  try{ await navigator.clipboard.writeText(txt + '\n' + url); toast('Convite copiado! Cole no WhatsApp.'); }catch(e){ toast('Código do grupo: ' + grpFmtCod(g.codigo)); }
+}
+function grpQR(){
+  const G = grpSt(), g = G.d && G.d.g; G.qr = !G.qr; render(); if(!G.qr || !g) return;
+  const desenha = () => { const el = document.getElementById('grp-qr'); if(!el || !window.QRCode) return; el.innerHTML = ''; new QRCode(el, {text:grpLink(g.codigo), width:200, height:200, colorDark:'#0b2e3d', colorLight:'#ffffff'}); };
+  if(window.QRCode){ setTimeout(desenha, 30); return; }
+  const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; s.onload = desenha; s.onerror = () => toast('Não consegui gerar o QR Code agora.'); document.head.appendChild(s);
+}
+
+/* ----- telas ----- */
+function grpBarra(prog, meta){ const p = Math.max(0, Math.min(100, Math.round(prog / meta * 100))); return `<div class="gbar" role="img" aria-label="${prog} de ${meta}"><span style="width:${p}%"></span></div>`; }
+function grpCard(date){
+  if(date !== today() || !S.planReady) return '';
+  const G = grpSt(), ativos = Object.entries(S.prof.grpPart || {}).filter(([, x]) => x.ini <= today() && x.fim >= today());
+  if(!(G.lista || []).length){
+    const disp = S.prof.grpDisp; if(disp && addDays(disp, 21) > today()) return '';
+    return `<section class="card jcard" aria-label="Desafios"><span class="jci">🏆</span><div><b>Desafie seus amigos</b><div class="sub">Crie um grupo, convide pelo WhatsApp e façam desafios juntos. O progresso conta sozinho.</div></div><div style="display:flex;flex-direction:column;gap:6px"><button class="primary" id="grp-card-abrir" data-act="grpopen">Ver desafios</button><button class="linkbtn" data-act="grpno">Agora não</button></div></section>`;
+  }
+  if(!ativos.length) return '';
+  return `<section class="card" aria-label="Seus desafios"><div class="thead"><div><h2>Seus desafios</h2><div class="sub">O progresso conta sozinho com o que você marca</div></div></div>
+    <div class="gmini">${ativos.slice(0, 4).map(([k, x]) => { const fez = x.tipo === 'custom' && (x.dias || []).includes(today()); return `<div class="gminirow"><button class="gminibtn" data-act="grpgo" data-g="${esc(k.split('/')[0])}"><span class="gic">${grpMod(x.tipo).ic}</span><span style="flex:1;min-width:0"><b>${esc(x.titulo)}</b><small>${esc(x.gnome)} · até ${grpDataBR(x.fim)}</small>${grpBarra(Math.max(0, x.last || 0), x.meta)}</span><span class="num gnum">${grpFmtProg(x, x.last)}</span></button>${x.tipo === 'custom' ? `<button class="gfiz${fez ? ' on' : ''}" data-act="grpfiz" data-k="${esc(k)}" aria-pressed="${fez}" aria-label="${fez ? 'Desfazer feito hoje' : 'Fiz hoje'}">${fez ? '✓' : 'Fiz hoje'}</button>` : ''}</div>`; }).join('')}</div>
+    <button class="linkbtn" data-act="grpopen" style="margin-top:8px">Ver grupos e desafios</button></section>`;
+}
+function grpView(){
+  const G = grpSt();
+  if(G.lista === null){ grpCarregar().then(render); return `<section class="card"><h2>Desafios e grupos</h2><div class="lerspin" aria-hidden="true"></div></section>`; }
+  if(G.atual) return grpGrupoView();
+  const msg = G.msg ? `<p class="banner" role="alert" style="margin:0">${esc(G.msg)}</p>` : '', F = G.form;
+  let form = '';
+  if(F === 'criar') form = `<div class="gform"><label class="bf" for="grp-nome"><span>Nome do grupo</span><input id="grp-nome" maxlength="40" placeholder="Ex.: Box Wagner, Família Serra" autocomplete="off"></label>${msg}<div class="row"><button class="primary" id="grp-criar" data-act="grpcriar" ${G.busy ? 'disabled' : ''}>${G.busy ? 'Criando…' : 'Criar grupo'}</button><button class="ghost" data-act="grpcancel">Cancelar</button></div></div>`;
+  else if(F === 'entrar') form = `<div class="gform"><label class="bf" for="grp-cod"><span>Código do convite</span><input id="grp-cod" maxlength="9" placeholder="CF-7K2M9P" autocapitalize="characters" autocomplete="off" style="text-transform:uppercase;letter-spacing:.08em"></label>${msg}<div class="row"><button class="primary" id="grp-buscar" data-act="grpbuscar" ${G.busy ? 'disabled' : ''}>${G.busy ? 'Buscando…' : 'Continuar'}</button><button class="ghost" data-act="grpcancel">Cancelar</button></div></div>`;
+  else if(F && F.tipo === 'confirmar') form = `<div class="gform"><h3 style="margin:0">Entrar no grupo "${esc(F.nome)}"?</h3><p class="sub" style="margin:0">Escolha o que o grupo pode ver de você. Peso, medidas, remédios e seu diário nunca aparecem.</p>
+     ${[['treinos', '💪', 'Meus treinos concluídos'], ['seq', '🔥', 'Minha sequência de presença'], ['conq', '🏆', 'Desafios que eu completar']].map(([k, ic, l]) => `<button class="pusho${F.share[k] ? ' on' : ''}" data-act="grpcshare" data-k="${k}" aria-pressed="${F.share[k]}"><span class="pic">${ic}</span><span><b>${l}</b></span><span class="psw" aria-hidden="true"></span></button>`).join('')}
+     ${msg}<div class="row"><button class="primary" id="grp-entrar" data-act="grpentrar" ${G.busy ? 'disabled' : ''}>${G.busy ? 'Entrando…' : 'Entrar no grupo'}</button><button class="ghost" data-act="grpcancel">Agora não</button></div></div>`;
+  const lista = (G.lista || []).length ? `<div class="glista">${G.lista.map(g => `<button class="gitem" data-act="grpgo" data-g="${esc(g.id)}"><span class="gav">${esc((g.nome || '?').slice(0, 1).toUpperCase())}</span><span style="flex:1;min-width:0"><b>${esc(g.nome)}</b><small>${(g.membros || []).length} ${(g.membros || []).length === 1 ? 'pessoa' : 'pessoas'}${g.admin === grpEu() ? ' · você administra' : ''}</small></span><span aria-hidden="true">›</span></button>`).join('')}</div>`
+    : `<div class="gvazio"><span>🏆</span><b>Faça desafios com quem você conhece</b><p class="sub" style="margin:4px 0 0">Crie um grupo e convide pelo WhatsApp, ou entre com o código que alguém te mandou. Treinos, água e dias no plano contam sozinhos para o desafio.</p></div>`;
+  return `<section class="card" id="view-grp"><div class="bhead"><h2>Desafios e grupos</h2><button class="ghost" data-act="grpback">Voltar</button></div>
+    ${F && F.tipo === 'confirmar' ? '' : lista}
+    ${form || `<div class="row"><button class="primary" id="grp-novo" data-act="grpform" data-v="criar">+ Criar grupo</button><button class="ghost" id="grp-cod-btn" data-act="grpform" data-v="entrar">Entrar com código</button></div>`}
+    <p class="tip" style="margin:0">Nos grupos aparecem só conquistas: treinos concluídos, sequência e desafios. Peso, medidas, remédios e o diário são sempre privados.</p></section>`;
+}
+function grpGrupoView(){
+  const G = grpSt(), D = G.d;
+  if(!D) return `<section class="card"><div class="bhead"><h2>Abrindo o grupo…</h2><button class="ghost" data-act="grpvoltalista">Voltar</button></div><div class="lerspin" aria-hidden="true"></div></section>`;
+  const g = D.g, adm = g.admin === grpEu(), msg = G.msg ? `<p class="banner" role="alert" style="margin:0">${esc(G.msg)}</p>` : '';
+  const abas = [['desafios', 'Desafios'], ['mural', 'Mural'], ['membros', 'Pessoas (' + D.membros.length + ')']];
+  let corpo = '';
+  if(G.aba === 'desafios'){
+    if(G.form && G.form.tipo === 'desafio'){
+      const F = G.form, m = grpMod(F.modelo), fim = addDays(today(), m.dias - 1);
+      corpo = `<div class="gform"><h3 style="margin:0">Novo desafio</h3><div class="opts" role="group" aria-label="Modelo" style="padding:0">${GRP_MODELOS.map(x => `<button class="chip" data-act="grpmodelo" data-v="${x.tipo}" aria-pressed="${x.tipo === F.modelo}">${x.ic} ${x.rotulo || x.titulo}</button>`).join('')}</div>
+        <label class="bf" for="gd-tit-${F.modelo}"><span>Nome do desafio</span><input id="gd-tit-${F.modelo}" maxlength="50" value="${esc(m.titulo)}" placeholder="${F.modelo === 'custom' ? 'Ex.: 30 dias sem refrigerante' : ''}"></label>
+        <div class="bgrid"><label class="bf" for="gd-meta-${F.modelo}"><span>Meta (${esc(m.un)})</span><input id="gd-meta-${F.modelo}" inputmode="${F.modelo === 'peso' ? 'decimal' : 'numeric'}" value="${String(m.meta).replace('.', ',')}"></label><label class="bf" for="gd-ini-${F.modelo}"><span>Começa em</span><input id="gd-ini-${F.modelo}" type="date" value="${today()}"></label></div>
+        <label class="bf" for="gd-fim-${F.modelo}"><span>Termina em</span><input id="gd-fim-${F.modelo}" type="date" value="${fim}"></label>
+        <p class="tip" style="margin:0">${{plano:'Conta cada dia em que a pessoa marcou todas as refeições do plano e bateu a meta de água.', treinos:'Conta cada treino registrado: musculação, cardio, WOD ou outra atividade.', agua:'Conta cada dia em que a pessoa bateu a própria meta de água.', presenca:'Conta cada dia com qualquer registro no app.', custom:'Cada pessoa marca "Fiz hoje" nos dias em que cumprir. Vale a palavra de cada um.', peso:'Conta a porcentagem de peso perdida desde a primeira pesagem do desafio. O grupo vê só a porcentagem, nunca o peso. A meta pode ser de no máximo cerca de 1% por semana: o objetivo é constância, não pressa.'}[F.modelo]}</p>
+        ${msg}<div class="row"><button class="primary" id="gd-salvar" data-act="grpdsalvar" ${G.busy ? 'disabled' : ''}>${G.busy ? 'Criando…' : 'Criar e avisar o grupo'}</button><button class="ghost" data-act="grpcancel">Cancelar</button></div></div>`;
+    } else {
+      corpo = (adm ? `<button class="primary" id="gd-novo" data-act="grpdnovo" style="width:100%">+ Novo desafio</button>` : '') +
+        (D.desafios.length ? D.desafios.map(x => {
+          const st = grpStatus(x), m = grpMod(x.tipo), ps = D.part[x.id] || [], eu = ps.find(p => p.uid === grpEu());
+          return `<div class="gdes"><div class="gdesh"><span class="gic">${m.ic}</span><div style="flex:1;min-width:0"><b>${esc(x.titulo)}</b><small>${grpDataBR(x.ini)} a ${grpDataBR(x.fim)} · meta: ${x.tipo === 'peso' ? 'perder ' + String(x.meta).replace('.', ',') + '% do peso' : x.meta + ' ' + esc(m.un)}</small></div><span class="gst ${st}">${{ativo:'em andamento', futuro:'começa ' + grpDataBR(x.ini), fim:'encerrado'}[st]}</span></div>
+            ${eu ? '' : st !== 'fim' ? `<button class="primary" data-act="grppart" data-d="${esc(x.id)}" style="width:100%;margin-top:8px">Participar</button>` : ''}
+            ${eu && x.tipo === 'custom' && st === 'ativo' ? (() => { const fez = (((S.prof.grpPart || {})[g.id + '/' + x.id] || {}).dias || []).includes(today()); return `<button class="${fez ? 'ghost' : 'primary'}" data-act="grpfiz" data-k="${esc(g.id + '/' + x.id)}" aria-pressed="${fez}" style="width:100%;margin-top:8px">${fez ? '✓ Feito hoje (toque para desfazer)' : 'Fiz hoje ✓'}</button>`; })() : ''}
+            ${eu && x.tipo === 'peso' && st !== 'futuro' ? (() => { const w = grpPeso(x); return w.base ? `<p class="tip" style="margin:8px 0 0">Seu progresso usa as pesagens que você registra. Continue se pesando no app.</p>` : `<div class="banner" style="margin:8px 0 0">Registre seu peso para começar a contar. <button class="linkbtn" data-act="grppeso">Registrar peso</button></div>`; })() : ''}
+            ${x.tipo === 'peso' ? '<p class="tip" style="margin:6px 0 0">O grupo vê só a porcentagem. Siga o plano do seu nutricionista: o objetivo é constância, não pressa.</p>' : ''}
+            ${ps.length ? `<ol class="grank">${ps.map((p, i) => `<li class="${p.uid === grpEu() ? 'eu' : ''}"><span class="gpos">${p.ok ? '🏆' : i + 1 + 'º'}</span><span style="flex:1;min-width:0"><b>${esc(p.nome || 'Alguém')}${p.uid === grpEu() ? ' (você)' : ''}</b>${grpBarra(Math.max(0, p.prog || 0), x.meta)}</span><span class="num gnum">${grpFmtProg(x, p.prog)}</span></li>`).join('')}</ol>` : `<p class="sub" style="margin:8px 0 0">Ninguém entrou ainda. Seja o primeiro!</p>`}
+            ${adm ? (G.conf === 'd:' + x.id ? `<div class="banner" style="margin:8px 0 0">Excluir este desafio? <div class="row" style="margin-top:6px"><button class="primary" data-act="grpdexok" data-d="${esc(x.id)}">Excluir</button><button class="ghost" data-act="grpconfno">Manter</button></div></div>` : `<button class="linkbtn" data-act="grpconf" data-v="d:${esc(x.id)}" style="margin-top:6px">Excluir desafio</button>`) : ''}</div>`;
+        }).join('') : `<p class="sub" style="margin:0">${adm ? 'Nenhum desafio ainda. Crie o primeiro e o grupo recebe um aviso.' : 'Nenhum desafio ainda. Quando o administrador criar, você recebe um aviso.'}</p>`);
+    }
+  } else if(G.aba === 'mural'){
+    corpo = D.mural.length ? `<div class="gmural">${D.mural.map(p => { const cont = {}; Object.values(p.reac || {}).forEach(e => cont[e] = (cont[e] || 0) + 1); const meu = (p.reac || {})[grpEu()];
+      return `<div class="gpost"><span class="gic">${esc(p.ic || '✨')}</span><div style="flex:1;min-width:0"><div><b>${esc(p.nome || 'Alguém')}</b> ${esc(p.txt)}</div><small>${grpQuando(p.em || Date.now())}</small><div class="greac">${GRP_REAC.map(e => `<button class="${meu === e ? 'on' : ''}" data-act="grpreac" data-m="${esc(p.id)}" data-e="${e}" aria-pressed="${meu === e}" aria-label="Reagir com ${e}">${e}${cont[e] ? ' <span class="num">' + cont[e] + '</span>' : ''}</button>`).join('')}</div></div>${p.uid === grpEu() || adm ? `<button class="ghost gdel" data-act="grpmdel" data-m="${esc(p.id)}" aria-label="Apagar">✕</button>` : ''}</div>`; }).join('')}</div>`
+      : '<p class="sub" style="margin:0">As conquistas do grupo aparecem aqui: treinos concluídos, sequências e desafios completos.</p>';
+  } else {
+    const sh = grpShare(g.id);
+    corpo = `<div class="glista">${D.membros.map(m => `<div class="gitem"><span class="gav">${esc((m.nome || '?').slice(0, 1).toUpperCase())}</span><span style="flex:1;min-width:0"><b>${esc(m.nome || 'Alguém')}${m.uid === grpEu() ? ' (você)' : ''}</b><small>${m.uid === g.admin ? 'administra o grupo' : 'entrou há ' + grpQuando(m.entrou || Date.now())}</small></span>${adm && m.uid !== grpEu() ? (G.conf === 'r:' + m.uid ? `<button class="primary" data-act="grpremok" data-u="${esc(m.uid)}">Remover</button>` : `<button class="ghost" data-act="grpconf" data-v="r:${esc(m.uid)}">Remover</button>`) : ''}</div>`).join('')}</div>
+      <h3 style="margin:12px 0 0">O que o grupo vê de você</h3>
+      ${[['treinos', '💪', 'Meus treinos concluídos'], ['seq', '🔥', 'Minha sequência de presença'], ['conq', '🏆', 'Desafios que eu completar']].map(([k, ic, l]) => `<button class="pusho${sh[k] ? ' on' : ''}" data-act="grpshare" data-k="${k}" aria-pressed="${sh[k]}"><span class="pic">${ic}</span><span><b>${l}</b></span><span class="psw" aria-hidden="true"></span></button>`).join('')}
+      ${adm ? (G.conf === 'enc' ? `<div class="banner" style="margin:10px 0 0">Encerrar o grupo apaga desafios e mural para todos. <div class="row" style="margin-top:6px"><button class="primary" data-act="grpencok">Encerrar grupo</button><button class="ghost" data-act="grpconfno">Cancelar</button></div></div>` : `<button class="linkbtn" data-act="grpconf" data-v="enc" style="margin-top:10px">Encerrar grupo</button>`)
+        : (G.conf === 'sair' ? `<div class="banner" style="margin:10px 0 0">Sair do grupo? <div class="row" style="margin-top:6px"><button class="primary" data-act="grpsairok">Sair</button><button class="ghost" data-act="grpconfno">Ficar</button></div></div>` : `<button class="linkbtn" data-act="grpconf" data-v="sair" style="margin-top:10px">Sair do grupo</button>`)}`;
+  }
+  return `<section class="card" id="view-grp"><div class="bhead"><h2>${esc(g.nome)}</h2><button class="ghost" data-act="grpvoltalista">Voltar</button></div>
+    <div class="gcod"><div><small>Código do convite</small><b class="num">${grpFmtCod(g.codigo)}</b></div><div class="row" style="gap:6px"><button class="primary" id="grp-conv" data-act="grpconv">Convidar</button><button class="ghost" data-act="grpqr" aria-pressed="${!!G.qr}">QR Code</button></div></div>
+    ${G.qr ? `<div class="gqr"><div id="grp-qr"></div><small>Aponte a câmera do celular para entrar no grupo</small>${adm ? (G.conf === 'cod' ? `<div class="row"><button class="primary" data-act="grpcodok">Gerar código novo</button><button class="ghost" data-act="grpconfno">Cancelar</button></div>` : '<button class="linkbtn" data-act="grpconf" data-v="cod">Trocar código (o atual para de funcionar)</button>') : ''}</div>` : ''}
+    <div class="gtabs" role="tablist">${abas.map(([k, l]) => `<button role="tab" aria-selected="${G.aba === k}" data-act="grpaba" data-v="${k}">${l}</button>`).join('')}</div>
+    ${corpo}</section>`;
+}
+/* convite por link: ?g=CODIGO */
+(function(){ try{ const c = grpLimpaCod(new URLSearchParams(location.search).get('g')); if(c.length === 6){ localStorage.setItem('cf-grp-conv', c); history.replaceState(null, '', location.pathname); } }catch(e){} })();
+function grpConvitePendente(){
+  let c = null; try{ c = localStorage.getItem('cf-grp-conv'); }catch(e){}
+  if(!c || !S.user || !S.planReady || !S.cliReady || S.mode !== 'app' || grpConvitePendente.busy || grpConvitePendente.feito === c + S.user.uid) return;
+  grpConvitePendente.busy = true; const G = grpSt();
+  const vai = async () => {
+    G.atual = null; await grpBuscar(c); grpConvitePendente.busy = false;
+    if((G.form && G.form.tipo === 'confirmar') || G.atual){ grpConvitePendente.feito = c + S.user.uid; S.mode = 'grp'; render(); window.scrollTo(0, 0); }
+    else { try{ localStorage.removeItem('cf-grp-conv'); }catch(e){} if(G.msg) toast(G.msg); G.msg = ''; }
+  };
+  (G.lista === null ? grpCarregar() : Promise.resolve()).then(vai);
+}
+function grpAct(a, b){
+  const G = grpSt();
+  if(a === 'grpopen'){ S.plus = false; S.mode = 'grp'; G.atual = null; G.form = null; G.msg = ''; if(G.lista !== null) grpCarregar().then(render); render(); window.scrollTo(0, 0); return true; }
+  if(a === 'grpno'){ S.prof.grpDisp = today(); saveProf(); render(); return true; }
+  if(a === 'grpback'){ S.mode = 'app'; G.form = null; G.msg = ''; render(); window.scrollTo(0, 0); return true; }
+  if(a === 'grpgo'){ S.plus = false; S.mode = 'grp'; G.aba = 'desafios'; grpAbrir(b.dataset.g); window.scrollTo(0, 0); return true; }
+  if(a === 'grpvoltalista'){ G.atual = null; G.d = null; G.form = null; G.conf = null; G.qr = false; G.msg = ''; render(); window.scrollTo(0, 0); return true; }
+  if(a === 'grpform'){ G.form = b.dataset.v; G.msg = ''; render(); setTimeout(() => { const el = document.getElementById(G.form === 'criar' ? 'grp-nome' : 'grp-cod'); if(el) el.focus(); }, 50); return true; }
+  if(a === 'grpcancel'){ G.form = null; G.msg = ''; try{ if(!G.atual) localStorage.removeItem('cf-grp-conv'); }catch(e){} render(); return true; }
+  if(a === 'grpcriar'){ grpCriar((document.getElementById('grp-nome') || {}).value); return true; }
+  if(a === 'grpbuscar'){ grpBuscar((document.getElementById('grp-cod') || {}).value); return true; }
+  if(a === 'grpcshare'){ const F = G.form; if(F && F.share){ F.share[b.dataset.k] = !F.share[b.dataset.k]; render(); } return true; }
+  if(a === 'grpentrar'){ grpEntrar(); return true; }
+  if(a === 'grpaba'){ G.aba = b.dataset.v; G.form = null; G.conf = null; G.msg = ''; render(); return true; }
+  if(a === 'grpconv'){ grpConvidar(); return true; }
+  if(a === 'grpqr'){ grpQR(); return true; }
+  if(a === 'grpconf'){ G.conf = b.dataset.v; render(); return true; }
+  if(a === 'grpconfno'){ G.conf = null; render(); return true; }
+  if(a === 'grpcodok'){ grpTrocaCod(); return true; }
+  if(a === 'grpencok'){ grpEncerrar(); return true; }
+  if(a === 'grpsairok'){ grpSair(); return true; }
+  if(a === 'grpremok'){ grpRemover(b.dataset.u); return true; }
+  if(a === 'grpshare'){ grpSalvaShare(b.dataset.k); return true; }
+  if(a === 'grpdnovo'){ G.form = {tipo:'desafio', modelo:'plano'}; G.msg = ''; render(); return true; }
+  if(a === 'grpmodelo'){ const m = grpMod(b.dataset.v); G.form = {tipo:'desafio', modelo:m.tipo}; G.msg = ''; render(); return true; }
+  if(a === 'grpdsalvar'){ return grpCriarDesafio(), true; }
+  if(a === 'grppart'){ grpParticipar(b.dataset.d); return true; }
+  if(a === 'grpfiz'){ grpFizHoje(b.dataset.k); return true; }
+  if(a === 'grppeso'){ S.mode = 'app'; S.tab = 'inicio'; S.date = today(); render(); setTimeout(() => plusGo('peso'), 60); return true; }
+  if(a === 'grpdexok'){ grpExcluirDesafio(b.dataset.d); return true; }
+  if(a === 'grpreac'){ grpReagir(b.dataset.m, b.dataset.e); return true; }
+  if(a === 'grpmdel'){ const g = G.d && G.d.g; if(g){ grpCol('grupos').doc(g.id).collection('mural').doc(b.dataset.m).delete().then(() => { G.d.mural = G.d.mural.filter(x => x.id !== b.dataset.m); render(); }).catch(() => toast('Não consegui apagar agora.')); } return true; }
+  return false;
+}
+
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
 const WD_LONG = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 const slug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'ex';
@@ -4272,7 +4686,7 @@ function finishSessao(){
   const d = S.days[S.date]; d.treinos = Array.isArray(d.treinos) ? d.treinos.filter(t => t.sess !== sess.ini) : [];
   d.treinos.push({t:'musculacao', min:r.min, i:1, sess:sess.ini, f:sess.f});
   stopRest(); wakeOff(); S.mode = 'app'; S.sessIni = null; S.confirmDiscard = false;
-  save(S.date); render(); window.scrollTo(0, 0); setTimeout(() => postAbrir('treino', sess.ini), 400);
+  save(S.date); render(); window.scrollTo(0, 0); setTimeout(() => postAbrir('treino', sess.ini), 400); try{ grpPostTreino(r.min); }catch(e){}
   toast(`${lbl(sess.f)} concluído: ${r.min} min, ${r.series} séries${r.prs ? ', ' + r.prs + ' recorde(s)' : ''}.`);
 }
 function discardSessao(){
@@ -4522,6 +4936,7 @@ function render(){
   if(S.mode==='wod'){ head(false); mount('wod', ban+wodView()); return; }
   if(S.mode==='diario'){ head(false); mount('diario', ban+jorView()); return; }
   if(S.mode==='semana'){ head(false); mount('semana', ban+semanaView()); setTimeout(()=>semanaPrep(S.semW||'cur'),0); return; }
+  if(S.mode==='grp'){ head(false); mount('grp-'+(grpSt().atual||'l')+'-'+grpSt().aba, ban+grpView()); return; }
   if(S.mode==='ler'){ head(false); mount('ler-'+(lerSt().fase), ban+lerView()); return; }
   if(S.mode==='rem'){ head(false); mount('rem'+(remSt().ed?'-ed':''), ban+remView()); return; }
   if(S.mode==='bio'){ head(false); mount('bio', ban+bioForm()); return; }
@@ -4533,6 +4948,7 @@ function render(){
   S.lastView='app';
   engVerifica();
   if(S.remIrDepois){ S.remIrDepois=false; setTimeout(remIr,50); }
+  setTimeout(grpConvitePendente, 0);
   document.getElementById('navbar').hidden = !(S.tab==='inicio'||S.tab==='evol');
   bnv.innerHTML=bnavHTML(); bnv.hidden=false; document.body.classList.add('hasnav'); document.body.classList.toggle('hab', ehHabitos());
   app.innerHTML = ban + renewBanner() + (S.tab==='planos'?planosView():S.tab==='perfil'?perfilView():S.tab==='evol'?evolView():viewDay()) + plusSheet() + foodSheet() + celeHTML() + postSheet() + instSheet();
@@ -4829,6 +5245,7 @@ document.addEventListener('click',e=>{
   if(/^push/.test(a) && pushAct(a,b)) return;
   if(/^rem/.test(a) && remAct(a,b)) return;
   if(/^ler/.test(a) && lerAct(a,b)) return;
+  if(/^grp/.test(a) && grpAct(a,b)) return;
   if(a==='posttreinox'){ postAbrir(b.dataset.k, String(b.dataset.ini)); return; }
   if(/^post(dia|treino|close|m|share|modo|copy|pos)$/.test(a)){ postAct(a,b); return; }
   if(a==='btab'){setTab(b.dataset.v); return;}
