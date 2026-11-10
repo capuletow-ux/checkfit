@@ -4057,7 +4057,7 @@ async function lerEnviar(){
     const d = r.data || {}; L.restantes = d.restantes;
     if(!d.ok && F){ L.fase = 'escolher'; L.msg = d.motivo === 'nao-ficha' ? 'Isso não parece uma ficha de treino. ' + ((d.duvidas || [])[0] || 'Confira o arquivo e tente de novo.') : 'Não encontrei exercícios nesse arquivo. Tente uma foto mais nítida, com a página inteira.'; render(); return; }
     if(F){ L.treino = d.treino; L.duvidas = d.duvidas || []; L.fase = 'revisar'; render(); window.scrollTo(0, 0); return; }
-    if(!d.ok){ L.fase = 'escolher'; L.msg = d.motivo === 'nao-plano' ? 'Isso não parece um plano alimentar. ' + ((d.duvidas || [])[0] || 'Confira o arquivo e tente de novo.') : 'Não encontrei refeições nesse arquivo. Tente uma foto mais nítida, com a página inteira.'; render(); return; }
+    if(!d.ok){ L.fase = 'escolher'; L.msg = d.motivo === 'nao-plano' ? 'Isso não parece um plano alimentar. ' + ((d.duvidas || [])[0] || 'Confira o arquivo e tente de novo.') : d.motivo === 'grande' ? 'O plano é grande demais para ler de uma vez. Tente de novo; se continuar, envie pelo WhatsApp.' : 'Não encontrei refeições nesse arquivo. Tente uma foto mais nítida, com a página inteira.'; render(); return; }
     L.plano = d.plano; lerSugere(L.plano); L.duvidas = d.duvidas || []; L.fase = 'revisar'; render(); window.scrollTo(0, 0);
   }catch(e){ L.fase = 'escolher'; L.msg = (e && e.message) || 'Não consegui ler o plano agora.'; render(); }
 }
@@ -4112,7 +4112,7 @@ function lerView(){
   const F = L.tipo === 'ficha', doc = F ? 'ficha' : 'plano', voltarF = F ? `<button class="ghost" data-act="lerback">${S.treino ? 'Voltar' : 'Cancelar'}</button>` : voltar;
   const zap = suporteBtn(F ? 'Olá! Quero enviar minha ficha de treino para o CheckFit. Sou ' + nome + '.' : 'Olá! Quero enviar meu plano alimentar para o CheckFit. Sou ' + nome + '.', 'Prefiro enviar pelo WhatsApp');
   const msg = L.msg ? `<p class="banner" role="alert" style="margin:0">${esc(L.msg)}</p>` : '';
-  if(L.fase === 'lendo') return `<section class="card" id="view-ler"><h2>Lendo sua ${doc}…</h2><div class="lerspin" aria-hidden="true"></div><p class="sub" style="margin:0;text-align:center">Isso leva até 1 minuto. Não feche o app.</p></section>`;
+  if(L.fase === 'lendo') return `<section class="card" id="view-ler"><h2>Lendo sua ${doc}…</h2><div class="lerspin" aria-hidden="true"></div><p class="sub" style="margin:0;text-align:center">Isso pode levar até 2 minutos em planos grandes. Não feche o app.</p></section>`;
   if(L.fase === 'revisar' && F){
     const T = L.treino, DS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     const ag = T.agenda ? Object.entries(T.agenda).sort().map(([d, id]) => DS[+d] + ': ' + id).join(' · ') : '';
