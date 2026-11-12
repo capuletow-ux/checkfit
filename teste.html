@@ -621,6 +621,14 @@ html.pwa .wrap{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;over
 .mbar.ok i{background:var(--ok)}.mbar.skip i{background:var(--muted)}.mbar.pend i{width:0!important}
 .meal.mfech:has(.mbar.ok){border-color:var(--ok-soft)}
 .mbody{display:flex;flex-direction:column;gap:10px}
+
+.relper{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+.relper .seg{display:inline-flex;background:var(--surface2);border-radius:12px;padding:3px;gap:3px}
+.relper .seg button{border:0;background:none;color:var(--muted);font:inherit;font-weight:700;padding:8px 16px;border-radius:9px;cursor:pointer}
+.relper .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink,inherit);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.relnav{display:flex;align-items:center;gap:8px;font-weight:700}
+.relnav button{min-width:40px;padding:6px 10px;font-size:20px;line-height:1}
+.relnav button[disabled]{opacity:.35}
 </style>
 </head>
 <body>
@@ -1547,10 +1555,11 @@ function medChartCard(){
 function relNotaKey(){ return 'checkfit-nota-' + (S.user ? S.user.uid : '') + '-' + S.date.slice(0, 7); }
 function relNota(){ try{ return localStorage.getItem(relNotaKey()) || ''; }catch(e){ return S.relNotaMem || ''; } }
 function relSetNota(v){ S.relNotaMem = v; try{ localStorage.setItem(relNotaKey(), v); }catch(e){} const p = document.getElementById('rel-nota-print'); if(p){ p.textContent = v; p.parentElement.hidden = !v.trim(); } }
-function relView(){
-  const d0 = parse(S.date), y = d0.getFullYear(), mo = d0.getMonth(), n = new Date(y, mo + 1, 0).getDate();
-  const td = today(), all = [...Array(n)].map((_, i) => ymd(new Date(y, mo, i + 1))), dates = all.filter(d => d <= td);
-  const s = stats(dates.length ? dates : all), nome = (S.cli && S.cli.nome) || (S.user && S.user.email) || '', mes = d0.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
+function relDados(){
+  const RP = relPeriodo(), per = RP.per, all = RP.all, dates = RP.dates, n = all.length, d0 = parse(all[0]), td = today();
+  const s = stats(dates.length ? dates : all), nome = (S.cli && S.cli.nome) || (S.user && S.user.email) || '';
+  const mes = per === 'sem' ? 'semana de ' + relIntervalo(all[0], all[n - 1]) : d0.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
+  const noP = per === 'sem' ? 'na semana' : 'no mês', iniP = per === 'sem' ? 'Início da semana' : 'Início do mês';
   const P = S.prof || {}, ini = dates[0] || all[0], fim = dates[dates.length - 1] || all[all.length - 1];
   const reg = s.logged.length, pctPlano = s.mealsTot ? Math.round(s.mealsOk / s.mealsTot * 100) : 0;
   const pesoMes = weightList().filter(x => x.d >= ini && x.d <= fim), pesoAntes = weightList().filter(x => x.d < ini).pop();
@@ -1568,13 +1577,20 @@ function relView(){
   const nota = relNota(), geradoEm = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'});
   const kgs = v => String(Math.round(v * 10) / 10).replace('.', ',');
   const stTxt = st => (DAY_STATUS[st] || ['—'])[0];
-  let h = `<section class="card noprint" id="view-rel"><div class="thead"><div><h2>Relatório de ${mes}</h2><div class="sub">Para levar à nutricionista, ao médico ou ao personal.</div></div><button class="ghost" id="rel-back" data-act="relback">Voltar</button></div>
+  return {per, all, dates, n, d0, td, s, nome, mes, noP, iniP, P, ini, fim, reg, pctPlano, pesoMes, pesoAntes, WL, pIni, pesoPts, porRef, medRows, grp, cargas, nota, geradoEm, kgs, stTxt};
+}
+function relView(){
+  const D = relDados(), {per, all, dates, n, s, nome, mes, noP, iniP, P, ini, fim, reg, pctPlano, pesoMes, pIni, pesoPts, porRef, medRows, grp, cargas, nota, geradoEm, kgs, stTxt} = D;
+  let h = `<section class="card noprint" id="view-rel"><div class="thead"><div><h2>Relatório ${per === 'sem' ? 'semanal' : 'mensal'}</h2><div class="sub">Para levar à nutricionista, ao médico ou ao personal.</div></div><button class="ghost" id="rel-back" data-act="relback">Voltar</button></div>
+    <div class="relper"><div class="seg" role="group" aria-label="Período do relatório"><button id="rel-sem" data-act="relper" data-v="sem" aria-pressed="${per === 'sem'}">Semanal</button><button id="rel-mes" data-act="relper" data-v="mes" aria-pressed="${per !== 'sem'}">Mensal</button></div>
+     <div class="relnav"><button class="ghost" id="rel-prev" data-act="relnav" data-d="-1" aria-label="${per === 'sem' ? 'Semana anterior' : 'Mês anterior'}">‹</button><span>${per === 'sem' ? relIntervalo(all[0], all[n - 1], true) : mes}</span><button class="ghost" id="rel-next" data-act="relnav" data-d="1" aria-label="${per === 'sem' ? 'Próxima semana' : 'Próximo mês'}" ${all[n - 1] >= today() ? 'disabled' : ''}>›</button></div></div>
+    ${relImgBox()}
     <label class="sub" for="rel-nota" style="font-weight:700;display:block;margin-top:10px">Observações para o profissional (opcional)</label>
     <textarea id="rel-nota" class="relnota" placeholder="Ex.: senti mais fome à noite; dor no joelho na semana 2; viajei de 10 a 13.">${esc(nota)}</textarea>
     ${relPdfBox()}
-    <p class="tip" style="margin:8px 0 0">${dates.length < n ? 'O mês ainda não terminou: o relatório vai até hoje. ' : ''}Prévia do relatório abaixo. No computador, também dá para <button class="linkbtn" data-act="relprint">imprimir</button>.</p></section>
+    <p class="tip" style="margin:8px 0 0">${dates.length < n ? (per === 'sem' ? 'A semana' : 'O mês') + ' ainda não terminou: o relatório vai até hoje. ' : ''}Abaixo, a versão completa (vai no PDF). No computador, também dá para <button class="linkbtn" data-act="relprint">imprimir</button>.</p></section>
   <article class="rep" aria-label="Relatório">
-   <header class="rh"><div><div class="rbrand">CheckFit</div><h1>Relatório mensal · ${mes}</h1><div class="rmeta">${esc(nome)}${P.idade ? ' · ' + esc(P.idade) + ' anos' : ''}${P.altura ? ' · ' + esc(P.altura) + ' cm' : ''} · ${dCurta(ini)} a ${dCurta(fim)} · gerado em ${geradoEm}</div>
+   <header class="rh"><div><div class="rbrand">CheckFit</div><h1>${per === 'sem' ? 'Relatório semanal' : 'Relatório mensal'} · ${mes}</h1><div class="rmeta">${esc(nome)}${P.idade ? ' · ' + esc(P.idade) + ' anos' : ''}${P.altura ? ' · ' + esc(P.altura) + ' cm' : ''} · ${dCurta(ini)} a ${dCurta(fim)} · gerado em ${geradoEm}</div>
     ${PLANINFO && PLANINFO.nutri ? `<div class="rmeta">Plano alimentar: ${esc(PLANINFO.nutri)}${PLANINFO.data ? ' (' + esc(PLANINFO.data) + ')' : ''}</div>` : ''}${S.treino && S.treino.prof ? `<div class="rmeta">Treino: ${esc(S.treino.prof)}${S.treino.objetivo ? ' · ' + esc(S.treino.objetivo) : ''}</div>` : ''}</div></header>
    <section class="rs"><h2>Resumo</h2><div class="rgrid">
     <div><b>${reg}</b><span>dias registrados de ${dates.length || n}</span></div>
@@ -1583,22 +1599,22 @@ function relView(){
     <div><b>${reg ? fmt(s.avg) : '—'}</b><span>kcal/dia em média (meta ≈ ${fmt(REF)})</span></div>
     <div><b>${s.waterAvg ? fmtL(s.waterAvg) + ' L' : '—'}</b><span>água/dia em média (meta ${fmtL(WATER_GOAL)} L)</span></div>
     <div><b>${s.waterDays}</b><span>dias com a meta de água</span></div>
-    <div><b>${s.trN}</b><span>treinos no mês</span></div>
-    <div><b>${s.wDelta == null ? '—' : (s.wDelta <= 0 ? '−' : '+') + kgs(Math.abs(s.wDelta)) + ' kg'}</b><span>variação de peso no mês${s.wEnd ? ' (atual ' + kgs(s.wEnd) + ' kg)' : ''}</span></div>
-   </div>${s.deficit > 0 ? `<p class="rnote">Déficit calórico estimado no mês: ${fmt(s.deficit)} kcal (≈ ${kgs(s.deficit / 7700)} kg de gordura), considerando a taxa basal informada × 1,2 mais os treinos.</p>` : ''}</section>
-   ${pesoPts.length ? `<section class="rs"><h2>Peso</h2><div class="rtwo"><div>${lineChart(pesoPts, {color:'#0B2E3D', un:'kg', label:'Peso no mês', meta:P.meta})}</div>
-     <table class="rt"><tr><th>Início do mês</th><td>${kgs(pesoPts[0].v)} kg</td></tr><tr><th>Atual</th><td>${kgs(pesoPts[pesoPts.length - 1].v)} kg</td></tr><tr><th>No mês</th><td>${(pesoPts[pesoPts.length - 1].v - pesoPts[0].v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pesoPts[0].v))} kg</td></tr>${pIni ? `<tr><th>Peso inicial</th><td>${kgs(pIni.v)} kg${pIni.d ? ' <small>' + parse(pIni.d).toLocaleDateString('pt-BR') + '</small>' : ''}</td></tr><tr><th>Desde o início</th><td><b>${(pesoPts[pesoPts.length - 1].v - pIni.v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pIni.v))} kg</b></td></tr>` : ''}${P.meta ? `<tr><th>Meta</th><td>${kgs(P.meta)} kg</td></tr>` : ''}<tr><th>Pesagens no mês</th><td>${pesoMes.length}</td></tr></table></div></section>` : ''}
-   ${medRows.length ? `<section class="rs"><h2>Medidas corporais</h2><table class="rt full"><thead><tr><th>Medida</th><th>Início do mês</th><th>Última</th><th>No mês</th><th>Desde o início</th></tr></thead><tbody>
+    <div><b>${s.trN}</b><span>treinos ${noP}</span></div>
+    <div><b>${s.wDelta == null ? '—' : (s.wDelta <= 0 ? '−' : '+') + kgs(Math.abs(s.wDelta)) + ' kg'}</b><span>variação de peso ${noP}${s.wEnd ? ' (atual ' + kgs(s.wEnd) + ' kg)' : ''}</span></div>
+   </div>${s.deficit > 0 ? `<p class="rnote">Déficit calórico estimado ${noP}: ${fmt(s.deficit)} kcal (≈ ${kgs(s.deficit / 7700)} kg de gordura), considerando a taxa basal informada × 1,2 mais os treinos.</p>` : ''}</section>
+   ${pesoPts.length ? `<section class="rs"><h2>Peso</h2><div class="rtwo"><div>${lineChart(pesoPts, {color:'#0B2E3D', un:'kg', label:'Peso ' + noP, meta:P.meta})}</div>
+     <table class="rt"><tr><th>${iniP}</th><td>${kgs(pesoPts[0].v)} kg</td></tr><tr><th>Atual</th><td>${kgs(pesoPts[pesoPts.length - 1].v)} kg</td></tr><tr><th>${per === 'sem' ? 'Na semana' : 'No mês'}</th><td>${(pesoPts[pesoPts.length - 1].v - pesoPts[0].v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pesoPts[0].v))} kg</td></tr>${pIni ? `<tr><th>Peso inicial</th><td>${kgs(pIni.v)} kg${pIni.d ? ' <small>' + parse(pIni.d).toLocaleDateString('pt-BR') + '</small>' : ''}</td></tr><tr><th>Desde o início</th><td><b>${(pesoPts[pesoPts.length - 1].v - pIni.v <= 0 ? '−' : '+') + kgs(Math.abs(pesoPts[pesoPts.length - 1].v - pIni.v))} kg</b></td></tr>` : ''}${P.meta ? `<tr><th>Meta</th><td>${kgs(P.meta)} kg</td></tr>` : ''}<tr><th>Pesagens ${noP}</th><td>${pesoMes.length}</td></tr></table></div></section>` : ''}
+   ${medRows.length ? `<section class="rs"><h2>Medidas corporais</h2><table class="rt full"><thead><tr><th>Medida</th><th>${iniP}</th><th>Última</th><th>${per === 'sem' ? 'Na semana' : 'No mês'}</th><th>Desde o início</th></tr></thead><tbody>
      ${medRows.map(r => `<tr><td>${r.l}</td><td>${fmtM(r.a.v)} ${medUn(r.k)} <small>${dCurta(r.a.d)}</small></td><td>${fmtM(r.b.v)} ${medUn(r.k)} <small>${dCurta(r.b.d)}</small></td><td>${r.a.d !== r.b.d ? medDelta(r.b.v - r.a.v, r.k) : '—'}</td><td>${r.ini.d !== r.b.d ? medDelta(r.b.v - r.ini.v, r.k) + ' <small>desde ' + dCurta(r.ini.d) + '</small>' : '—'}</td></tr>`).join('')}</tbody></table></section>` : ''}
    ${bioMesSecao(ini, fim)}
    ${reg ? `<section class="rs"><h2>Alimentação por refeição</h2><table class="rt full"><thead><tr><th>Refeição</th><th>No plano</th><th>Ajustada</th><th>Com extra</th><th>Pulada</th><th>Sem registro</th></tr></thead><tbody>
      ${porRef.map(({m, c}) => `<tr><td>${esc(m.time ? m.time + ' · ' : '')}${esc(m.name)}</td><td>${c.ok}</td><td>${c.adj}</td><td>${c.extra}</td><td>${c.skip}</td><td>${c.pend}</td></tr>`).join('')}</tbody></table>
      ${s.top.length ? `<h3>Fora do plano mais registrados</h3><table class="rt full"><tbody>${s.top.map(t => `<tr><td>${esc(t.n)}</td><td>${t.q}×</td><td>${fmt(t.k)} kcal no total</td></tr>`).join('')}</tbody></table>` : ''}
-     <p class="rnote">Extras somaram ${fmt(s.extraK)} kcal no mês. ${s.skipped ? s.skipped + ' refeição(ões) puladas.' : 'Nenhuma refeição pulada.'}</p></section>` : ''}
+     <p class="rnote">Extras somaram ${fmt(s.extraK)} kcal ${noP}. ${s.skipped ? s.skipped + ' refeição(ões) puladas.' : 'Nenhuma refeição pulada.'}</p></section>` : ''}
    ${Object.keys(grp).length || s.mu.feitos ? `<section class="rs"><h2>Atividade física</h2>
      ${S.treino ? `<p class="rnote" style="margin-top:0">Musculação: ${s.mu.feitos} treino(s) concluído(s)${s.mu.previstos ? ' de ' + s.mu.previstos + ' previsto(s)' : ''} · ${fmt(s.mu.vol)} kg levantados no total.</p>` : ''}
      ${Object.keys(grp).length ? `<table class="rt full"><thead><tr><th>Atividade</th><th>Vezes</th><th>Minutos</th><th>Gasto extra</th></tr></thead><tbody>${Object.values(grp).sort((a, b) => b.k - a.k).map(x => `<tr><td>${x.n}</td><td>${x.q}</td><td>${fmt(x.min)}</td><td>${fmt(x.k)} kcal</td></tr>`).join('')}</tbody></table>` : ''}
-     ${cargas.length ? `<h3>Evolução das cargas no mês</h3><table class="rt full"><thead><tr><th>Exercício</th><th>Primeiro treino</th><th>Último treino</th><th>Treinos</th></tr></thead><tbody>${cargas.map(c => `<tr><td>${esc(c.n)}</td><td>${kgs(c.a)} kg</td><td>${kgs(c.b)} kg${c.b > c.a ? ' ▲' : ''}</td><td>${c.q}</td></tr>`).join('')}</tbody></table>` : ''}</section>` : ''}
+     ${cargas.length ? `<h3>Evolução das cargas ${noP}</h3><table class="rt full"><thead><tr><th>Exercício</th><th>Primeiro treino</th><th>Último treino</th><th>Treinos</th></tr></thead><tbody>${cargas.map(c => `<tr><td>${esc(c.n)}</td><td>${kgs(c.a)} kg</td><td>${kgs(c.b)} kg${c.b > c.a ? ' ▲' : ''}</td><td>${c.q}</td></tr>`).join('')}</tbody></table>` : ''}</section>` : ''}
    ${(() => { const L = ajLinhas(S.aj, S.planBase, S.treinoBase); return L.length ? `<section class="rs"><h2>Ajustes feitos pelo paciente</h2><p class="rnote" style="margin:0 0 6px">Mudanças que o paciente fez por conta própria sobre o plano e a ficha originais.</p><table class="rt full"><tbody>${L.map(l => `<tr><td>${esc(l)}</td></tr>`).join('')}</tbody></table></section>` : ''; })()}
    <section class="rs brk"><h2>Dia a dia</h2><table class="rt full dd"><thead><tr><th>Dia</th><th>kcal</th><th>Água</th><th>Treino</th><th>Peso</th><th>Situação</th></tr></thead><tbody>
      ${s.cs.map(x => { const dd = S.days[x.d] || {}, ms = sessoes(x.d).filter(z => z.fim).length; return `<tr class="${x.c.status}"><td>${parse(x.d).toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit'})}</td><td>${x.c.status === 'vazio' ? '—' : fmt(x.c.kcal)}</td><td>${x.c.water ? fmtL(x.c.water) + ' L' : '—'}</td><td>${x.c.tr.min || ms ? (x.c.tr.min ? fmt(x.c.tr.min) + ' min' : '') + (ms ? (x.c.tr.min ? ' · ' : '') + 'musc.' : '') : '—'}</td><td>${+dd.peso > 0 ? kgs(+dd.peso) : '—'}</td><td>${stTxt(x.c.status)}</td></tr>`; }).join('')}</tbody></table></section>
@@ -1744,7 +1760,7 @@ async function relPdf(){
   await new Promise(r => setTimeout(r, 60));
   try{
     const blob = pdfBlob(pdfRender(rep)), d0 = parse(S.date);
-    const nome = S.pdfNome || ('Relatorio-CheckFit-' + d0.toLocaleDateString('pt-BR', {month:'long'}) + '-' + d0.getFullYear() + '.pdf').normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const nome = S.pdfNome || (S.relPer === 'sem' && S.mode === 'rel' ? 'Relatorio-semanal-CheckFit-' + weekStart(S.date).split('-').reverse().join('-') + '.pdf' : 'Relatorio-CheckFit-' + d0.toLocaleDateString('pt-BR', {month:'long'}) + '-' + d0.getFullYear() + '.pdf').normalize('NFD').replace(/[̀-ͯ]/g, '');
     if(S.relPdf && S.relPdf.url) try{ URL.revokeObjectURL(S.relPdf.url); }catch(e){}
     let file = null; try{ file = new File([blob], nome, {type:'application/pdf'}); }catch(e){}
     S.relPdf = {url:URL.createObjectURL(blob), nome, file, kb:Math.round(blob.size / 1024), share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))};
@@ -2788,6 +2804,7 @@ async function loadFull(from){
 }
 /* qual é o dia mais antigo que a tela atual precisa completo */
 function precisaDe(){
+  if(S.mode === 'rel' && S.relPer === 'sem') return weekStart(S.date);
   if(S.mode === 'rel' || (S.mode === 'app' && S.view === 'mes')) return S.date.slice(0, 8) + '01';
   if(S.mode === 'app' && S.view === 'semana') return weekStart(S.date);
   return S.date;
@@ -4737,6 +4754,261 @@ function mealAct(a, b){
   return false;
 }
 
+/* ---------- Relatório semanal e mensal em imagem (1 página, estilo infográfico) ---------- */
+const MESES_PT = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+function relIntervalo(a, b, curto){
+  const A = parse(a), B = parse(b), m = i => curto ? MESES_PT[i].slice(0, 3) : MESES_PT[i];
+  if(A.getFullYear() !== B.getFullYear()) return `${A.getDate()} de ${m(A.getMonth())} de ${A.getFullYear()} a ${B.getDate()} de ${m(B.getMonth())} de ${B.getFullYear()}`;
+  if(A.getMonth() !== B.getMonth()) return `${A.getDate()} de ${m(A.getMonth())} a ${B.getDate()} de ${m(B.getMonth())} de ${B.getFullYear()}`;
+  return `${A.getDate()} a ${B.getDate()} de ${m(B.getMonth())} de ${B.getFullYear()}`;
+}
+function relPeriodo(){
+  const per = S.relPer === 'sem' ? 'sem' : 'mes', td = today();
+  let all;
+  if(per === 'sem'){ const ws = weekStart(S.date); all = [...Array(7)].map((_, i) => addDays(ws, i)); }
+  else { const d0 = parse(S.date), y = d0.getFullYear(), mo = d0.getMonth(), n = new Date(y, mo + 1, 0).getDate(); all = [...Array(n)].map((_, i) => ymd(new Date(y, mo, i + 1))); }
+  return {per, all, dates:all.filter(d => d <= td)};
+}
+/* quebra texto em linhas dentro de uma largura */
+function icWrap(x, s, a, b, maxW, lh, o){
+  o = o || {}; x.font = (o.w || 400) + ' ' + (o.s || 16) + 'px ' + (o.h ? IFH : IFB);
+  const words = String(s).split(/ +/); let line = '', y = b, n = 0;
+  words.forEach(w => { const t = line ? line + ' ' + w : w; if(x.measureText(t).width > maxW && line){ if(!o.dry) icT(x, line, a, y, o); y += lh; n++; line = w; } else line = t; });
+  if(line){ if(!o.dry) icT(x, line, a, y, o); y += lh; n++; }
+  return {y, n};
+}
+function icCheck(x, cx, cy, r, kind){
+  x.fillStyle = kind === 'warn' ? IC.orange : kind === 'go' ? '#F59E0B' : IC.green; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
+  x.strokeStyle = '#fff'; x.lineWidth = r * 0.28; x.lineCap = 'round'; x.lineJoin = 'round'; x.beginPath();
+  if(kind === 'warn'){ x.moveTo(cx, cy - r * 0.5); x.lineTo(cx, cy + r * 0.12); x.stroke(); x.fillStyle = '#fff'; x.beginPath(); x.arc(cx, cy + r * 0.45, r * 0.14, 0, Math.PI * 2); x.fill(); }
+  else if(kind === 'go'){ x.moveTo(cx - r * 0.45, cy); x.lineTo(cx + r * 0.4, cy); x.moveTo(cx + r * 0.05, cy - r * 0.38); x.lineTo(cx + r * 0.45, cy); x.lineTo(cx + r * 0.05, cy + r * 0.38); x.stroke(); }
+  else { x.moveTo(cx - r * 0.42, cy + r * 0.02); x.lineTo(cx - r * 0.1, cy + r * 0.34); x.lineTo(cx + r * 0.45, cy - r * 0.3); x.stroke(); }
+}
+function icEmoji(x, e, a, b, sz){ x.font = sz + 'px "Apple Color Emoji","Noto Color Emoji","Segoe UI Emoji",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(e, a, b); x.textBaseline = 'alphabetic'; x.textAlign = 'left'; }
+/* painel com título (mesmo visual do relatório de bioimpedância) e subtítulo opcional */
+function rpPanel(x, a, b, w, h, title, sub, bg){
+  if(bg){ x.fillStyle = bg; icRR(x, a, b, w, h, 18); x.fill(); x.strokeStyle = '#CDEBD8'; x.lineWidth = 1.5; icRR(x, a, b, w, h, 18); x.stroke(); icT(x, title, a + 22, b + 40, {s:21, w:800, h:1, c:IC.navy}); }
+  else icPanel(x, a, b, w, h, title);
+  if(sub){ icT(x, sub, a + 22, b + 80, {s:14, c:IC.mut, max:w - 44}); return b + 96; }
+  return b + 66;
+}
+function relDestaques(D){
+  const {s, reg, pctPlano, dates, P} = D, out = [], kg = v => String(Math.round(v * 10) / 10).replace('.', ',');
+  const quer = P.meta && s.wEnd ? (P.meta < s.wEnd ? 'perder' : 'ganhar') : 'perder';
+  if(s.wDelta != null && Math.abs(s.wDelta) >= 0.1){ const bom = (s.wDelta < 0) === (quer === 'perder'); out.push([(s.wDelta < 0 ? 'Perda de ' : 'Ganho de ') + kg(Math.abs(s.wDelta)) + ' kg ' + D.noP, bom ? 'ok' : 'warn']); }
+  if(s.trN || s.mu.feitos) out.push([(s.trN || s.mu.feitos) + ' treino' + ((s.trN || s.mu.feitos) > 1 ? 's' : '') + ' realizado' + ((s.trN || s.mu.feitos) > 1 ? 's' : ''), 'ok']);
+  if(s.waterAvg) out.push([s.waterAvg >= WATER_GOAL ? 'Média de ' + fmtL(s.waterAvg) + ' L de água por dia' : 'Água abaixo da meta: ' + fmtL(s.waterAvg) + ' de ' + fmtL(WATER_GOAL) + ' L/dia', s.waterAvg >= WATER_GOAL ? 'ok' : 'warn']);
+  if(reg) out.push([reg + ' dia' + (reg > 1 ? 's' : '') + ' com registros', reg >= dates.length * 0.7 ? 'ok' : 'warn']);
+  if(s.mealsTot && !ehHabitos()) out.push([pctPlano >= 70 ? pctPlano + '% das refeições dentro do plano' : 'Aumentar a adesão ao plano alimentar (atual: ' + pctPlano + '%)', pctPlano >= 70 ? 'ok' : 'warn']);
+  if(s.best >= 3) out.push(['Melhor sequência: ' + s.best + ' dias com tudo feito', 'ok']);
+  return out.slice(0, 6);
+}
+function relInsights(D){
+  const {s, reg, pctPlano, dates, P} = D, out = [];
+  if(s.wDelta != null && P.meta && s.wEnd){ const quer = P.meta < s.wEnd ? -1 : 1; if(Math.sign(s.wDelta) === quer) out.push(['Você está no caminho certo para a sua meta de peso.', 'ok']); else if(Math.abs(s.wDelta) >= 0.2) out.push(['O peso foi no sentido contrário da meta: reveja extras e treinos.', 'go']); }
+  if(s.mu.previstos){ if(s.mu.feitos >= s.mu.previstos) out.push(['Treinos em dia: mantenha a frequência.', 'ok']); else out.push(['Conclua os treinos previstos (' + s.mu.feitos + ' de ' + s.mu.previstos + ').', 'go']); }
+  else if(s.trN) out.push(['Mantenha a frequência dos treinos.', 'ok']);
+  if(s.mealsTot && !ehHabitos() && pctPlano < 80) out.push(['Aumente a adesão ao plano alimentar (meta: ≥ 80%).', 'go']);
+  if(s.waterAvg && s.waterAvg < WATER_GOAL) out.push(['Busque atingir a meta de água (' + fmtL(WATER_GOAL) + ' L/dia).', 'go']);
+  if(dates.length && reg < dates.length * 0.8) out.push(['Registre todos os dias para um relatório mais fiel.', 'go']);
+  if(s.skipped > 2) out.push(['Evite pular refeições (' + s.skipped + ' puladas ' + D.noP + ').', 'go']);
+  if(s.top.length && s.top[0].q >= 3) out.push(['Fique de olho no extra mais frequente: ' + s.top[0].n + ' (' + s.top[0].q + '×).', 'go']);
+  if(!out.length) out.push(['Continue registrando: cada dia conta.', 'ok']);
+  return out.slice(0, 5);
+}
+async function relImgGerar(D){
+  try{ if(document.fonts && document.fonts.load){ await Promise.race([Promise.all([document.fonts.load('800 30px Montserrat'), document.fonts.load('400 16px Inter'), document.fonts.load('700 16px Inter')]), new Promise(r => setTimeout(r, 1500))]); } }catch(e){}
+  const {s, P, reg, pctPlano, pesoPts, pIni, porRef, grp, cargas, nota, dates, all, per} = D, kgs = v => String(Math.round(v * 10) / 10).replace('.', ',');
+  const W = 1080, SC = 2, Hmax = 3600, cv = document.createElement('canvas'); cv.width = W * SC; cv.height = Hmax * SC;
+  const x = cv.getContext('2d'); x.scale(SC, SC); x.fillStyle = '#F4F7F9'; x.fillRect(0, 0, W, Hmax);
+  const sem = per === 'sem', ini = all[0], fim = all[all.length - 1], nome = (S.cli && S.cli.nome) || '';
+  // ---- cabeçalho
+  const hg = x.createLinearGradient(0, 0, W, 0); hg.addColorStop(0, IC.navy); hg.addColorStop(1, IC.navy2); x.fillStyle = hg; x.fillRect(0, 0, W, 150);
+  x.fillStyle = 'rgba(34,197,94,.55)'; x.beginPath(); x.moveTo(0, 150); x.quadraticCurveTo(60, 120, 150, 150); x.closePath(); x.fill();
+  icLogo(x, 34, 40, 58); icT(x, 'Check', 100, 90, {s:36, w:800, h:1, c:'#fff'}); const cw = x.measureText('Check').width; icT(x, 'Fit', 100 + cw, 90, {s:36, w:800, h:1, c:IC.lime});
+  x.fillStyle = 'rgba(255,255,255,.35)'; x.fillRect(278, 40, 2, 72);
+  icT(x, sem ? 'Relatório Semanal' : 'Relatório Mensal', 300, 78, {s:34, w:800, h:1, c:'#fff', max:420});
+  const subt = sem ? relIntervalo(ini, fim) : (MESES_PT[parse(ini).getMonth()][0].toUpperCase() + MESES_PT[parse(ini).getMonth()].slice(1) + ' de ' + parse(ini).getFullYear());
+  icT(x, subt, 300, 112, {s:sem ? 22 : 26, w:800, h:1, c:IC.lime, max:440});
+  x.fillStyle = 'rgba(0,0,0,.28)'; icRR(x, 768, 30, 288, 92, 16); x.fill();
+  icEmoji(x, '📅', 800, 76, 30);
+  icT(x, 'Período do relatório', 828, 60, {s:15, c:'#D7ECEA'});
+  const fimR = dates.length ? dates[dates.length - 1] : fim;
+  icT(x, relIntervalo(ini, fimR, true), 828, 84, {s:17, w:700, c:'#fff', max:220});
+  icT(x, 'Gerado em ' + new Date().toLocaleDateString('pt-BR'), 828, 106, {s:13.5, c:'#D7ECEA'});
+  // ---- faixa do paciente
+  let y = 170; x.fillStyle = '#fff'; icRR(x, 24, y, W - 48, 96, 18); x.fill(); x.strokeStyle = IC.line; x.lineWidth = 1.5; icRR(x, 24, y, W - 48, 96, 18); x.stroke();
+  const ini2 = (nome || 'P').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  const ag = x.createLinearGradient(40, y + 14, 108, y + 82); ag.addColorStop(0, IC.green); ag.addColorStop(1, IC.navy2); x.fillStyle = ag; x.beginPath(); x.arc(78, y + 48, 32, 0, Math.PI * 2); x.fill();
+  icT(x, ini2, 78, y + 58, {s:26, w:800, h:1, c:'#fff', al:'center'});
+  icT(x, nome || 'Paciente', 126, y + 44, {s:25, w:800, h:1, max:300});
+  icT(x, [P.idade ? P.idade + ' anos' : '', P.altura ? P.altura + ' cm' : ''].filter(Boolean).join(' • ') || ' ', 126, y + 72, {s:17, c:IC.mut});
+  x.fillStyle = IC.line; x.fillRect(452, y + 18, 1.5, 60);
+  icEmoji(x, '📋', 492, y + 48, 30);
+  const pl = PLANINFO && PLANINFO.nutri ? ['Plano alimentar:', PLANINFO.nutri, PLANINFO.data ? '(' + PLANINFO.data + ')' : ''] : ehHabitos() ? ['Modo hábitos', 'Checklist diário de saúde', ''] : ['Plano alimentar:', 'Montado pelo próprio usuário', ''];
+  icT(x, pl[0], 524, y + 36, {s:16, w:800}); icT(x, pl[1] + (pl[2] ? ' ' + pl[2] : ''), 524, y + 60, {s:16, max:500});
+  if(S.treino && S.treino.prof) icT(x, 'Treino: ' + S.treino.prof, 524, y + 82, {s:14.5, c:IC.mut, max:500});
+  // ---- resumo (6 indicadores)
+  y += 118; icEmoji(x, '📊', 46, y + 14, 26); icT(x, sem ? 'Resumo da semana' : 'Resumo do mês', 72, y + 24, {s:25, w:800, h:1, c:IC.dg});
+  icT(x, 'Visão geral da sua evolução, adesão e principais indicadores.', 72, y + 48, {s:15, c:IC.mut});
+  y += 64;
+  const tw = (W - 48 - 5 * 12) / 6, th = 132, pctReg = dates.length ? Math.round(reg / dates.length * 100) : 0;
+  const tiles = [
+    ['📅', String(reg), '', 'dias registrados de ' + (dates.length || all.length), null, true],
+    ['🍽️', s.mealsTot ? pctPlano + '%' : '—', '', ehHabitos() ? 'dos hábitos feitos' : 'das refeições dentro do plano', null],
+    ['🍎', reg ? fmt(s.avg) : '—', reg ? 'kcal' : '', 'em média por dia (meta: ' + fmt(REF) + ')', '#FFF8EC'],
+    ['💧', s.waterAvg ? fmtL(s.waterAvg) + ' L' : '—', '', 'água/dia (meta: ' + fmtL(WATER_GOAL) + '\u00a0L)', '#EEF6FD'],
+    ['🏋️', String(s.trN || s.mu.feitos || 0), '', 'treinos ' + D.noP, null],
+    ['⚖️', s.wDelta == null ? '—' : (s.wDelta <= 0 ? '−' : '+') + kgs(Math.abs(s.wDelta)) + ' kg', '', 'variação do peso ' + D.noP + (s.wEnd ? ' (atual: ' + kgs(s.wEnd) + ' kg)' : ''), null]
+  ];
+  tiles.forEach((t, k) => {
+    const a = 24 + k * (tw + 12); x.fillStyle = t[4] || '#fff'; icRR(x, a, y, tw, th, 16); x.fill(); x.strokeStyle = IC.line; x.lineWidth = 1.5; icRR(x, a, y, tw, th, 16); x.stroke();
+    icEmoji(x, t[0], a + 26, y + 32, 24);
+    icT(x, t[1], a + 46, y + 42, {s:t[1].length > 7 ? 22 : 27, w:800, h:1, max:tw - 54}); if(t[2]){ const vw = x.measureText(t[1]).width; icT(x, t[2], a + 50 + vw, y + 42, {s:14, w:700}); }
+    icWrap(x, t[3], a + 16, y + 74, t[5] ? tw - 78 : tw - 28, 19, {s:14.5, c:IC.mut});
+    if(t[5]){ const cx = a + tw - 36, cy = y + 88, r = 24; x.lineWidth = 7; x.strokeStyle = '#E6EEF2'; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.stroke(); x.strokeStyle = IC.green; x.lineCap = 'round'; x.beginPath(); x.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pctReg / 100); x.stroke(); icT(x, pctReg + '%', cx, cy + 5, {s:13, w:800, al:'center'}); }
+  });
+  y += th + 22;
+  const Lx = 24, Lw = 664, Rx = 704, Rw = W - 24 - 704;
+  const linha = (blocos) => { const h = Math.max(...blocos.map(b => b.h)); blocos.forEach(b => b.draw(b.a, y, b.w, h)); y += h + 18; };
+  // ---- peso + destaques
+  const dest = relDestaques(D);
+  const pesoBloco = {a:Lx, w:Lw, h:pesoPts.length ? 372 : 140, draw:(a, b, w, h) => {
+    const cy0 = rpPanel(x, a, b, w, h, 'Evolução do peso', 'Acompanhe a sua variação ao longo do ' + (sem ? 'período' : 'mês') + '.');
+    if(!pesoPts.length){ icT(x, 'Nenhuma pesagem registrada ' + D.noP + '.', a + 22, cy0 + 24, {s:16, c:IC.mut}); return; }
+    const gx = a + 64, gw = 300, gy = cy0 + 44, gh = 170, vs = pesoPts.map(p => p.v).concat(P.meta ? [+P.meta] : []);
+    let lo = Math.min(...vs), hi = Math.max(...vs); if(hi - lo < 2){ lo -= 1; hi += 1; } lo = Math.floor(lo * 2) / 2 - 0.5; hi = Math.ceil(hi * 2) / 2 + 0.5;
+    const Y = v => gy + gh - (v - lo) / (hi - lo) * gh, d0 = parse(ini).getTime(), d1 = Math.max(parse(fim).getTime(), d0 + 1), X = d => gx + (parse(d).getTime() - d0) / (d1 - d0) * gw;
+    for(let k = 0; k <= 4; k++){ const v = lo + (hi - lo) * k / 4, yy = Y(v); x.fillStyle = '#EDF2F5'; x.fillRect(gx, yy, gw, 1); icT(x, kgs(v), gx - 8, yy + 5, {s:12, c:IC.mut, al:'right'}); }
+    if(P.meta){ x.setLineDash([6, 5]); x.strokeStyle = IC.green; x.lineWidth = 2; x.beginPath(); x.moveTo(gx, Y(+P.meta)); x.lineTo(gx + gw, Y(+P.meta)); x.stroke(); x.setLineDash([]); x.fillStyle = IC.green; icRR(x, gx + gw - 104, Y(+P.meta) - 30, 104, 24, 7); x.fill(); icT(x, 'Meta: ' + kgs(P.meta) + ' kg', gx + gw - 52, Y(+P.meta) - 13, {s:13, w:700, c:'#fff', al:'center'}); }
+    x.strokeStyle = IC.dg; x.lineWidth = 3; x.lineJoin = 'round'; x.beginPath(); pesoPts.forEach((p, k) => { const px = X(p.d), py = Y(p.v); k ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke();
+    pesoPts.forEach((p, k) => { if(k && k < pesoPts.length - 1 && pesoPts.length > 8) return; x.fillStyle = IC.dg; x.beginPath(); x.arc(X(p.d), Y(p.v), 5.5, 0, Math.PI * 2); x.fill(); });
+    [pesoPts[0], pesoPts[pesoPts.length - 1]].forEach((p, k) => { if(k && pesoPts.length < 2) return; const t = kgs(p.v) + ' kg'; x.font = '700 13px ' + IFB; const tw2 = x.measureText(t).width + 16, px = Math.min(Math.max(X(p.d) - tw2 / 2, gx - 10), gx + gw - tw2 + 10); x.fillStyle = IC.dg; icRR(x, px, Y(p.v) - 34, tw2, 24, 7); x.fill(); icT(x, t, px + tw2 / 2, Y(p.v) - 17, {s:13, w:700, c:'#fff', al:'center'}); });
+    icT(x, dCurta(ini), gx, gy + gh + 22, {s:12.5, c:IC.mut}); icT(x, dCurta(pesoPts[pesoPts.length - 1].d), gx + gw, gy + gh + 22, {s:12.5, c:IC.mut, al:'right'});
+    // tabela
+    const tx = a + 400, tw3 = w - 400 - 22, atual = pesoPts[pesoPts.length - 1].v, dl = atual - pesoPts[0].v, rows = [['Início ' + (sem ? 'da semana' : 'do mês'), kgs(pesoPts[0].v) + ' kg'], ['Atual', kgs(atual) + ' kg'], ['Variação', (dl <= 0 ? '−' : '+') + kgs(Math.abs(dl)) + ' kg', dl <= 0 ? IC.okFg : IC.badFg]];
+    if(pIni){ rows.push(['Peso inicial', kgs(pIni.v) + ' kg']); const di = atual - pIni.v; rows.push(['Desde o início', (di <= 0 ? '−' : '+') + kgs(Math.abs(di)) + ' kg', di <= 0 ? IC.okFg : IC.badFg]); }
+    if(P.meta) rows.push(['Meta', kgs(P.meta) + ' kg']);
+    let ty = cy0 + 6; rows.forEach(([l, v, c]) => { icT(x, l, tx, ty + 14, {s:14.5}); icT(x, v, tx + tw3, ty + 14, {s:15, w:800, al:'right', c:c || IC.fg}); x.fillStyle = '#EDF2F5'; x.fillRect(tx, ty + 24, tw3, 1); ty += 31; });
+    if(P.meta && pIni && pIni.v !== +P.meta){ const pr = Math.max(0, Math.min(1, (pIni.v - atual) / (pIni.v - P.meta))); icT(x, 'Progresso da meta', tx, ty + 16, {s:14.5}); icT(x, Math.round(pr * 100) + '%', tx + tw3, ty + 16, {s:16, w:800, al:'right'}); x.fillStyle = '#E6EEF2'; icRR(x, tx, ty + 28, tw3, 12, 6); x.fill(); const pg = x.createLinearGradient(tx, 0, tx + tw3, 0); pg.addColorStop(0, IC.green); pg.addColorStop(1, IC.lime); x.fillStyle = pg; if(pr > 0){ icRR(x, tx, ty + 28, Math.max(12, tw3 * pr), 12, 6); x.fill(); } }
+  }};
+  const destBloco = {a:Rx, w:Rw, h:66 + Math.max(1, dest.length) * 0 + 14, draw:(a, b, w, h) => {
+    const yy0 = rpPanel(x, a, b, w, h, '🏅 Destaques', '', '#ECF8F0'); let yy = yy0 + 8;
+    if(!dest.length){ icT(x, 'Registre mais dias para ver os destaques.', a + 22, yy + 12, {s:15, c:IC.mut}); return; }
+    dest.forEach(([t, k]) => { icCheck(x, a + 34, yy + 8, 12, k); const r = icWrap(x, t, a + 58, yy + 14, w - 80, 21, {s:16}); yy = r.y + 12; });
+  }};
+  // altura real dos destaques
+  { let hh = 66 + 8; dest.forEach(([t]) => { hh += icWrap(x, t, 0, 0, Rw - 80, 21, {s:16, dry:true}).n * 21 + 12; }); destBloco.h = Math.max(hh + 10, dest.length ? 0 : 120); }
+  linha([pesoBloco, destBloco]);
+  // ---- alimentação + extras
+  if(reg && PLAN.length){
+    const cols = [['No plano', 'ok'], ['Ajustada', 'adj'], ['Com extra', 'extra'], ['Pulada', 'skip'], ['Sem registro', 'pend']];
+    const alim = {a:Lx, w:Lw, h:96 + 30 + porRef.length * 32 + 14, draw:(a, b, w, h) => {
+      let yy = rpPanel(x, a, b, w, h, ehHabitos() ? 'Hábitos' : 'Alimentação por refeição', 'Comparativo entre o planejado e o que foi registrado.');
+      const c0 = a + 22, cX = k => a + 290 + k * 74; icT(x, 'Refeição', c0, yy + 14, {s:14, w:800}); cols.forEach(([l], k) => icT(x, l, cX(k), yy + 14, {s:13, w:800, al:'center', max:72}));
+      yy += 26; porRef.forEach(({m, c}) => { x.fillStyle = '#EDF2F5'; x.fillRect(c0, yy, w - 44, 1); icT(x, (m.time ? m.time + ' · ' : '') + m.name, c0, yy + 22, {s:14.5, max:250}); cols.forEach(([, k2], k) => { const v = c[k2] || 0; icT(x, String(v), cX(k), yy + 22, {s:15, w:v ? 800 : 400, al:'center', c:v ? (k2 === 'ok' ? IC.okFg : k2 === 'skip' || k2 === 'pend' ? IC.mut : IC.fg) : '#A9B8C0'}); }); yy += 32; });
+    }};
+    const topK = Math.max(1, ...s.top.map(t => t.k));
+    const extras = {a:Rx, w:Rw, h:66 + Math.max(1, s.top.length) * 44 + 40, draw:(a, b, w, h) => {
+      let yy = rpPanel(x, a, b, w, h, 'Fora do plano'); yy += 4;
+      if(!s.top.length){ icT(x, 'Nenhum extra registrado ' + D.noP + '. 👏', a + 22, yy + 18, {s:15, c:IC.mut}); return; }
+      s.top.forEach(t => { icT(x, t.n + ' (' + t.q + '×)', a + 22, yy + 16, {s:14.5, max:w - 130}); icT(x, fmt(t.k) + ' kcal', a + w - 22, yy + 16, {s:14, w:700, al:'right'}); x.fillStyle = '#E6EEF2'; icRR(x, a + 22, yy + 25, w - 44, 8, 4); x.fill(); x.fillStyle = IC.green; icRR(x, a + 22, yy + 25, Math.max(8, (w - 44) * t.k / topK), 8, 4); x.fill(); yy += 44; });
+      icT(x, 'Extras somaram ' + fmt(s.extraK) + ' kcal ' + D.noP + '.', a + 22, yy + 18, {s:13.5, c:IC.mut, max:w - 44});
+    }};
+    linha([alim, extras]);
+  }
+  // ---- atividade física + cargas
+  const gl = Object.values(grp).sort((a, b) => b.k - a.k);
+  if(gl.length || s.mu.feitos){
+    const at = {a:Lx, w:cargas.length ? Lw : W - 48, h:96 + 30 + Math.max(1, gl.length) * 32 + 14, draw:(a, b, w, h) => {
+      const sub = S.treino ? s.mu.feitos + ' treino(s) de musculação concluído(s)' + (s.mu.previstos ? ' de ' + s.mu.previstos + ' previsto(s)' : '') + ' · ' + fmt(s.mu.vol) + ' kg levantados.' : 'Treinos registrados ' + D.noP + '.';
+      let yy = rpPanel(x, a, b, w, h, 'Atividade física', sub); const cX = [a + 22, a + w * 0.5, a + w * 0.68, a + w - 22];
+      icT(x, 'Atividade', cX[0], yy + 14, {s:14, w:800}); icT(x, 'Vezes', cX[1], yy + 14, {s:14, w:800, al:'center'}); icT(x, 'Minutos', cX[2], yy + 14, {s:14, w:800, al:'center'}); icT(x, 'Gasto extra', cX[3], yy + 14, {s:14, w:800, al:'right'});
+      yy += 26; gl.forEach(g => { x.fillStyle = '#EDF2F5'; x.fillRect(cX[0], yy, w - 44, 1); icT(x, g.n, cX[0], yy + 22, {s:15, max:w * 0.42}); icT(x, String(g.q), cX[1], yy + 22, {s:15, w:700, al:'center'}); icT(x, fmt(g.min), cX[2], yy + 22, {s:15, al:'center'}); icT(x, fmt(g.k) + ' kcal', cX[3], yy + 22, {s:15, w:700, al:'right'}); yy += 32; });
+    }};
+    const bl = [at];
+    if(cargas.length){ const cg = cargas.slice(0, 6); bl.push({a:Rx, w:Rw, h:96 + 30 + cg.length * 32 + 14, draw:(a, b, w, h) => {
+      let yy = rpPanel(x, a, b, w, h, 'Evolução das cargas', 'Primeiro e último treino ' + D.noP + '.'); const cX = [a + 22, a + 196, a + 256, a + w - 22];
+      icT(x, 'Exercício', cX[0], yy + 14, {s:13.5, w:800}); icT(x, '1º', cX[1], yy + 14, {s:13.5, w:800, al:'center'}); icT(x, 'Último', cX[2], yy + 14, {s:13.5, w:800, al:'center'}); icT(x, 'Var.', cX[3], yy + 14, {s:13.5, w:800, al:'right'});
+      yy += 26; cg.forEach(c => { x.fillStyle = '#EDF2F5'; x.fillRect(cX[0], yy, w - 44, 1); icT(x, c.n, cX[0], yy + 22, {s:14, max:150}); icT(x, kgs(c.a), cX[1], yy + 22, {s:14, al:'center'}); icT(x, kgs(c.b), cX[2], yy + 22, {s:14, w:700, al:'center'}); const v = c.a > 0 ? Math.round((c.b - c.a) / c.a * 100) : 0; icT(x, v > 0 ? '▲ +' + v + '%' : v < 0 ? '▼ ' + v + '%' : '—', cX[3], yy + 22, {s:14, w:800, al:'right', c:v > 0 ? IC.okFg : v < 0 ? IC.badFg : IC.mut}); yy += 32; });
+    }}); }
+    linha(bl);
+  }
+  // ---- dia a dia (semana) ou calendário (mês) + próximos passos
+  const ins = relInsights(D);
+  let insH = 66 + 8; ins.forEach(([t]) => { insH += icWrap(x, t, 0, 0, Rw - 80, 20, {s:15, dry:true}).n * 20 + 12; });
+  const corSt = st => st === 'plano' ? [IC.okBg, IC.okFg] : st === 'fora' ? [IC.warnBg, IC.warnFg] : st === 'andamento' ? ['#E8F0FB', '#2F5DA8'] : ['#F2F6F8', '#A9B8C0'];
+  const dd = sem ? {a:Lx, w:Lw, h:96 + 30 + Math.max(1, s.cs.length) * 32 + 14, draw:(a, b, w, h) => {
+    let yy = rpPanel(x, a, b, w, h, 'Dia a dia', 'Calorias, água, treino e peso de cada dia.'); const cX = [a + 22, a + 170, a + 258, a + 360, a + 460, a + w - 22];
+    ['Dia', 'kcal', 'Água', 'Treino', 'Peso', 'Situação'].forEach((l, k) => icT(x, l, cX[k], yy + 14, {s:14, w:800, al:k === 0 ? 'left' : k === 5 ? 'right' : 'center'}));
+    yy += 26; s.cs.forEach(c => { const d = S.days[c.d] || {}, ms = sessoes(c.d).filter(z => z.fim).length, fut = c.d > today(); x.fillStyle = '#EDF2F5'; x.fillRect(cX[0], yy, w - 44, 1);
+      icT(x, parse(c.d).toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit'}), cX[0], yy + 22, {s:14.5, w:700, c:fut ? '#A9B8C0' : IC.fg});
+      if(!fut){ icT(x, c.c.status === 'vazio' ? '—' : fmt(c.c.kcal), cX[1], yy + 22, {s:14.5, al:'center'}); icT(x, c.c.water ? fmtL(c.c.water) + ' L' : '—', cX[2], yy + 22, {s:14.5, al:'center', c:c.c.waterOk ? IC.okFg : IC.fg});
+        icT(x, c.c.tr.min ? fmt(c.c.tr.min) + ' min' : ms ? 'musc.' : '—', cX[3], yy + 22, {s:14.5, al:'center'}); icT(x, +d.peso > 0 ? kgs(+d.peso) : '—', cX[4], yy + 22, {s:14.5, al:'center'});
+        const [bg, fg] = corSt(c.c.status), t = (DAY_STATUS[c.c.status] || ['—'])[0]; x.font = '700 12.5px ' + IFB; const pw = Math.min(130, x.measureText(t).width + 18); x.fillStyle = bg; icRR(x, cX[5] - pw, yy + 6, pw, 22, 7); x.fill(); icT(x, t, cX[5] - pw / 2, yy + 22, {s:12.5, w:700, c:fg, al:'center', max:pw - 6}); }
+      yy += 32; });
+  }} : (() => {
+    const lead = (parse(ini).getDay() + 6) % 7, rows = Math.ceil((lead + all.length) / 7), ch = 50;
+    return {a:Lx, w:Lw, h:96 + 26 + rows * (ch + 6) + 40, draw:(a, b, w, h) => {
+      let yy = rpPanel(x, a, b, w, h, 'Calendário do mês', 'Como foi cada dia (kcal registradas).'); const cwid = (w - 44 - 6 * 6) / 7;
+      ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'].forEach((l, k) => icT(x, l, a + 22 + k * (cwid + 6) + cwid / 2, yy + 12, {s:13, w:700, c:IC.mut, al:'center'}));
+      yy += 22; const csM = {}; s.cs.forEach(c => csM[c.d] = c); all.map(d => csM[d] || {d, c:{status:'vazio', kcal:0}}).forEach((c, i) => { const p = lead + i, cx = a + 22 + (p % 7) * (cwid + 6), cy = yy + Math.floor(p / 7) * (ch + 6), fut = c.d > today(), [bg, fg] = fut ? ['#F8FAFB', '#C5D0D6'] : corSt(c.c.status);
+        x.fillStyle = bg; icRR(x, cx, cy, cwid, ch, 9); x.fill(); icT(x, String(parse(c.d).getDate()), cx + 9, cy + 19, {s:13.5, w:800, c:fg}); if(!fut && c.c.status !== 'vazio') icT(x, fmt(c.c.kcal), cx + cwid - 8, cy + 41, {s:12.5, w:700, c:fg, al:'right'}); if(c.c.waterOk){ x.fillStyle = '#3B82F6'; x.beginPath(); x.arc(cx + cwid - 12, cy + 13, 4, 0, Math.PI * 2); x.fill(); } });
+      const ly = yy + rows * (ch + 6) + 14; [['Fiz tudo', IC.okBg, IC.okFg], ['Dia parcial', IC.warnBg, IC.warnFg], ['Em andamento', '#E8F0FB', '#2F5DA8'], ['Sem registro', '#F2F6F8', '#A9B8C0']].forEach(([l, bg, fg], k) => { const lx = a + 22 + k * 142; x.fillStyle = bg; icRR(x, lx, ly - 12, 16, 16, 4); x.fill(); x.strokeStyle = fg; x.lineWidth = 1; icRR(x, lx, ly - 12, 16, 16, 4); x.stroke(); icT(x, l, lx + 22, ly + 1, {s:13, c:IC.mut}); });
+          }};
+  })();
+  const insB = {a:Rx, w:Rw, h:insH + 10, draw:(a, b, w, h) => {
+    let yy = rpPanel(x, a, b, w, h, 'Próximos passos') + 8; ins.forEach(([t, k]) => { icCheck(x, a + 34, yy + 7, 11, k); const r = icWrap(x, t, a + 56, yy + 13, w - 78, 20, {s:15}); yy = r.y + 12; });
+  }};
+  linha([dd, insB]);
+  // ---- ajustes do paciente
+  const AJ = ajLinhas(S.aj, S.planBase, S.treinoBase);
+  if(AJ.length){ const lst = AJ.slice(0, 6); let hh = 96 + 4; lst.forEach(t => { hh += icWrap(x, t, 0, 0, W - 48 - 80, 20, {s:15, dry:true}).n * 20 + 10; });
+    linha([{a:24, w:W - 48, h:hh + 8, draw:(a, b, w, h) => { let yy = rpPanel(x, a, b, w, h, 'Ajustes feitos pelo paciente', 'Mudanças feitas por conta própria no plano ou na ficha de treino.') + 4; lst.forEach(t => { icCheck(x, a + 34, yy + 7, 11, 'ok'); yy = icWrap(x, t, a + 56, yy + 13, w - 80, 20, {s:15}).y + 10; }); }}]); }
+  // ---- observações
+  if(nota && nota.trim()){ let hh = 70; hh += icWrap(x, nota.trim(), 0, 0, W - 48 - 44, 21, {s:15.5, dry:true}).n * 21;
+    linha([{a:24, w:W - 48, h:hh + 10, draw:(a, b, w, h) => { const yy = rpPanel(x, a, b, w, h, 'Observações do paciente'); icWrap(x, nota.trim(), a + 22, yy + 10, w - 44, 21, {s:15.5}); }}]); }
+  // ---- faixa final
+  const fin = [];
+  if(P.meta && pIni && s.wEnd && pIni.v !== +P.meta){ const pr = Math.max(0, Math.min(1, (pIni.v - s.wEnd) / (pIni.v - P.meta))); fin.push(['🏆', 'Progresso geral', Math.round(pr * 100) + '%', 'da meta de peso alcançada']); }
+  else fin.push(['🏆', 'Dias com tudo feito', String(s.plano), 'de ' + (dates.length || all.length) + ' dias ' + D.noP]);
+  if(s.deficit > 0) fin.push(['🔥', 'Déficit calórico estimado', fmt(s.deficit) + ' kcal', '(≈ ' + kgs(s.deficit / 7700) + ' kg de gordura)']);
+  else fin.push(['🔥', 'Gasto com treinos', fmt(s.trK) + ' kcal', 'em ' + (s.trN || 0) + ' treino(s)']);
+  if(P.meta) fin.push(['🎯', 'Meta final', kgs(P.meta) + ' kg', s.wEnd ? (Math.abs(s.wEnd - P.meta) < 0.1 ? 'meta alcançada!' : 'faltam ' + kgs(Math.abs(s.wEnd - P.meta)) + ' kg') : '']);
+  else fin.push(['🎯', 'Melhor sequência', s.best + ' dia' + (s.best === 1 ? '' : 's'), 'seguidos com tudo feito']);
+  const fg2 = x.createLinearGradient(0, 0, W, 0); fg2.addColorStop(0, IC.navy); fg2.addColorStop(1, '#14532D'); x.fillStyle = fg2; icRR(x, 24, y, W - 48, 124, 20); x.fill();
+  const fw = (W - 48) / 3; fin.forEach(([e, l, v, sub], k) => { const a = 24 + k * fw; if(k){ x.fillStyle = 'rgba(255,255,255,.25)'; x.fillRect(a, y + 24, 1.5, 76); } icEmoji(x, e, a + 44, y + 62, 36); icT(x, l, a + 80, y + 40, {s:16, w:700, c:'#fff', max:fw - 92}); icT(x, v, a + 80, y + 78, {s:30, w:800, h:1, c:'#fff', max:fw - 92}); icT(x, sub, a + 80, y + 102, {s:13.5, c:'#D7ECEA', max:fw - 92}); });
+  y += 124 + 22;
+  icT(x, 'Gerado pelo app CheckFit · checkfitapp.com.br · dados registrados pelo próprio usuário · não substitui avaliação profissional', W / 2, y + 6, {s:12.5, c:IC.mut, al:'center', max:W - 48});
+  const H = Math.ceil(y + 26), out = document.createElement('canvas'); out.width = W * SC; out.height = H * SC; out.getContext('2d').drawImage(cv, 0, 0);
+  return out;
+}
+async function relImgPrep(){
+  const D = relDados(), tag = D.per + '|' + D.all[0] + '|' + D.all.length + '|' + D.dates.length + '|' + JSON.stringify(D.dates.map(d => (S.days[d] || {})._t || 0)) + '|' + D.nota + '|' + JSON.stringify(S.prof);
+  if(S.relImg && S.relImg.tag === tag) return; S.relImg = {tag, loading:true}; render();
+  try{
+    const cv = await relImgGerar(D), blob = await cvBlob(cv), nome = ('Relatorio-' + (D.per === 'sem' ? 'semanal' : 'mensal') + '-CheckFit-' + D.all[0].split('-').reverse().join('-') + '.png');
+    let file = null; try{ file = new File([blob], nome, {type:'image/png'}); }catch(e){}
+    if(S.relImg && S.relImg.url) try{ URL.revokeObjectURL(S.relImg.url); }catch(e){}
+    S.relImg = {tag, url:URL.createObjectURL(blob), nome, file, share:!!(file && navigator.canShare && navigator.canShare({files:[file]}))};
+  }catch(e){ console.error(e); S.relImg = {tag, erro:true}; }
+  render();
+}
+function relImgBox(){
+  const R = S.relImg;
+  if(!R || R.loading) return `<p class="sub" style="margin:10px 0">Montando a imagem do relatório…</p>`;
+  if(R.erro) return `<p class="lmsg">Não consegui montar a imagem neste aparelho. Use a versão em PDF abaixo.</p>`;
+  return `<div class="row" style="margin-top:10px">${R.share ? `<button class="primary" id="rimg-share" data-act="rimgshare">Salvar ou enviar imagem</button>` : ''}<a class="${R.share ? 'ghost' : 'primary'} relbtnl" id="rimg-dl" href="${R.url}" download="${esc(R.nome)}" target="_blank" rel="noopener">${R.share ? 'Abrir imagem' : 'Baixar imagem'}</a></div>
+    <img class="bioimg" id="rimg" src="${R.url}" alt="Relatório em imagem">`;
+}
+function relPerAct(a, b){
+  if(a === 'rimgshare'){ const R = S.relImg; if(R && R.file) navigator.share({files:[R.file], title:'Relatório CheckFit'}).catch(() => {}); return true; }
+  if(a === 'relper'){ S.relPer = b.dataset.v; S.relPdf = null; S.pdfNome = null; render(); return true; }
+  if(a === 'relnav'){ const dir = +b.dataset.d; if(S.relPer === 'sem') S.date = addDays(S.date, 7 * dir); else { const d = parse(S.date); S.date = ymd(new Date(d.getFullYear(), d.getMonth() + dir, 1)); } if(S.date > today()) S.date = today(); S.relPdf = null; S.pdfNome = null; render(); return true; }
+  if(a === 'relsem'){ S.relPer = 'sem'; S.mode = 'rel'; S.relPdf = null; S.pdfNome = null; render(); window.scrollTo(0, 0); return true; }
+  return false;
+}
+
 /* ---------- Treino de musculação: ficha, modo treinar, descanso, recordes ---------- */
 const WD_LONG = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 const slug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'ex';
@@ -5121,7 +5393,7 @@ function render(){
   if(S.mode==='bio'){ head(false); mount('bio', ban+bioForm()); return; }
   if(S.mode==='biorel'){ head(false); mount('biorel', ban+bioRelView()); const LB=bioList(), dB=(LB.find(z=>z.d===S.bioRel)||LB[LB.length-1]||{}).d; if(dB) setTimeout(()=>bioImgPrep(dB),0); return; }
   if(S.mode==='treino'){ head(false); mount('treino', ban+treinoView()+postSheet()); return; }
-  if(S.mode==='rel'){ head(false); mount('rel', ban+relView()); return; }
+  if(S.mode==='rel'){ head(false); mount('rel', ban+relView()); setTimeout(relImgPrep,0); return; }
   if(!PLAN.length){ document.getElementById('tabs').hidden=true; document.getElementById('navbar').hidden=true; const ta=document.getElementById('impt'); if(!(ta && ta.value) || S.lastView!=='plan') app.innerHTML=ban+caminhoView(); S.lastView='plan'; return; }
   const active=document.activeElement && document.activeElement.id;
   S.lastView='app';
@@ -5338,7 +5610,7 @@ function topList(s){
 function viewWeek(){
   const ws=weekStart(S.date), dates=[...Array(7)].map((_,i)=>addDays(ws,i)), s=stats(dates);
   const max=Math.max(REF*1.3,...s.cs.map(x=>x.c.kcal));
-  let h=tiles(s,7);
+  let h=`<section class="card relbtn"><div><b>Relatório da semana</b><div class="sub">Resumo em imagem ou PDF para a nutricionista ou o personal.</div></div><button class="primary" id="relsem-open" data-act="relsem">Gerar</button></section>`+tiles(s,7);
   h+=`<section class="card sum" aria-label="Calorias por dia"><h2>Calorias por dia</h2>
    <div class="chart">${s.cs.map(x=>{const d=parse(x.d);return `<button class="col" id="wk-${x.d}" data-act="goday" data-d="${x.d}" aria-label="${d.toLocaleDateString('pt-BR',{weekday:'long'})}: ${fmt(x.c.kcal)} kcal"><span class="v num">${x.c.kcal?fmt(x.c.kcal):''}</span><span class="b" style="height:${x.c.kcal/max*130}px;background:${colorOf(x.c.status)}"></span><span class="d">${WD[d.getDay()]}</span></button>`}).join('')}
    <div class="ref" style="bottom:${REF/max*130+20}px"><em class="num">ref. ${fmt(REF)}</em></div></div>
@@ -5358,7 +5630,7 @@ function viewMonth(){
   const lead=(new Date(y,mo,1).getDay()+6)%7, td=today();
   let cal=['seg','ter','qua','qui','sex','sáb','dom'].map(w=>`<div class="h">${w}</div>`).join('')+'<div></div>'.repeat(lead);
   s.cs.forEach(x=>{const st=x.c.status;cal+=`<button id="cal-${x.d}" data-act="goday" data-d="${x.d}" class="${x.d===td?'today':''}" style="background:${softOf(st)};color:${inkOf(st)}" aria-label="Dia ${parse(x.d).getDate()}: ${DAY_STATUS[st][0]}"><span class="num">${parse(x.d).getDate()}</span>${st!=='vazio'?`<small class="num">${fmt(x.c.kcal)}</small>`:''}${x.c.waterOk?'<span class="drop"></span>':''}</button>`});
-  let h=`<section class="card relbtn"><div><b>Relatório do mês</b><div class="sub">Resumo em PDF para a nutricionista ou o médico.</div></div><button class="primary" id="rel-open" data-act="rel">Gerar</button></section>`+tiles(s,n);
+  let h=`<section class="card relbtn"><div><b>Relatório do mês</b><div class="sub">Resumo em imagem ou PDF para a nutricionista ou o médico.</div></div><button class="primary" id="rel-open" data-act="rel">Gerar</button></section>`+tiles(s,n);
   h+=`<section class="card sum" aria-label="Calendário"><h2>Calendário do mês</h2><div class="cal">${cal}</div>
    <div class="legend"><span><i style="background:var(--ok-soft);border:1px solid var(--ok)"></i>Fiz tudo</span><span><i style="background:var(--bad-soft);border:1px solid var(--bad)"></i>Não fiz tudo</span><span><i style="background:var(--surface);border:1px solid var(--line)"></i>Sem registro</span><span><i style="background:var(--water);border-radius:50%"></i>Meta de água</span></div></section>`;
   h+=`<section class="card sum"><h2>Resumo do mês</h2><p style="margin:0">${summaryText(s,'neste mês')}</p>
@@ -5394,7 +5666,8 @@ document.addEventListener('click',e=>{
   if(a==='delno'){S.confirmDel=false; render(); return;}
   if(a==='delyes'){deleteAccount(); return;}
   if(a==='afilter'){A.f=b.dataset.v; render(); return;}
-  if(a==='rel'){S.mode='rel'; S.relPdf=null; S.pdfNome=null; render(); window.scrollTo(0,0); return;}
+  if(/^(relper|relnav|relsem|rimgshare)$/.test(a) && relPerAct(a,b)) return;
+  if(a==='rel'){S.relPer='mes'; S.mode='rel'; S.relPdf=null; S.pdfNome=null; render(); window.scrollTo(0,0); return;}
   if(a==='bionova'){S.plus=false; S.bioDate=null; S.bioConf=null; S.mode='bio'; render(); window.scrollTo(0,0); return;}
   if(a==='bioedit'){S.bioDate=b.dataset.d; S.bioConf=null; S.mode='bio'; render(); window.scrollTo(0,0); return;}
   if(a==='bioback'){S.mode='app'; S.tab='evol'; render(); window.scrollTo(0,0); return;}

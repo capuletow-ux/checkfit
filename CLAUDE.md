@@ -1,6 +1,6 @@
 # CheckFit — contexto do projeto (para continuar em outra conversa)
 
-Atualizado em 10/11/2026, versão 49 do app.
+Atualizado em 12/11/2026, versão 50 do app.
 
 ## Quem sou e como trabalho
 - **Quem:** Alexandre (pt-BR). Uso iPhone e não sou programador. Respostas em português, diretas, com passo a passo quando eu precisar mexer em algo.
@@ -42,6 +42,12 @@ O CheckFit é um app (PWA) de checklist diário de saúde: plano alimentar, águ
   - `html.pwa` faz o `.wrap` virar o container de rolagem.
   - Depois que o teclado fecha, a tela é reposicionada.
   - A virada do dia é conferida ao voltar para o app (`viraDia`).
+- **Relatórios:** `relView` (tela e versão completa para o PDF) usa `relDados()`, que calcula o período pelo `relPeriodo()` (`S.relPer` = 'sem' ou 'mes').
+  - Tela com botões Semanal/Mensal e setas para trocar o período (`relPerAct`).
+  - Imagem estilo infográfico de 1 página em canvas (`relImgGerar`, `relImgPrep`, `relImgBox`), com o mesmo visual do relatório de bioimpedância (helpers `IC`, `icT`, `icPanel`).
+  - Na semana aparece o "Dia a dia"; no mês, um calendário colorido.
+  - Destaques e próximos passos são gerados automaticamente (`relDestaques`, `relInsights`).
+  - Entradas: cartão "Relatório da semana" na visão semanal (`relsem`) e "Relatório do mês" na visão mensal (`rel`).
 - **Refeições:** ficam encolhidas (`mealCard`, `mealHead`, `mealDaVez`, `mealAct`). A refeição da hora abre sozinha. "Marcar tudo" ou "Pulei" fecham e passam para a próxima.
 
 ## Dados no Firestore
@@ -69,7 +75,7 @@ O CheckFit é um app (PWA) de checklist diário de saúde: plano alimentar, águ
 - **Como o app chama o servidor:** por `fetch` em `https://us-central1-dieta-alexandre.cloudfunctions.net/<nome>` com o token do usuário. Não usar o SDK de functions, porque ele quebra o service worker das notificações.
 
 ## O que já está pronto
-Login e assinatura manual, plano da nutricionista (por texto ou leitura com IA), modo "monte o seu", modo hábitos, água, peso, medidas, bioimpedância, musculação com ficha (semanas e periodização, descanso, recordes, cartão de story), cardio, suplementos e remédios com estoque, notificações push, Minha Jornada com cartas para o futuro, grupos e desafios fase 1 (prontos, personalizado e perda de peso com ranking em %), refeições encolhidas, cópia de segurança do dia.
+Login e assinatura manual, plano da nutricionista (por texto ou leitura com IA), modo "monte o seu", modo hábitos, água, peso, medidas, bioimpedância, musculação com ficha (semanas e periodização, descanso, recordes, cartão de story), cardio, suplementos e remédios com estoque, notificações push, Minha Jornada com cartas para o futuro, grupos e desafios fase 1 (prontos, personalizado e perda de peso com ranking em %), refeições encolhidas, cópia de segurança do dia, relatório semanal e mensal em imagem e PDF.
 
 ## Pendências e próximos passos
 1. Apagar os 2 grupos órfãos "Desafio teste" (Editar › Encerrar).
